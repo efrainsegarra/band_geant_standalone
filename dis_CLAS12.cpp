@@ -7,6 +7,8 @@
 #include <cstdarg>
 #include <time.h>
 
+#include "TFoam.h"
+
 using namespace std;
 
 #include "constants.h"
@@ -41,7 +43,8 @@ extern "C"{
 
 int main(int argc, char *argv[])
 {
-    
+  TFoam * csFoam = new TFoam();
+
     //what do you want to calculate
     //0=F2*P, like Deeps data
     //1=diff cross section
