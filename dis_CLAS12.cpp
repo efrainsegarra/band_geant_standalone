@@ -53,6 +53,16 @@ const double max_phi_er=2.*M_PI;
 
 int main(int argc, char *argv[])
 {
+  // Read in arguments
+  if (argc != 3)
+    {
+      cerr << "Wrong number of arguments. Instead use: [nEvents] [/path/to/output/file]\n";
+      exit(-1);
+    }
+
+  const int nEvents=atoi(argv[1]);
+  TFile * outputFile = new TFile(argv[2],"RECREATE");
+
   // Set external variables
   if(offshellset==0) epsinput=-0.5;
   if(offshellset==1) lambdainput=0;
@@ -60,14 +70,11 @@ int main(int argc, char *argv[])
   if(offshellset==3) epsinput=-0.5;
   if(offshellset==4) epsinput=-0.5;
  
-  strcpy(dir_.homedir,"/Users/schmidta/src_group/band_scint/monte_carlo/deuteron_dis"); //dir where we are running the program
+  strcpy(dir_.homedir,getenv("HOME"));
   strcpy(dir_.a09file1,getenv("HOME"));
   strcpy(dir_.a09file2,getenv("HOME"));
   strcat(dir_.a09file1,"/.deuteron_dis/grids/a09.sfs_lNNC");
   strcat(dir_.a09file2,"/.deuteron_dis/grids/a09.dsfs_lNNC");
-
-  // Create an output file
-  TFile * outputFile = new TFile("output.root","RECREATE");
 
   // Create a tree
   TTree * outputTree = new TTree("MCout","Generator Output");
@@ -94,9 +101,12 @@ int main(int argc, char *argv[])
   // Create memory for each event
   double * eventData = new double[5];
 
-  const int nEvents=10000;
   for (int i=0 ; i<nEvents ; i++)
     {
+      if (nEvents >= 10000)
+	if (i%10000==0)
+	  cerr << "Working on event " << i << "\n";
+
       csFoam->MakeEvent();
       csFoam->GetMCvect(eventData);
 
