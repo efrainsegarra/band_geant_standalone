@@ -59,10 +59,10 @@ int main(int argc, char *argv[])
   if(offshellset==4) epsinput=-0.5;
  
   strcpy(dir_.homedir,"/Users/schmidta/src_group/band_scint/monte_carlo/deuteron_dis"); //dir where we are running the program
-  strcpy(dir_.a09file1,"/Users/schmidta/src_group/band_scint/monte_carlo/deuteron_dis");
-  strcpy(dir_.a09file2,"/Users/schmidta/src_group/band_scint/monte_carlo/deuteron_dis");
-  strcat(dir_.a09file1,"../deuteron_dis/grids/a09.sfs_lNNC");
-  strcat(dir_.a09file2,"..//deuteron_dis/grids/a09.dsfs_lNNC");
+  strcpy(dir_.a09file1,getenv("HOME"));
+  strcpy(dir_.a09file2,getenv("HOME"));
+  strcat(dir_.a09file1,"/.deuteron_dis/grids/a09.sfs_lNNC");
+  strcat(dir_.a09file2,"/.deuteron_dis/grids/a09.dsfs_lNNC");
  
   // Random number generator
   TRandom3 * rand = new TRandom3(0);
