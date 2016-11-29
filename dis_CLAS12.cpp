@@ -8,6 +8,8 @@
 #include <cstdarg>
 #include <time.h>
 
+#include "TFile.h"
+#include "TTree.h"
 #include "TFoam.h"
 #include "TRandom3.h"
 
@@ -63,7 +65,22 @@ int main(int argc, char *argv[])
   strcpy(dir_.a09file2,getenv("HOME"));
   strcat(dir_.a09file1,"/.deuteron_dis/grids/a09.sfs_lNNC");
   strcat(dir_.a09file2,"/.deuteron_dis/grids/a09.dsfs_lNNC");
- 
+
+  // Create an output file
+  TFile * outputFile = new TFile("output.root","RECREATE");
+
+  // Create a tree
+  TTree * outputTree = new TTree("MCout","Generator Output");
+  
+  // Initialize the branches
+  double mom_e[3], mom_r[3];
+  outputTree->Branch("x_e",&(mom_e[0]),"x_e/D");
+  outputTree->Branch("y_e",&(mom_e[1]),"y_e/D");
+  outputTree->Branch("z_e",&(mom_e[2]),"z_e/D");
+  outputTree->Branch("x_r",&(mom_r[0]),"x_r/D");
+  outputTree->Branch("y_r",&(mom_r[1]),"y_r/D");
+  outputTree->Branch("z_r",&(mom_r[2]),"z_r/D");
+
   // Random number generator
   TRandom3 * rand = new TRandom3(0);
 
@@ -97,8 +114,18 @@ int main(int argc, char *argv[])
 	phi_r -= 2.*M_PI;
 
       // Write to tree
+      mom_e[0] = p_e*sin(theta_e)*cos(phi_e);
+      mom_e[1] = p_e*sin(theta_e)*sin(phi_e);
+      mom_e[2] = p_e*cos(theta_e);
+      mom_r[0] = p_r*sin(theta_r)*cos(phi_r);
+      mom_r[1] = p_r*sin(theta_r)*sin(phi_r);
+      mom_r[2] = p_r*cos(theta_r);
+      outputTree->Fill();
     }
    
+  outputTree->Write();
+  outputFile->Close();
+
   // Clean up
   delete csFoam;
   delete rand;
