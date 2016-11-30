@@ -96,6 +96,10 @@ int main(int argc, char *argv[])
   csFoam->SetkDim(5);
   csFoam->SetRhoInt(csTotal);
   csFoam->SetPseRan(rand);
+  // optional
+  csFoam->SetnCells(2000);
+  csFoam->SetnSampl(200);
+  // initialize
   csFoam->Initialize();
 
   // Create memory for each event
@@ -160,6 +164,7 @@ double csTotal(int nDim, double *args)
   double theta_r = min_theta_r + args[2]*(max_theta_r - min_theta_r);
   double p_r = min_p_r + args[3]*(max_p_r - min_p_r);
   double phi_er = min_phi_er + args[4]*(max_phi_er - min_phi_er);
+  double E_r = sqrt(sq(MASSP) + sq(p_r));
 
   // Develop derived quantities
   double Q2 = 4.*Ein*p_e * sq(sin(0.5*theta_e));
@@ -183,8 +188,10 @@ double csTotal(int nDim, double *args)
       
       double crosstotal1 = calc_cross(Ein, Q2, x, p_r, theta_rq, phi_er, proton, which_wave, decay, num_res, 0);
       double jacobian = x*Ein*p_e*p_r/(M_PI*nu);
-
-      result = crosstotal1 * jacobian;
+      double differential_e = (max_theta_e - min_theta_e)*(2.*M_PI)*(max_p_e - min_p_e)*sin(theta_e);
+      double differential_p = (max_theta_r - min_theta_r)*(max_phi_er - min_phi_er)*(max_p_r - min_p_r)*sin(theta_r)*p_r/E_r;
+ 
+      result = crosstotal1 * jacobian * differential_e * differential_p;
     }
 
   //printf("%g %g %g %g %g %g\n",theta_e*180./M_PI, p_e, theta_r*180./M_PI, p_r, phi_er*180./M_PI,result);
