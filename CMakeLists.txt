@@ -16,6 +16,9 @@ include_directories(${INCLUDES})
 add_executable(dis_CLAS12 dis_CLAS12.cpp crossdis.cpp crossincl.cpp deuteronwf.cpp alekhin.f F1F209_test.f ${HEADERS} )
 target_link_libraries(dis_CLAS12 ${ROOT_LIBRARIES} Foam)
 
+add_executable(dis_CLAS12_2d dis_CLAS12_2d.cpp crossdis.cpp crossincl.cpp deuteronwf.cpp alekhin.f F1F209_test.f ${HEADERS} )
+target_link_libraries(dis_CLAS12_2d ${ROOT_LIBRARIES} Foam)
+
 add_executable(inclusive_CLAS12 inclusive_CLAS12.cpp crossdis.cpp crossincl.cpp deuteronwf.cpp alekhin.f F1F209_test.f ${HEADERS} )
 
 # install the grid files so that the cross section code can access them

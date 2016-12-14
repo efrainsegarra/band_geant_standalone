@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
 
   // Initialize the foam
   TFoam * csFoam = new TFoam("csFoam");
-  csFoam->SetkDim(5);
+  csFoam->SetkDim(4);
   csFoam->SetRhoInt(csTotal);
   csFoam->SetPseRan(rand);
   // optional
@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
       double p_e = min_p_e + eventData[1]*(max_p_e - min_p_e);
       double theta_r = min_theta_r + eventData[2]*(max_theta_r - min_theta_r);
       double p_r = min_p_r + eventData[3]*(max_p_r - min_p_r);
-      double phi_er = min_phi_er + eventData[4]*(max_phi_er - min_phi_er);
+      double phi_er = M_PI; // constrained
 
       // Handle phi (** DANGER ** )
       double phi_e = 2.*M_PI * rand->Rndm();
@@ -165,12 +165,14 @@ double csTotal(int nDim, double *args)
   int decay=0;
   int num_res=1;
 
-  // Variables (there should be 5 of them)
+  // Variables (there should be 4 of them)
   double theta_e = min_theta_e + args[0]*(max_theta_e - min_theta_e);
   double p_e = min_p_e + args[1]*(max_p_e - min_p_e);
   double theta_r = min_theta_r + args[2]*(max_theta_r - min_theta_r);
   double p_r = min_p_r + args[3]*(max_p_r - min_p_r);
-  double phi_er = min_phi_er + args[4]*(max_phi_er - min_phi_er);
+
+  // Fixed
+  double phi_er = M_PI;
 
   // Develop derived quantities
   double E_r = sqrt(sq(MASSP) + sq(p_r));
