@@ -5,21 +5,24 @@
 #include "TFile.h"
 #include "TTree.h"
 #include "TRandom3.h"
+#include "TVectorT.h"
 
 using namespace std;
 
 // Define some constants for BAND (positions in cm, time in ns, mass in GeV)
 const double bandZ = -240.;
+const double bandZWidth=60.;
 const double barWidth = 7.;
 const double tResPMT = 0.200;
 const double cAir = 29.9792458;
-const double cScint = cAir / 1.58; // A more accurate number will eventually need to be supplied
+const double cScint = 15.;
 const double mP = 0.93827208;
 const double mN = 0.93956541;
 const double mD = 1.875612928;
 const double E1 = 10.9;
 
 inline double sq(double x){ return x*x;};
+bool didItHit(double x, double y);
 
 int main(int argc, char ** argv)
 {
@@ -38,6 +41,11 @@ int main(int argc, char ** argv)
   TTree * inTree = (TTree*)inFile->Get("MCout");
   TTree * outTree = new TTree("ReconTree","Reconstructed Values");
 
+  // Copy the cross section
+  TVectorT<double> * csVec = (TVectorT<double>*)inFile->Get("totalCS");
+  gFile=outFile;
+  csVec->Write();
+
   // Memory for the input branches
   double mom_e[3];
   double mom_r[3];
@@ -51,6 +59,8 @@ int main(int argc, char ** argv)
   // Memory for the output tree
   double trueWp, trueXp, trueAs, truePr;
   double reconWp, reconXp, reconAs, reconPr;
+  double reconMom_r[3];
+  double reconMom_e[3];
   outTree->Branch("trueWp",&trueWp,"trueWp/D");
   outTree->Branch("trueXp",&trueXp,"trueXp/D");
   outTree->Branch("trueAs",&trueAs,"trueAs/D");
@@ -59,6 +69,19 @@ int main(int argc, char ** argv)
   outTree->Branch("reconXp",&reconXp,"reconXp/D");
   outTree->Branch("reconAs",&reconAs,"reconAs/D");
   outTree->Branch("reconPr",&reconPr,"reconPr/D");
+  // True momenta
+  outTree->Branch("truePe_x",&(mom_e[0]),"truePe_x/D");
+  outTree->Branch("truePe_y",&(mom_e[1]),"truePe_y/D");
+  outTree->Branch("truePe_z",&(mom_e[2]),"truePe_z/D");
+  outTree->Branch("truePr_x",&(mom_r[0]),"truePr_x/D");
+  outTree->Branch("truePr_y",&(mom_r[1]),"truePr_y/D");
+  outTree->Branch("truePr_z",&(mom_r[2]),"truePr_z/D");
+  outTree->Branch("reconPe_x",&(reconMom_e[0]),"reconPe_x/D");
+  outTree->Branch("reconPe_y",&(reconMom_e[1]),"reconPe_y/D");
+  outTree->Branch("reconPe_z",&(reconMom_e[2]),"reconPe_z/D");
+  outTree->Branch("reconPr_x",&(reconMom_r[0]),"reconPr_x/D");
+  outTree->Branch("reconPr_y",&(reconMom_r[1]),"reconPr_y/D");
+  outTree->Branch("reconPr_z",&(reconMom_r[2]),"reconPr_z/D");
 
   // Loop over the events
   for (int i=0 ; i<inTree->GetEntries() ; i++)
@@ -70,72 +93,104 @@ int main(int argc, char ** argv)
       inTree->GetEvent(i);
 
       // Figure out where the recoiling neutron hits BAND
-      double trueZ = bandZ;
-      double trueX = mom_r[0]*trueZ/mom_r[2];
-      double trueY = mom_r[1]*trueZ/mom_r[2];
+      double trueZHit = bandZ - bandZWidth*myRand->Rndm();
+      double trueXHit = mom_r[0]*trueZHit/mom_r[2];
+      double trueYHit = mom_r[1]*trueZHit/mom_r[2];
+
+      // Test if it hit the detector
+      //if (!didItHit(trueXHit,trueYHit))
+      //continue;
+
+      // Energy and timing
       truePr = sqrt(sq(mom_r[0]) + sq(mom_r[1]) + sq(mom_r[2]));
       double trueEr = sqrt(sq(truePr) + sq(mN));
-      double trueT = sqrt(sq(trueX)+sq(trueY)+sq(trueZ)) / (cAir * truePr / trueEr); // d / beta
+      double trueT = sqrt(sq(trueXHit)+sq(trueYHit)+sq(trueZHit)) / (cAir * truePr / trueEr); // d / beta
+
+      // Test if we were efficient for the neutron hit
+      // This could in the future depend on neutron momentum
+      //if (myRand->Rndm() > 0.3)
+      //continue;
 
       // Flight time smearing is based on PMT resolution for mean time
       double reconT = myRand->Gaus(trueT,tResPMT/sqrt(2.));
 
       // X reconstruction is smeared based on PMT resolution for time difference
-      double reconX = myRand->Gaus(trueX,cScint * tResPMT/sqrt(2.));
+      double reconXHit = myRand->Gaus(trueXHit,cScint * tResPMT/sqrt(2.));
 
       // Y reconstruction is based on center of the bar
-      int bar = floor(trueY / barWidth);
-      double reconY = barWidth* (((float)bar) + 0.5);
+      int bar = floor(trueYHit / barWidth);
+      double reconYHit = barWidth* (((float)bar) + 0.5);
 
-      // Z is not smeared
-      double reconZ = trueZ;
+      // Z is also reconstructed base on the center of the bar
+      bar = floor((bandZ-trueZHit)/barWidth);
+      double reconZHit = bandZ - barWidth*(((float)bar) * 0.5);
 
       // Momentum
-      double reconPath = sqrt(sq(reconX)+sq(reconY)+sq(reconZ));
+      double reconPath = sqrt(sq(reconXHit)+sq(reconYHit)+sq(reconZHit));
       double reconBeta = reconPath/(cAir*reconT);
       reconPr = mN / sqrt( sq(1./reconBeta) - 1.);
       double reconEr = sqrt(sq(reconPr)+sq(mN));
 
-      // Lepton arm is not smeared
-      double p_e =sqrt(sq(mom_e[0]) + sq(mom_e[1]) + sq(mom_e[2]));
-      double cosTheta_e = mom_e[2]/p_e;
-      double theta_e = acos(cosTheta_e);
-      double phi_e = atan2(mom_e[1],mom_e[0]);
-      double QSq = 2.*E1*p_e*(1.-cosTheta_e);
-      double nu = E1 - p_e;
-      double x = QSq / (2.*mP*nu);
-      double q = sqrt(QSq + sq(nu));
-      double phi_q = phi_e+M_PI;
-      if (phi_q > M_PI) phi_q -= 2.*M_PI;
-      double theta_q = acos((E1 - p_e*cos(theta_e))/q);
+      // True lepton quantities
+      double truePe =sqrt(sq(mom_e[0]) + sq(mom_e[1]) + sq(mom_e[2]));
+      double trueCosTheta_e = mom_e[2]/truePe;
+      double trueTheta_e = acos(trueCosTheta_e);
+      double truePhi_e = atan2(mom_e[1],mom_e[0]);
+      double trueQSq = 2.*E1*truePe*(1.-trueCosTheta_e);
+      double trueNu = E1 - truePe;
+      double trueX = trueQSq / (2.*mP*trueNu);
+      double true_q = sqrt(trueQSq + sq(trueNu));
+      double truePhi_q = truePhi_e+M_PI;
+      if (truePhi_q > M_PI) truePhi_q -= 2.*M_PI;
+      double trueTheta_q = acos((E1 - truePe*trueCosTheta_e)/true_q);
 
-      // Proton arm is smeared
+      // Lepton needs to be smeared
+      double reconPe = myRand->Gaus(truePe,0.005*truePe); // 0.5% smearing
+      double reconTheta_e = myRand->Gaus(trueTheta_e,0.001); // 1mrad smearing
+      double reconPhi_e = myRand->Gaus(truePhi_e,0.001/sin(trueTheta_e)); // 1mrad/sin(theta)
+      if (reconPhi_e > M_PI) reconPhi_e -=2.*M_PI;
+      if (reconPhi_e < -M_PI) reconPhi_e +=2.*M_PI;
+      double reconQSq = 2.*E1*reconPe*(1.-cos(reconTheta_e));
+      double reconNu = E1 - reconPe;
+      double reconX = reconQSq / (2.*mP*reconNu);
+      double recon_q = sqrt(reconQSq + sq(reconNu));
+      double reconPhi_q = reconPhi_e + M_PI;
+      if (reconPhi_q > M_PI) reconPhi_q -= 2.*M_PI;
+      double reconTheta_q = acos((E1 - reconPe*cos(reconTheta_e))/recon_q);
+      reconMom_e[0] = reconPe * sin(reconTheta_e) * cos(reconPhi_e);
+      reconMom_e[1] = reconPe * sin(reconTheta_e) * sin(reconPhi_e);
+      reconMom_e[2] = reconPe * cos(reconTheta_e);
+
+      // Recoil neutron needs to be smeared
       double trueCosTheta_r = mom_r[2]/truePr;
       double trueTheta_r = acos(trueCosTheta_r);
       double truePhi_r = atan2(mom_r[1],mom_r[0]);
-      double reconCosTheta_r = reconZ/reconPath;
-      double reconTheta_r = acos(trueCosTheta_r);
-      double reconPhi_r = atan2(trueY,trueX);
+      double reconCosTheta_r = reconZHit/reconPath;
+      double reconTheta_r = acos(reconCosTheta_r);
+      double reconPhi_r = atan2(reconYHit,reconXHit);
+      reconMom_r[0] = reconPr * sin(reconTheta_r) * cos(reconPhi_r);
+      reconMom_r[1] = reconPr * sin(reconTheta_r) * sin(reconPhi_r);
+      reconMom_r[2] = reconPr * reconCosTheta_r;      
       
       // Let's take care of those pesky relative phi angles
-      double truePhi_er = truePhi_r - phi_e;
+      double truePhi_er = truePhi_r - truePhi_e;
       if (truePhi_er < -M_PI) truePhi_er += 2.*M_PI;
       if (truePhi_er > M_PI) truePhi_er -= 2.*M_PI;
-      double reconPhi_er = reconPhi_r - phi_e;
+      double reconPhi_er = reconPhi_r - reconPhi_e;
       if (reconPhi_er < -M_PI) reconPhi_er += 2.*M_PI;
       if (reconPhi_er > M_PI) reconPhi_er -= 2.*M_PI;
 
       // Theta qr
-      double trueCosTheta_qr = cos(trueTheta_r)*cos(theta_q) - sin(trueTheta_r)*sin(theta_q)*cos(truePhi_er);
-      double reconCosTheta_qr = cos(reconTheta_r)*cos(theta_q) - sin(reconTheta_r)*sin(theta_q)*cos(reconPhi_er);
+      double trueCosTheta_qr = cos(trueTheta_r)*cos(trueTheta_q) - sin(trueTheta_r)*sin(trueTheta_q)*cos(truePhi_er);
+      double reconCosTheta_qr = cos(reconTheta_r)*cos(reconTheta_q) - sin(reconTheta_r)*sin(trueTheta_q)*cos(reconPhi_er);
       
       // x prime
-      trueXp = QSq/(2.*( nu*(mD-trueEr) + truePr*q*trueCosTheta_qr));
-      reconXp = QSq/(2.*( nu*(mD-reconEr) + reconPr*q*reconCosTheta_qr));
+      trueXp = trueQSq/(2.*( trueNu*(mD-trueEr) + truePr*true_q*trueCosTheta_qr));
+      reconXp = reconQSq/(2.*( reconNu*(mD-reconEr) + reconPr*recon_q*reconCosTheta_qr));
 
       // W prime
-      trueWp = sqrt(sq(mD) - QSq + sq(mP) + 2.*mD*(nu-trueEr) -2.* nu * trueEr + 2.*q*truePr*trueCosTheta_qr);
-      reconWp = sqrt(sq(mD) - QSq + sq(mP) + 2.*mD*(nu-reconEr) -2.* nu * reconEr + 2.*q*reconPr*reconCosTheta_qr);
+      trueWp = sqrt(sq(mD) - trueQSq + sq(mP) + 2.*mD*(trueNu-trueEr) -2.* trueNu * trueEr + 2.*true_q*truePr*trueCosTheta_qr);
+      reconWp = sqrt(sq(mD) - reconQSq + sq(mP) + 2.*mD*(reconNu-reconEr) -2.* reconNu * reconEr + 2.*recon_q*reconPr*reconCosTheta_qr);
 
       // alpha_s
       trueAs = (trueEr - truePr*trueCosTheta_qr)/mN;
@@ -155,4 +210,24 @@ int main(int argc, char ** argv)
   delete myRand;
 
   return 0;
+}
+
+bool didItHit(double x, double y)
+{
+  // This function will do the geometric test to see if the hit position is in the array.
+
+  // Test if below bottom bar
+  if (y<-50.)
+    return false;
+
+  // Test if outside radius
+  double r=sqrt(sq(x)+sq(y));
+  if (r > 140.)
+    return false;
+
+  // Test if in the beam pipe gap
+  if ((fabs(y) < 20.) and (fabs(x)<50.))
+    return false;
+
+  return true;
 }
