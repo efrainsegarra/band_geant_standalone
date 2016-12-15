@@ -12,8 +12,6 @@ using namespace std;
 // Define some constants for BAND (positions in cm, time in ns, mass in GeV)
 const double bandZ = -240.;
 const double bandZWidth=60.;
-const double barWidth = 7.;
-const double tResPMT = 0.200;
 const double cAir = 29.9792458;
 const double cScint = 15.;
 const double mP = 0.93827208;
@@ -26,11 +24,14 @@ bool didItHit(double x, double y);
 
 int main(int argc, char ** argv)
 {
-  if (argc != 3)
+  if (argc != 5)
     {
-      cerr << "Wrong number of arguments. Instead use\n\tdet_sim /path/to/input/file /path/to/output/file\n";
+      cerr << "Wrong number of arguments. Instead use\n\tdet_sim /path/to/input/file /path/to/output/file [bar Width (cm)] [PMT time res (ps)]\n";
       exit(-1);
     }
+
+  const double barWidth = atof(argv[3]);
+  const double tResPMT = 1.E-3 * atof(argv[4]); // convert time res to ns
 
   // Random number generator
   TRandom3 * myRand = new TRandom3(0);
