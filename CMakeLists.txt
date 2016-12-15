@@ -8,6 +8,8 @@ find_package(ROOT REQUIRED)
 
 project (deuteron_dis)
 
+add_subdirectory(detector_sim)
+
 file( GLOB HEADERS ${CMAKE_SOURCE_DIR}/*.h )
 
 set(INCLUDES ${ROOT_INCLUDE_DIR} )

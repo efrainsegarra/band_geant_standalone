@@ -49,8 +49,6 @@ const double min_theta_r =160.*M_PI/180.;
 const double max_theta_r =170.*M_PI/180.;
 const double min_p_r =0.275;
 const double max_p_r =0.600;
-const double min_phi_er=0.;
-const double max_phi_er=2.*M_PI;
 
 int main(int argc, char *argv[])
 {
@@ -120,11 +118,10 @@ int main(int argc, char *argv[])
       double p_e = min_p_e + eventData[1]*(max_p_e - min_p_e);
       double theta_r = min_theta_r + eventData[2]*(max_theta_r - min_theta_r);
       double p_r = min_p_r + eventData[3]*(max_p_r - min_p_r);
-      double phi_er = M_PI; // constrained
 
-      // Handle phi (** DANGER ** )
+      // phi
       double phi_e = 2.*M_PI * rand->Rndm();
-      double phi_r = phi_e + phi_er;
+      double phi_r = phi_e + M_PI;
       if (phi_r > 2.*M_PI)
 	phi_r -= 2.*M_PI;
 
@@ -193,7 +190,7 @@ double csTotal(int nDim, double *args)
       double crosstotal1 = calc_cross(Ein, Q2, x, p_r, theta_rq, phi_er, proton, which_wave, decay, num_res, 0);
       double jacobian = x*Ein*p_e*p_r/(M_PI*nu);
       double differential_e = (max_theta_e - min_theta_e)*(2.*M_PI)*(max_p_e - min_p_e)*sin(theta_e);
-      double differential_p = (max_theta_r - min_theta_r)*(max_phi_er - min_phi_er)*(max_p_r - min_p_r)*sin(theta_r)*p_r/E_r;
+      double differential_p = (max_theta_r - min_theta_r)*(2.*M_PI)*(max_p_r - min_p_r)*sin(theta_r)*p_r/E_r;
       
       result = crosstotal1 * jacobian * differential_e * differential_p;
 
