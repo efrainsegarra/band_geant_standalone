@@ -185,21 +185,12 @@ double csTotal(int nDim, double *args)
   double W_prime = sqrt(sq(MASSD) - Q2 + sq(MASSN) + 2.*MASSD*(nu-E_r) -2.* nu * E_r + 2.*q*p_r*cos(theta_rq) );
   sigmainput = (25.3+53*(W_prime-MASSN))/(Q2);
 
-  double result=0.; // This will be the final returned cross section
-  if (W_prime > 2.)
-    {      
-      double crosstotal1 = calc_cross(Ein, Q2, x, p_r, theta_rq, phi_er, proton, which_wave, decay, num_res, 0);
-      double jacobian = x*Ein*p_e*p_r/(M_PI*nu);
-      double differential_e = (max_theta_e - min_theta_e)*(2.*M_PI)*(max_p_e - min_p_e)*sin(theta_e);
-      double differential_p = (max_theta_r - min_theta_r)*(max_phi_er - min_phi_er)*(max_p_r - min_p_r)*sin(theta_r)*p_r/E_r;
-      
-      result = crosstotal1 * jacobian * differential_e * differential_p;
-
-      // Sanitize against negative cross sections
-      if (result < 0.)
-	result =0.;
-    }
-
+  double crosstotal1 = calc_cross(Ein, Q2, x, p_r, theta_rq, phi_er, proton, which_wave, decay, num_res, 0);
+  double jacobian = x*Ein*p_e*p_r/(M_PI*nu);
+  double differential_e = (max_theta_e - min_theta_e)*(2.*M_PI)*(max_p_e - min_p_e)*sin(theta_e);
+  double differential_p = (max_theta_r - min_theta_r)*(max_phi_er - min_phi_er)*(max_p_r - min_p_r)*sin(theta_r)*p_r/E_r;
+  
+  double result = crosstotal1 * jacobian * differential_e * differential_p;
   return result;
 }
 
