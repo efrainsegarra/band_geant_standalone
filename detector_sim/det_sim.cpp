@@ -31,7 +31,7 @@ int main(int argc, char ** argv)
     }
 
   const double barWidth = atof(argv[3]);
-  const double tResPMT = 1.E-3 * atof(argv[4]); // convert time res to ns
+  const double tResPMT = 1.E-3 * atof(argv[4]); // convert time res from ps to ns
 
   // Random number generator
   TRandom3 * myRand = new TRandom3(0);

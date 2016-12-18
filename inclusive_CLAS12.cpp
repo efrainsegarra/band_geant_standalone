@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cstdlib>
+#include <cstdio>
 #include <cmath>
 #include <cstring>
 #include <complex>
@@ -7,22 +8,41 @@
 #include <cstdarg>
 #include <time.h>
 
+#include "TFile.h"
+#include "TTree.h"
+#include "TFoam.h"
+#include "TRandom3.h"
+#include "TVectorT.h"
+
 using namespace std;
 
 #include "constants.h"
 #include "deuteronwf.h"
 #include "crossdis.h"
 #include "crossincl.h"
-double sigmainput=40.;
-double betainput=8.;
-double epsinput=-0.5;
+
+// Settings for cross section: 
+double sigmainput=40.;          //sigma parameter in rescattering amplitude [mb], default value
+double betainput=8.;            //beta parameter in rescattering amplitude [GeV^-2], default value
+double epsinput=-0.5;           //epsilon parameter in rescattering amplitude [], default value
 double lambdainput=1.2;
 double betaoffinput=8.;
-int offshellset=0;
+int offshellset=3;              // 0=mass diff suppression, 1=dipole suppression, 2=beta parameterization, 3=no offshell, 4=full off-shell
+int symm=0;                     //symmetric FSI in inclusive reaction
+int phiavg=1;                   //average cross section over phi
+int F_param=0;                  //structure functions parametrization 0=SLAC, 1=Christy&Bosted, 2=Alekhin et al leading twist
 
-int phiavg=1;
-int F_param=2;
-int symm=0;
+// Constant settings
+const double Ein=10.9;
+const int calc=0;
+const int which_wave=1;
+const int decay=0;
+const int num_res=1;
+
+// Memory
+double *c, *d, *m;
+int c_length=0;
+
 extern "C"{
     extern struct{
         char homedir[128];
@@ -31,67 +51,124 @@ extern "C"{
     } dir_;
 }//shared fortran variables
 
+// Foam ranges
+double csTotal(int nDim, double *args);
+const double min_theta_e = 5.*M_PI/180.;
+const double max_theta_e = 35.*M_PI/180.;
+const double min_p_e = 2.;
+const double max_p_e = 8.;
+
 int main(int argc, char *argv[])
 {
-    
-    
-    int calc=0;//atoi(argv[1]);
-    int which_wave=1;//atoi(argv[6]);
-    F_param=0;//atoi(argv[5]);
-    int decay=0;
-    int num_res=1;
-    int offshellset=3;
-    sanitycheck(calc,0,F_param,which_wave,offshellset);
-    
-    double *c, *d, *m;
-    int c_length=0;  //parametriz array dim
-    get_wf_param(&c, &d, &m,c_length, which_wave);
-    
-    double Ein=10.9;//atof(argv[2]); //incoming beam energy [GeV]
-    double Q2=2;//atof(argv[3]); //[GeV^2]
-    double x=0.1;//atof(argv[4]);
-    strcpy(dir_.homedir,"/root/Desktop/PhD/EMC-SRC_exp/DeuteronDIScode"/*argv[7]*/); //dir where we are running the program
-    strcpy(dir_.a09file1,"/root/Desktop/PhD/EMC-SRC_exp/DeuteronDIScode"/*argv[7]*/);
-    strcpy(dir_.a09file2,"/root/Desktop/PhD/EMC-SRC_exp/DeuteronDIScode"/*argv[7]*/);
-    strcat(dir_.a09file1,"/grids/a09.sfs_lNNC");
-    strcat(dir_.a09file2,"/grids/a09.dsfs_lNNC");
-    
-    
-    double QEpw, DISpw, DISfsi, DISfsi2;
-    
-    
-    
-    
-    
-    double Eprime_central = 6.8;
-    double Eprime_bin = 0.1;
-    
-    double theta_e_central = 14;
-    double theta_e_bin = 0.2;
-    double theta_e_acceptance = 1.6;
-    
-    for(double Eprime = 2; Eprime<8; Eprime+=0.1){
-        
-        for(double theta_e = 5; theta_e<35; theta_e+=0.5){
-            
-            //      double Eprime = 4.5; double theta_e = 17;
-            Q2 = 4*Ein*Eprime*(sin((theta_e*DEGRTORAD)/2)*sin((theta_e*DEGRTORAD)/2));
-            x = Q2/(2*MASSN*(Ein-Eprime));
-            
-            //calc inclusive
-            calc_inclusive2(QEpw, DISpw, DISfsi, DISfsi2, Ein, Q2,x, c, d, m, c_length, which_wave, offshellset, decay, num_res, calc);
-            double dsigma=DISpw+QEpw-DISfsi;
-            cout << Q2 << " " << x << " " /*<< QEpw*x*Ein*(Ein-Q2/(2*MASSN*x))/(PI*Q2/(2*MASSN*x)) << " " << DISpw*x*Ein*(Ein-Q2/(2*MASSN*x))/(PI*Q2/(2*MASSN*x)) << " "*/  << dsigma*x*Ein*(Ein-Q2/(2*MASSN*x))/(PI*Q2/(2*MASSN*x)) << endl;
-            
-            
-        }
+  // Read in arguments
+  if (argc != 3)
+    {
+      cerr << "Wrong number of arguments. Instead use: [nEvents] [/path/to/output/file]\n";
+      exit(-1);
     }
+  const int nEvents=atoi(argv[1]);
+  TFile * outputFile = new TFile(argv[2],"RECREATE");
 
-    
-    
-    
-    
-    delete [] c; delete [] d; delete [] m;
-    
-    
+  // Run sanity check on parameters
+  sanitycheck(calc,0,F_param,which_wave,offshellset);
+
+  // Get some parameters
+  get_wf_param(&c, &d, &m, c_length, which_wave);
+
+  // Read in data files
+  strcpy(dir_.homedir,getenv("HOME"));
+  strcpy(dir_.a09file1,getenv("HOME"));
+  strcpy(dir_.a09file2,getenv("HOME"));
+  strcat(dir_.a09file1,"/.deuteron_dis/grids/a09.sfs_lNNC");
+  strcat(dir_.a09file2,"/.deuteron_dis/grids/a09.dsfs_lNNC");
+
+  // Create a tree
+  TTree * outputTree = new TTree("MCout","Generator Output");
+  
+  // Initialize the branches
+  double mom_e[3];
+  outputTree->Branch("x_e",&(mom_e[0]),"x_e/D");
+  outputTree->Branch("y_e",&(mom_e[1]),"y_e/D");
+  outputTree->Branch("z_e",&(mom_e[2]),"z_e/D");
+
+  // Random number generator
+  TRandom3 * rand = new TRandom3(0);
+
+  // Initialize the foam
+  TFoam * csFoam = new TFoam("csFoam");
+  csFoam->SetkDim(2);
+  csFoam->SetRhoInt(csTotal);
+  csFoam->SetPseRan(rand);
+  // optional
+  csFoam->SetnCells(100);
+  csFoam->SetnSampl(100);
+  // initialize
+  csFoam->Initialize();
+
+  // Create memory for each event
+  double * eventData = new double[2];
+
+  for (int i=0 ; i<nEvents ; i++)
+    {
+      if (nEvents >= 10000)
+	if (i%10000==0)
+	  cerr << "Working on event " << i << "\n";
+
+      csFoam->MakeEvent();
+      csFoam->GetMCvect(eventData);
+
+      // Extract useful quantities
+      double theta_e = min_theta_e + eventData[0]*(max_theta_e - min_theta_e);
+      double p_e = min_p_e + eventData[1]*(max_p_e - min_p_e);
+
+      // Handle phi
+      double phi_e = 2.*M_PI * rand->Rndm();
+
+      // Write to tree
+      mom_e[0] = p_e*sin(theta_e)*cos(phi_e);
+      mom_e[1] = p_e*sin(theta_e)*sin(phi_e);
+      mom_e[2] = p_e*cos(theta_e);
+      outputTree->Fill();
+    }
+   
+  outputTree->Write();
+
+  // Store the total cross section (and error) in the output file in a TVectorT
+  TVectorT<double> totalCS(2);
+  csFoam->GetIntegMC(totalCS[0],totalCS[1]);
+  totalCS.Write("totalCS");
+
+  outputFile->Close();
+
+  // Clean up
+  delete csFoam;
+  delete rand;
+
+  return 0;
 }
+
+inline double sq(double x) {return x*x;};
+
+double csTotal(int nDim, double *args)
+{
+  // Variables (there should be 2 of them)
+  double theta_e = min_theta_e + args[0]*(max_theta_e - min_theta_e);
+  double p_e = min_p_e + args[1]*(max_p_e - min_p_e);
+
+  // Develop derived quantities
+  double Q2 = 4.*Ein*p_e * sq(sin(0.5*theta_e));
+  double nu = Ein - p_e;
+  double x = Q2 / (2.*MASSN*nu);
+
+  // Some memory for the cross section calculation results
+  double QEpw, DISpw, DISfsi, DISfsi2;
+  
+  // Calculate the cross section
+  calc_inclusive2(QEpw, DISpw, DISfsi, DISfsi2, Ein, Q2,x, c, d, m, c_length, which_wave, offshellset, decay, num_res, calc);
+  double dsigma=DISpw+QEpw-DISfsi;
+  double jacobian = x*Ein*p_e/(M_PI*nu);
+  double differential = (max_theta_e - min_theta_e)*(2.*M_PI)*(max_p_e - min_p_e)*sin(theta_e);
+
+  return dsigma*jacobian*differential;
+}
+
