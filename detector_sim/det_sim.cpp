@@ -21,6 +21,7 @@ const double E1 = 10.9;
 
 inline double sq(double x){ return x*x;};
 bool didItHit(double x, double y);
+double getCLAS12_PRes(double theta, double p);
 
 int main(int argc, char ** argv)
 {
@@ -156,7 +157,7 @@ int main(int argc, char ** argv)
       double trueTheta_q = acos((E1 - truePe*trueCosTheta_e)/true_q);
 
       // Lepton needs to be smeared
-      double reconPe = myRand->Gaus(truePe,0.005*truePe); // 0.5% smearing
+      double reconPe = myRand->Gaus(truePe,getCLAS12_PRes(trueTheta_e,truePe));
       double reconTheta_e = myRand->Gaus(trueTheta_e,0.001); // 1mrad smearing
       double reconPhi_e = myRand->Gaus(truePhi_e,0.001/sin(trueTheta_e)); // 1mrad/sin(theta)
       if (reconPhi_e > M_PI) reconPhi_e -=2.*M_PI;
@@ -241,4 +242,13 @@ bool didItHit(double x, double y)
     return false;
 
   return true;
+}
+
+double getCLAS12_PRes(double theta, double p)
+{
+  const double a=0.0549141;
+  const double b=-0.00332126;
+  const double c=-0.052163;
+
+  return p*(a+b*sin(theta)+c*cos(theta));  
 }
