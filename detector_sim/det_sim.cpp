@@ -43,9 +43,19 @@ int main(int argc, char ** argv)
   TTree * outTree = new TTree("ReconTree","Reconstructed Values");
 
   // Copy the cross section
-  TVectorT<double> * csVec = (TVectorT<double>*)inFile->Get("totalCS");
-  gFile=outFile;
-  csVec->Write();
+  TVectorT<double> * csVec;
+  if (inFile->GetListOfKeys()->Contains("totalCS"))
+    {
+      csVec = (TVectorT<double>*)inFile->Get("totalCS");
+      gFile=outFile;
+      csVec->Write("totalCS");
+    }
+  else if (inFile->GetListOfKeys()->Contains("totalCSSq"))
+    {
+      csVec = (TVectorT<double>*)inFile->Get("totalCSSq");  
+      gFile=outFile;
+      csVec->Write("totalCSSq");
+    }
 
   // Memory for the input branches
   double mom_e[3];

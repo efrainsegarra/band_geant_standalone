@@ -172,6 +172,8 @@ double csTotal(int nDim, double *args)
   double p_r = min_p_r + args[3]*(max_p_r - min_p_r);
   double phi_er = min_phi_er + args[4]*(max_phi_er - min_phi_er);
 
+  //cout << theta_e*180/M_PI << " " << p_e << " " << theta_r*180./M_PI << " " << p_r << " " << phi_er*180./M_PI << "\n";
+
   // Develop derived quantities
   double E_r = sqrt(sq(MASSP) + sq(p_r));
   double Q2 = 4.*Ein*p_e * sq(sin(0.5*theta_e));
@@ -181,8 +183,14 @@ double csTotal(int nDim, double *args)
   double theta_q = acos((Ein - p_e*cos(theta_e))/q);
   double theta_rq = acos( cos(theta_r)*cos(theta_q) - sin(theta_r)*sin(theta_q)*cos(phi_er));
 
+  //cout << E_r << " " << Q2 << " " << nu << " " << x << " " << q << " " << theta_q*180./M_PI << " " << theta_rq*180./M_PI << "\n";
+
   // Sigma-input parameter
-  double W_prime = sqrt(sq(MASSD) - Q2 + sq(MASSN) + 2.*MASSD*(nu-E_r) -2.* nu * E_r + 2.*q*p_r*cos(theta_rq) );
+  double W_primeSq = sq(MASSD) - Q2 + sq(MASSN) + 2.*MASSD*(nu-E_r) -2.* nu * E_r + 2.*q*p_r*cos(theta_rq);
+  if (W_primeSq < 0.)
+    return 0.;
+
+  double W_prime = sqrt(W_primeSq);
   sigmainput = (25.3+53*(W_prime-MASSN))/(Q2);
 
   double crosstotal1 = calc_cross(Ein, Q2, x, p_r, theta_rq, phi_er, proton, which_wave, decay, num_res, 0);
@@ -191,6 +199,9 @@ double csTotal(int nDim, double *args)
   double differential_p = (max_theta_r - min_theta_r)*(max_phi_er - min_phi_er)*(max_p_r - min_p_r)*sin(theta_r)*p_r/E_r;
   
   double result = crosstotal1 * jacobian * differential_e * differential_p;
+
+  if (result < 0.)
+    return 0.;
   return result;
 }
 
