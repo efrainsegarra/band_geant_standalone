@@ -25,14 +25,16 @@ double getCLAS12_PRes(double theta, double p);
 
 int main(int argc, char ** argv)
 {
-  if (argc != 5)
+  if (argc != 6)
     {
-      cerr << "Wrong number of arguments. Instead use\n\tdet_sim /path/to/input/file /path/to/output/file [bar Width (cm)] [PMT time res (ps)]\n";
+      cerr << "Wrong number of arguments. Instead use\n\tdet_sim /path/to/input/file /path/to/output/file [bar Width (cm)]\n"
+	   << "\t\t[PMT time res (ps)] [CLAS-12 res. factor (1=normal)]\n";
       exit(-1);
     }
 
   const double barWidth = atof(argv[3]);
   const double tResPMT = 1.E-3 * atof(argv[4]); // convert time res from ps to ns
+  const double clasFac=atof(argv[5]); // Multiplies all CLAS-12 resolutions
 
   // Random number generator
   TRandom3 * myRand = new TRandom3(0);
@@ -157,9 +159,9 @@ int main(int argc, char ** argv)
       double trueTheta_q = acos((E1 - truePe*trueCosTheta_e)/true_q);
 
       // Lepton needs to be smeared
-      double reconPe = myRand->Gaus(truePe,getCLAS12_PRes(trueTheta_e,truePe));
-      double reconTheta_e = myRand->Gaus(trueTheta_e,0.001); // 1mrad smearing
-      double reconPhi_e = myRand->Gaus(truePhi_e,0.001/sin(trueTheta_e)); // 1mrad/sin(theta)
+      double reconPe = myRand->Gaus(truePe,clasFac*getCLAS12_PRes(trueTheta_e,truePe));
+      double reconTheta_e = myRand->Gaus(trueTheta_e,clasFac*0.001); // 1mrad smearing
+      double reconPhi_e = myRand->Gaus(truePhi_e,clasFac*0.001/sin(trueTheta_e)); // 1mrad/sin(theta)
       if (reconPhi_e > M_PI) reconPhi_e -=2.*M_PI;
       if (reconPhi_e < -M_PI) reconPhi_e +=2.*M_PI;
       double reconQSq = 2.*E1*reconPe*(1.-cos(reconTheta_e));
