@@ -3,16 +3,16 @@
 
 #include <complex>
 
-complex<double> deuteronwf_on(int dspin, int proton, int spinp, int spinn, double p, double theta, double phi,
+std::complex<double> deuteronwf_on(int dspin, int proton, int spinp, int spinn, double p, double theta, double phi,
 			   int decay, double Gamma, int which_wave);
-complex<double> deuteronwf_on(int dspin, int proton, int spinp, int spinn, double p, double theta, double phi,
+std::complex<double> deuteronwf_on(int dspin, int proton, int spinp, int spinn, double p, double theta, double phi,
 			    int decay, double Gamma, int which_wave, double *c, double *d, double *m, int c_length);
-complex<double> deuteronwf_off(int dspin, int proton, int spinp, int spinn, double p, double theta, double phi,
+std::complex<double> deuteronwf_off(int dspin, int proton, int spinp, int spinn, double p, double theta, double phi,
 			       int decay, double Gamma, int which_wave);
-complex<double> deuteronwf_off(int dspin, int proton, int spinp, int spinn, double p, double theta, double phi,
+std::complex<double> deuteronwf_off(int dspin, int proton, int spinp, int spinn, double p, double theta, double phi,
 			    int decay, double Gamma, int which_wave, double *c, double *d, double *m, int c_length);			       
 double Ufront(int M, int spinp, int spinn);
-complex<double> get_stensor(int dspin, int spinp, int spinn, double theta, double phi);
+std::complex<double> get_stensor(int dspin, int spinp, int spinn, double theta, double phi);
 void get_wf_param(double **c, double **d, double **bm, int &c_length, int which_wave);
 double uu(double x, double xt, double xz, int decay, double Gamma,
 	  double *c, double *m, int c_length);
@@ -28,25 +28,25 @@ void error(const char * msg);
 double total_dens(double p, double theta, double phi, double* scattfactor, double s, double nu, double *przprime, double qvec,
 		  double massr, double massi, double Er, double Wx2, double *c, double *d, double *m, int c_length,
 		  int decay, double *Gamma, int which_wave, int num_res, double **scattparam, int FSI);
-complex<double> totdens_pt(double phi, va_list ap);
-complex<double> totdens_phi(double phi, va_list ap);
-complex<double> totdens_qt(double phi, va_list ap);
-complex<double> totdens_qphi(double phi, va_list ap);
+std::complex<double> totdens_pt(double phi, va_list ap);
+std::complex<double> totdens_phi(double phi, va_list ap);
+std::complex<double> totdens_qt(double phi, va_list ap);
+std::complex<double> totdens_qphi(double phi, va_list ap);
 double get_przprime(double pt, double massr, double nu, double qvec, double Er, double Wx2, double prz, double &Wxprime2);
 double born_dens(double p, double Er, int which_wave, double *c, double *d, double *m, int c_length);
 void cross_fsi_dens(double p, double theta, double* scattfactor, double s, double nu, double *przprime, double qvec,
 		  double massr, double massi, double Er,  double *c, double *d, double *m, int c_length,
 		  int decay, double *Gamma, int which_wave, int num_res, double **scattparam, double &crossdens, double &fsidens);
-complex<double> densint1(double pt, va_list ap);
-complex<double> densint2(double pt, va_list ap);
-complex<double> densint3(double pt, va_list ap);
-complex<double> densint4(double pt, va_list ap);
-complex<double> scatter(double t, double *scattparam);
+std::complex<double> densint1(double pt, va_list ap);
+std::complex<double> densint2(double pt, va_list ap);
+std::complex<double> densint3(double pt, va_list ap);
+std::complex<double> densint4(double pt, va_list ap);
+std::complex<double> scatter(double t, double *scattparam);
 double offshell(double B, double offshellm);
 double offshell2(double lambda, double massX2, double offshellm2);
 double offshell3(double Bdiff, double t);
 double normfactor(int which_wave);
-complex<double> complexromberg(complex<double> (*function)(double, va_list), double a, double b, double acc, int min, int max, ...);
+std::complex<double> complexromberg(std::complex<double> (*function)(double, va_list), double a, double b, double acc, int min, int max, ...);
 double romberger(double (*function)(double, va_list), double a, double b, double acc, int min, int max, ...);
 double power(double x, int y);
 double BESSI(int N, double X);
@@ -109,7 +109,7 @@ template <class T> void rombergerN(void (*function)(double, T*,  va_list), doubl
     if (n >= min) {
       double deviation=0.;
       for(int i=0;i<N;i++) {
-	dev[i] = (DN2[i][n] == complex<double>(0.,0.)) ? 0. : abs((DN2[i][n]-DN1[i][n-1]))/abs(DN2[i][n]);
+	dev[i] = (DN2[i][n] == std::complex<double>(0.,0.)) ? 0. : abs((DN2[i][n]-DN1[i][n-1]))/abs(DN2[i][n]);
 	if(dev[i]>deviation) deviation=dev[i];
       }
      if (((deviation < acc ) ) || ((abs(DN2[0][n]-DN1[0][n-1]) <acc*1e-07 ))) {
@@ -154,15 +154,15 @@ template <class T> void rombergerN(void (*function)(double, T*,  va_list), doubl
 // double cross_dens(double p, double theta, double *scattfactor, double *przprime, double qvec,
 // 		  double massr, double massi, double Er,  double *c, double *d, double *m, int c_length,
 // 		  int decay, double *Gamma, int which_wave, int num_res, double **scattparam);
-// complex<double> crossterm1(double pt, va_list ap);
-// complex<double> crossterm2(double pt, va_list ap);
-// complex<double> crossterm3(double pt, va_list ap);
-// complex<double> crossterm4(double pt, va_list ap);
+// std::complex<double> crossterm1(double pt, va_list ap);
+// std::complex<double> crossterm2(double pt, va_list ap);
+// std::complex<double> crossterm3(double pt, va_list ap);
+// std::complex<double> crossterm4(double pt, va_list ap);
 // double FSI_dens(double p, double theta, double* scattfactor, double *przprime, double qvec,
 // 		double massr, double massi, double Er,  double *c, double *d, double *m, int c_length,
 // 		int decay, double *Gamma, int which_wave, int num_res, double **scattparam);
-// complex<double> intU(double pt, va_list ap);
-// complex<double> intW1(double pt, va_list ap);
-// complex<double> intW2(double pt, va_list ap);
-// complex<double> intW3(double pt, va_list ap);
+// std::complex<double> intU(double pt, va_list ap);
+// std::complex<double> intW1(double pt, va_list ap);
+// std::complex<double> intW2(double pt, va_list ap);
+// std::complex<double> intW3(double pt, va_list ap);
 #endif

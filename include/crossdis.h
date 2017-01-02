@@ -21,7 +21,7 @@ void init_param(double *scattfactor, double *przprime, double prz,
 		double nu, double qvec, double Q2, double Wx2, double Wxprime2, double Wxprime2_0, double massi, double Er, double s);
 double intcheck(double p, va_list ap);
 double phiint(double phir, va_list ap);
-void readin_deeps(double ******pdeepsarray, string dir);
+void readin_deeps(double ******pdeepsarray, std::string dir);
 void maint_deepsarray(double *****deepsarray);
 void getF_deeps(double *****deepsarray,int proton, double Ein, double residu, int num_res, int which_wave, int offshell, int decay, int varvalue);
 //void neutronstructurefit_old(double Ein, double Q2, double x, 
