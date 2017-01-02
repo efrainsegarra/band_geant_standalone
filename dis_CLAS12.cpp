@@ -1,4 +1,6 @@
 #include <iostream>
+#include <cstdio>
+#include <cstdlib>
 
 #include "TFile.h"
 #include "TTree.h"
@@ -6,11 +8,11 @@
 #include "TRandom3.h"
 #include "TVectorT.h"
 
-using namespace std;
-
 #include "constants.h"
 #include "deuteronwf.h"
 #include "crossdis.h"
+
+using namespace std;
 
 // Settings for cross section: 
 double sigmainput=40.;          //sigma parameter in rescattering amplitude [mb], default value
