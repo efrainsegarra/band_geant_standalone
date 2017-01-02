@@ -7,13 +7,14 @@
 #include "TRandom3.h"
 #include "TVectorT.h"
 
+#include "constants.h"
+
 using namespace std;
 
 const double minMomR = 0.275;
 const double maxMomR = 0.700;
 const double maxThetaR = 170.*M_PI/180.;
 const double minThetaR = 160.*M_PI/180.;
-const double mN = 0.93956536;
 const double bandZ = -250.; // cm
 const double cAir = 29.9792458; // cm/ns
 const double csN = 4.E5 / (0.1 * (6.E36 * 1.E-33)); // nb/sr

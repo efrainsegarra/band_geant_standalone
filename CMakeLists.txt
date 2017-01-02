@@ -9,24 +9,22 @@ find_package(ROOT REQUIRED)
 project (deuteron_dis)
 
 add_subdirectory(detector_sim)
+add_subdirectory(wim_lib)
+add_subdirectory(analysis)
 
 file( GLOB HEADERS ${CMAKE_SOURCE_DIR}/*.h )
 
-set(INCLUDES ${ROOT_INCLUDE_DIR} )
+set(INCLUDES ${ROOT_INCLUDE_DIR} ${CMAKE_SOURCE_DIR}/include )
 include_directories(${INCLUDES})
 
-add_executable(dis_CLAS12 dis_CLAS12.cpp crossdis.cpp crossincl.cpp deuteronwf.cpp alekhin.f F1F209_test.f ${HEADERS} )
-target_link_libraries(dis_CLAS12 ${ROOT_LIBRARIES} Foam)
+add_executable(dis_CLAS12 dis_CLAS12.cpp ${HEADERS} )
+target_link_libraries(dis_CLAS12 ${ROOT_LIBRARIES} Foam wim_lib)
 
-add_executable(dis_CLAS12_2d dis_CLAS12_2d.cpp crossdis.cpp crossincl.cpp deuteronwf.cpp alekhin.f F1F209_test.f ${HEADERS} )
-target_link_libraries(dis_CLAS12_2d ${ROOT_LIBRARIES} Foam)
+add_executable(dis_CLAS12_2d dis_CLAS12_2d.cpp ${HEADERS} )
+target_link_libraries(dis_CLAS12_2d ${ROOT_LIBRARIES} Foam wim_lib)
 
-add_executable(inclusive_CLAS12 inclusive_CLAS12.cpp crossdis.cpp crossincl.cpp deuteronwf.cpp alekhin.f F1F209_test.f ${HEADERS} )
-target_link_libraries(inclusive_CLAS12 ${ROOT_LIBRARIES} Foam)
+add_executable(inclusive_CLAS12 inclusive_CLAS12.cpp ${HEADERS} )
+target_link_libraries(inclusive_CLAS12 ${ROOT_LIBRARIES} Foam wim_lib)
 
 add_executable(randoms_CLAS12 randoms_CLAS12.cpp )
 target_link_libraries(randoms_CLAS12 ${ROOT_LIBRARIES} )
-
-# install the grid files so that the cross section code can access them
-INSTALL (FILES grids/a09.dsfs_lNNC grids/a09.sfs_lNNC
-	DESTINATION "~/.deuteron_dis/grids/")

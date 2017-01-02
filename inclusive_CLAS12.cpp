@@ -1,12 +1,4 @@
 #include <iostream>
-#include <cstdlib>
-#include <cstdio>
-#include <cmath>
-#include <cstring>
-#include <complex>
-#include <fstream>
-#include <cstdarg>
-#include <time.h>
 
 #include "TFile.h"
 #include "TTree.h"
@@ -158,7 +150,7 @@ double csTotal(int nDim, double *args)
   // Develop derived quantities
   double Q2 = 4.*Ein*p_e * sq(sin(0.5*theta_e));
   double nu = Ein - p_e;
-  double x = Q2 / (2.*MASSN*nu);
+  double x = Q2 / (2.*mN*nu);
 
   // Some memory for the cross section calculation results
   double QEpw, DISpw, DISfsi, DISfsi2;

@@ -1,12 +1,4 @@
 #include <iostream>
-#include <cstdlib>
-#include <cstdio>
-#include <cmath>
-#include <cstring>
-#include <complex>
-#include <fstream>
-#include <cstdarg>
-#include <time.h>
 
 #include "TFile.h"
 #include "TTree.h"
@@ -175,10 +167,10 @@ double csTotal(int nDim, double *args)
   //cout << theta_e*180/M_PI << " " << p_e << " " << theta_r*180./M_PI << " " << p_r << " " << phi_er*180./M_PI << "\n";
 
   // Develop derived quantities
-  double E_r = sqrt(sq(MASSP) + sq(p_r));
+  double E_r = sqrt(sq(mP) + sq(p_r));
   double Q2 = 4.*Ein*p_e * sq(sin(0.5*theta_e));
   double nu = Ein - p_e;
-  double x = Q2 / (2.*MASSN*nu);
+  double x = Q2 / (2.*mN*nu);
   double q = sqrt(Q2 + sq(nu));
   double theta_q = acos((Ein - p_e*cos(theta_e))/q);
   double theta_rq = acos( cos(theta_r)*cos(theta_q) - sin(theta_r)*sin(theta_q)*cos(phi_er));
@@ -186,12 +178,12 @@ double csTotal(int nDim, double *args)
   //cout << E_r << " " << Q2 << " " << nu << " " << x << " " << q << " " << theta_q*180./M_PI << " " << theta_rq*180./M_PI << "\n";
 
   // Sigma-input parameter
-  double W_primeSq = sq(MASSD) - Q2 + sq(MASSN) + 2.*MASSD*(nu-E_r) -2.* nu * E_r + 2.*q*p_r*cos(theta_rq);
+  double W_primeSq = sq(mD) - Q2 + sq(mN) + 2.*mD*(nu-E_r) -2.* nu * E_r + 2.*q*p_r*cos(theta_rq);
   if (W_primeSq < 0.)
     return 0.;
 
   double W_prime = sqrt(W_primeSq);
-  sigmainput = (25.3+53*(W_prime-MASSN))/(Q2);
+  sigmainput = (25.3+53*(W_prime-mN))/(Q2);
 
   double crosstotal1 = calc_cross(Ein, Q2, x, p_r, theta_rq, phi_er, proton, which_wave, decay, num_res, 0);
   double jacobian = x*Ein*p_e*p_r/(M_PI*nu);

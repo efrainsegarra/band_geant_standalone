@@ -1,12 +1,4 @@
 #include <iostream>
-#include <cstdlib>
-#include <cstdio>
-#include <cmath>
-#include <cstring>
-#include <complex>
-#include <fstream>
-#include <cstdarg>
-#include <time.h>
 
 #include "TFile.h"
 #include "TTree.h"
@@ -172,17 +164,17 @@ double csTotal(int nDim, double *args)
   double phi_er = M_PI;
 
   // Develop derived quantities
-  double E_r = sqrt(sq(MASSP) + sq(p_r));
+  double E_r = sqrt(sq(mP) + sq(p_r));
   double Q2 = 4.*Ein*p_e * sq(sin(0.5*theta_e));
   double nu = Ein - p_e;
-  double x = Q2 / (2.*MASSN*nu);
+  double x = Q2 / (2.*mN*nu);
   double q = sqrt(Q2 + sq(nu));
   double theta_q = acos((Ein - p_e*cos(theta_e))/q);
   double theta_rq = acos( cos(theta_r)*cos(theta_q) - sin(theta_r)*sin(theta_q)*cos(phi_er));
 
   // Sigma-input parameter
-  double W_prime = sqrt(sq(MASSD) - Q2 + sq(MASSN) + 2.*MASSD*(nu-E_r) -2.* nu * E_r + 2.*q*p_r*cos(theta_rq) );
-  sigmainput = (25.3+53*(W_prime-MASSN))/(Q2);
+  double W_prime = sqrt(sq(mD) - Q2 + sq(mN) + 2.*mD*(nu-E_r) -2.* nu * E_r + 2.*q*p_r*cos(theta_rq) );
+  sigmainput = (25.3+53*(W_prime-mN))/(Q2);
 
   double result=0.; // This will be the final returned cross section
   if (W_prime > 2.)

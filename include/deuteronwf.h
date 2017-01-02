@@ -1,6 +1,8 @@
 #ifndef DEUT_H
 #define DEUT_H
 
+#include <complex>
+
 complex<double> deuteronwf_on(int dspin, int proton, int spinp, int spinn, double p, double theta, double phi,
 			   int decay, double Gamma, int which_wave);
 complex<double> deuteronwf_on(int dspin, int proton, int spinp, int spinn, double p, double theta, double phi,
