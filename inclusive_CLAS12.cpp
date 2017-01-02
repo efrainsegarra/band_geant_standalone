@@ -5,6 +5,7 @@
 #include "TFile.h"
 #include "TTree.h"
 #include "TFoam.h"
+#include "TFoamIntegrand.h"
 #include "TRandom3.h"
 #include "TVectorT.h"
 
@@ -46,11 +47,17 @@ extern "C"{
 }//shared fortran variables
 
 // Foam ranges
-double csTotal(int nDim, double *args);
 const double min_theta_e = 5.*M_PI/180.;
 const double max_theta_e = 35.*M_PI/180.;
 const double min_p_e = 2.;
 const double max_p_e = 8.;
+
+// Foam Integrand
+class InclusiveCS : public TFoamIntegrand
+{
+public:
+  double Density(int nDim, double * args);
+};
 
 int main(int argc, char *argv[])
 {
@@ -90,8 +97,9 @@ int main(int argc, char *argv[])
 
   // Initialize the foam
   TFoam * csFoam = new TFoam("csFoam");
+  InclusiveCS * csTotal = new InclusiveCS();
   csFoam->SetkDim(2);
-  csFoam->SetRhoInt(csTotal);
+  csFoam->SetRho(csTotal);
   csFoam->SetPseRan(rand);
   // optional
   csFoam->SetnCells(100);
@@ -143,7 +151,7 @@ int main(int argc, char *argv[])
 
 inline double sq(double x) {return x*x;};
 
-double csTotal(int nDim, double *args)
+double InclusiveCS::Density(int nDim, double *args)
 {
   // Variables (there should be 2 of them)
   double theta_e = min_theta_e + args[0]*(max_theta_e - min_theta_e);
