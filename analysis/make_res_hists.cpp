@@ -27,13 +27,16 @@ int main(int argc, char ** argv)
   
   // Set memory addresses for tree
   double trueXp, trueWp, reconXp, reconWp;
-  double mom_e[3], mom_r[3];
+  double mom_e[3], mom_r[3], true_mom_r[3];
   t->SetBranchAddress("reconPe_x",&(mom_e[0]));
   t->SetBranchAddress("reconPe_y",&(mom_e[1]));
   t->SetBranchAddress("reconPe_z",&(mom_e[2]));
   t->SetBranchAddress("reconPr_x",&(mom_r[0]));
   t->SetBranchAddress("reconPr_y",&(mom_r[1]));
   t->SetBranchAddress("reconPr_z",&(mom_r[2]));
+  t->SetBranchAddress("truePr_x",&(true_mom_r[0]));
+  t->SetBranchAddress("truePr_y",&(true_mom_r[1]));
+  t->SetBranchAddress("truePr_z",&(true_mom_r[2]));
   t->SetBranchAddress("trueXp",&trueXp);
   t->SetBranchAddress("trueWp",&trueWp);
   t->SetBranchAddress("reconXp",&reconXp);
@@ -42,6 +45,7 @@ int main(int argc, char ** argv)
   // Prep histograms
   int nXpBins=20;
   int nWpBins=26;
+  TH2D * prRes = new TH2D("prRes","Recon Q^2 > 2., W_prime > 1.8;p_r;delta p_r;Counts",20,.28,.68,80,-0.1,0.1);
   TH2D * xPrimeRes[5];
   TH2D * WPrimeRes[5];
   double minAlpha[5];
@@ -81,12 +85,16 @@ int main(int argc, char ** argv)
       // Make kinematic cuts
       if ((QSq > 2.) && (reconWp > 1.8))
 	{
+	  // Recoil momentum
+	  TVector3 rVec_true(true_mom_r[0],true_mom_r[1],true_mom_r[2]);
+	  TVector3 rVec(mom_r[0],mom_r[1],mom_r[2]);
+	  prRes->Fill(rVec_true.Mag(),rVec.Mag() - rVec_true.Mag());
+
 	  // Reconstruct alpha_s
 	  double nu = 10.9 - p_e;
 	  TVector3 qVec(-mom_e[0],-mom_e[1],10.9-mom_e[2]);
-	  TVector3 rVec(mom_r[0],mom_r[1],mom_r[2]);
 	  double E_r = sqrt(sq(mN) + rVec.Mag2());
-	  double alpha_s = (E_r - rVec.Dot(qVec)/qVec.Mag())/mN; // ERROR IN THIS LINE
+	  double alpha_s = (E_r - rVec.Dot(qVec)/qVec.Mag())/mN; 
 
 	  // Figure out what bin
 	  int aBin = floor((alpha_s - minAlpha[0])/0.05);
@@ -103,7 +111,8 @@ int main(int argc, char ** argv)
     }
 
   TFile *outRoot = new TFile(argv[2],"RECREATE");
-  
+
+  prRes->Write();
   for (int aBin=0 ; aBin <5 ; aBin++)
     {
       xPrimeRes[aBin]->Write();
