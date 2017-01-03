@@ -5,6 +5,7 @@
 #include "TFile.h"
 #include "TTree.h"
 #include "TFoam.h"
+#include "TFoamIntegrand.h"
 #include "TRandom3.h"
 #include "TVectorT.h"
 
@@ -34,7 +35,6 @@ extern "C"{
 }//shared fortran variables
 
 // Foam ranges
-double csTotal(int nDim, double *args);
 const double min_theta_e = 5.*M_PI/180.;
 const double max_theta_e = 35.*M_PI/180.;
 const double min_p_e = 2.;
@@ -45,6 +45,13 @@ const double min_p_r =0.275;
 const double max_p_r =0.600;
 const double min_phi_er=0.;
 const double max_phi_er=2.*M_PI;
+
+// Foam Integrand
+class disCS : public TFoamIntegrand
+{
+public:
+  double Density(int nDim, double * args);
+};
 
 int main(int argc, char *argv[])
 {
@@ -88,8 +95,9 @@ int main(int argc, char *argv[])
 
   // Initialize the foam
   TFoam * csFoam = new TFoam("csFoam");
+  disCS * csTotal = new disCS();
   csFoam->SetkDim(5);
-  csFoam->SetRhoInt(csTotal);
+  csFoam->SetRho(csTotal);
   csFoam->SetPseRan(rand);
   // optional
   csFoam->SetnCells(10000);
@@ -143,6 +151,7 @@ int main(int argc, char *argv[])
 
   // Clean up
   delete csFoam;
+  delete csTotal;
   delete rand;
 
   return 0;
@@ -150,10 +159,9 @@ int main(int argc, char *argv[])
 
 inline double sq(double x) {return x*x;};
 
-double csTotal(int nDim, double *args)
+double disCS::Density(int nDim, double *args)
 {
   // Parameters
-  double Ein = 10.9; // In GeV
   int proton = 1; // (0 for DIS on neutron with spectator proton, 1 for DIS on proton with spectator neutron).
   int which_wave =1;     // Non relativistic deuteron wf: 0 - Paris wf, 1 - AV18, 2 - CD Bonn, 3 - AV18*
   int decay=0;
@@ -170,11 +178,11 @@ double csTotal(int nDim, double *args)
 
   // Develop derived quantities
   double E_r = sqrt(sq(mP) + sq(p_r));
-  double Q2 = 4.*Ein*p_e * sq(sin(0.5*theta_e));
-  double nu = Ein - p_e;
+  double Q2 = 4.*E1*p_e * sq(sin(0.5*theta_e));
+  double nu = E1 - p_e;
   double x = Q2 / (2.*mN*nu);
   double q = sqrt(Q2 + sq(nu));
-  double theta_q = acos((Ein - p_e*cos(theta_e))/q);
+  double theta_q = acos((E1 - p_e*cos(theta_e))/q);
   double theta_rq = acos( cos(theta_r)*cos(theta_q) - sin(theta_r)*sin(theta_q)*cos(phi_er));
 
   //cout << E_r << " " << Q2 << " " << nu << " " << x << " " << q << " " << theta_q*180./M_PI << " " << theta_rq*180./M_PI << "\n";
@@ -187,8 +195,8 @@ double csTotal(int nDim, double *args)
   double W_prime = sqrt(W_primeSq);
   sigmainput = (25.3+53*(W_prime-mN))/(Q2);
 
-  double crosstotal1 = calc_cross(Ein, Q2, x, p_r, theta_rq, phi_er, proton, which_wave, decay, num_res, 0);
-  double jacobian = x*Ein*p_e*p_r/(M_PI*nu);
+  double crosstotal1 = calc_cross(E1, Q2, x, p_r, theta_rq, phi_er, proton, which_wave, decay, num_res, 0);
+  double jacobian = x*E1*p_e*p_r/(M_PI*nu);
   double differential_e = (max_theta_e - min_theta_e)*(2.*M_PI)*(max_p_e - min_p_e)*sin(theta_e);
   double differential_p = (max_theta_r - min_theta_r)*(max_phi_er - min_phi_er)*(max_p_r - min_p_r)*sin(theta_r)*p_r/E_r;
   

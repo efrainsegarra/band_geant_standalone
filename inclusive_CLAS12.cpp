@@ -28,7 +28,6 @@ int phiavg=1;                   //average cross section over phi
 int F_param=0;                  //structure functions parametrization 0=SLAC, 1=Christy&Bosted, 2=Alekhin et al leading twist
 
 // Constant settings
-const double Ein=10.9;
 const int calc=0;
 const int which_wave=1;
 const int decay=0;
@@ -144,6 +143,7 @@ int main(int argc, char *argv[])
 
   // Clean up
   delete csFoam;
+  delete csTotal;
   delete rand;
 
   return 0;
@@ -158,17 +158,17 @@ double InclusiveCS::Density(int nDim, double *args)
   double p_e = min_p_e + args[1]*(max_p_e - min_p_e);
 
   // Develop derived quantities
-  double Q2 = 4.*Ein*p_e * sq(sin(0.5*theta_e));
-  double nu = Ein - p_e;
+  double Q2 = 4.*E1*p_e * sq(sin(0.5*theta_e));
+  double nu = E1 - p_e;
   double x = Q2 / (2.*mN*nu);
 
   // Some memory for the cross section calculation results
   double QEpw, DISpw, DISfsi, DISfsi2;
   
   // Calculate the cross section
-  calc_inclusive2(QEpw, DISpw, DISfsi, DISfsi2, Ein, Q2,x, c, d, m, c_length, which_wave, offshellset, decay, num_res, calc);
+  calc_inclusive2(QEpw, DISpw, DISfsi, DISfsi2, E1, Q2,x, c, d, m, c_length, which_wave, offshellset, decay, num_res, calc);
   double dsigma=DISpw+QEpw-DISfsi;
-  double jacobian = x*Ein*p_e/(M_PI*nu);
+  double jacobian = x*E1*p_e/(M_PI*nu);
   double differential = (max_theta_e - min_theta_e)*(2.*M_PI)*(max_p_e - min_p_e)*sin(theta_e);
 
   return dsigma*jacobian*differential;
