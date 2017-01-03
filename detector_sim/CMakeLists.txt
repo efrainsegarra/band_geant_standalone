@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 2.6)
 
 #project(det_sim)
 
-set(INCLUDES ${ROOT_INCLUDE_DIR} )
+set(INCLUDES ${ROOT_INCLUDE_DIR} ${CMAKE_SOURCE_DIR}/include )
 include_directories(${INCLUDES})
 
 add_executable(det_sim ${CMAKE_CURRENT_SOURCE_DIR}/det_sim.cpp)

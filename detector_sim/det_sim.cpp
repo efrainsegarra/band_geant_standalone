@@ -7,17 +7,14 @@
 #include "TRandom3.h"
 #include "TVectorT.h"
 
+#include "constants.h"
+
 using namespace std;
 
 // Define some constants for BAND (positions in cm, time in ns, mass in GeV)
-const double bandZ = -240.;
-const double bandZWidth=60.;
-const double cAir = 29.9792458;
+const double bandZ = -250.; // The z position of the face of BAND that is closest to the target (in cm)
+const double bandZWidth=40.;
 const double cScint = 15.;
-const double mP = 0.93827208;
-const double mN = 0.93956541;
-const double mD = 1.875612928;
-const double E1 = 10.9;
 
 inline double sq(double x){ return x*x;};
 bool didItHit(double x, double y);
