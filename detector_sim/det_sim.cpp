@@ -133,11 +133,11 @@ int main(int argc, char ** argv)
       // X reconstruction is smeared based on PMT resolution for time difference
       double reconXHit = myRand->Gaus(trueXHit,cScint * tResPMT/sqrt(2.));
 
-      // Y reconstruction is based on center of the bar
+      // Y reconstruction assumes hit occurred at the center of the bar
       int bar = floor(trueYHit / barWidth);
       double reconYHit = barWidth* (((float)bar) + 0.5);
 
-      // Z is also reconstructed base on the center of the bar
+      // Z is also reconstructed assuming a hit at the center of the bar
       bar = floor((bandZ-trueZHit)/barWidth);
       reconZHit = bandZ - barWidth*(((float)bar) + 0.5);
 
