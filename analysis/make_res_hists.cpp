@@ -51,9 +51,9 @@ int main(int argc, char ** argv)
   int nWpBins=26;
   TH2D * prRes = new TH2D("prRes","Recon Q^2 > 2., W_prime > 1.8;p_r;delta p_r;Counts",20,.28,.68,80,-0.1,0.1);
   TH2D * asRes = new TH2D("asRes","Recon Q^2 > 2., W_prime > 1.8;a_s;delta a_s;Counts",20,1.3,1.55,80,-0.2,0.2);
-  TH2D * reconXpAsSame = new TH2D("reconXpAsSame","Stayed in same bin;Recon x_p;Recon a_s;Counts",10,0.2,0.6,5,1.3,1.55);
-  TH2D * reconXpAsDiff = new TH2D("reconXpAsDiff","Originated in other bin;Recon x_p;Recon a_s;Counts",10,0.2,0.6,5,1.3,1.55);
-  TH2D * trueXpAsDiff = new TH2D("trueXpAsDiff","Left the bin;True x_p;True a_s;Counts",10,0.2,0.6,5,1.3,1.55);
+  TH2D * reconXpAsSame = new TH2D("reconXpAsSame","Stayed in same bin;Recon x_p;Recon a_s;Counts",5,0.15,0.65,5,1.3,1.55);
+  TH2D * reconXpAsDiff = new TH2D("reconXpAsDiff","Originated in other bin;Recon x_p;Recon a_s;Counts",5,0.15,0.65,5,1.3,1.55);
+  TH2D * trueXpAsDiff = new TH2D("trueXpAsDiff","Left the bin;True x_p;True a_s;Counts",5,0.15,0.65,5,1.3,1.55);
   TH2D * xPrimeRes[5];
   TH2D * WPrimeRes[5];
   double minAlpha[5];

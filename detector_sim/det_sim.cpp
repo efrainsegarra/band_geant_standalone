@@ -72,6 +72,7 @@ int main(int argc, char ** argv)
   double reconWp, reconXp, reconAs, reconPr;
   double reconMom_r[3];
   double reconMom_e[3];
+  double trueZHit, reconZHit;
   outTree->Branch("trueWp",&trueWp,"trueWp/D");
   outTree->Branch("trueXp",&trueXp,"trueXp/D");
   outTree->Branch("trueAs",&trueAs,"trueAs/D");
@@ -93,6 +94,10 @@ int main(int argc, char ** argv)
   outTree->Branch("reconPr_x",&(reconMom_r[0]),"reconPr_x/D");
   outTree->Branch("reconPr_y",&(reconMom_r[1]),"reconPr_y/D");
   outTree->Branch("reconPr_z",&(reconMom_r[2]),"reconPr_z/D");
+  // Hit position
+  outTree->Branch("true_zHit",&trueZHit,"true_zHit/D");
+  outTree->Branch("recon_zHit",&reconZHit,"recon_zHit/D");
+
 
   // Loop over the events
   for (int i=0 ; i<inTree->GetEntries() ; i++)
@@ -104,7 +109,7 @@ int main(int argc, char ** argv)
       inTree->GetEvent(i);
 
       // Figure out where the recoiling neutron hits BAND
-      double trueZHit = bandZ - bandZWidth*myRand->Rndm();
+      trueZHit = bandZ - bandZWidth*myRand->Rndm();
       double trueXHit = mom_r[0]*trueZHit/mom_r[2];
       double trueYHit = mom_r[1]*trueZHit/mom_r[2];
 
@@ -115,7 +120,7 @@ int main(int argc, char ** argv)
       // Energy and timing
       truePr = sqrt(sq(mom_r[0]) + sq(mom_r[1]) + sq(mom_r[2]));
       double trueEr = sqrt(sq(truePr) + sq(mN));
-      double trueT = sqrt(sq(trueXHit)+sq(trueYHit)+sq(trueZHit)) / (cAir * truePr / trueEr); // d / beta
+      double trueT = sqrt(sq(trueXHit)+sq(trueYHit)+sq(trueZHit)) / (cAir * truePr / trueEr); // d / (c * beta)
 
       // Test if we were efficient for the neutron hit
       // This could in the future depend on neutron momentum
@@ -134,7 +139,7 @@ int main(int argc, char ** argv)
 
       // Z is also reconstructed base on the center of the bar
       bar = floor((bandZ-trueZHit)/barWidth);
-      double reconZHit = bandZ - barWidth*(((float)bar) * 0.5);
+      reconZHit = bandZ - barWidth*(((float)bar) + 0.5);
 
       // Momentum
       double reconPath = sqrt(sq(reconXHit)+sq(reconYHit)+sq(reconZHit));
