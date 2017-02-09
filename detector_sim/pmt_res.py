@@ -2,6 +2,9 @@ from __future__ import division
 import matplotlib.pyplot as plt
 import numpy as np
 
+# Relevant reference papers:
+# https://arxiv.org/pdf/1610.05667.pdf
+# http://citeseerx.ist.psu.edu/viewdoc/download;jsessionid=308EB1E49D97380D43DB8245785F4964?doi=10.1.1.659.2431&rep=rep1&type=pdf
 
 # Fudge factor -- will have to extract from data. In sigma_t(x), the
 # A(x) factors should really be N(x), however I don't have a conversion
