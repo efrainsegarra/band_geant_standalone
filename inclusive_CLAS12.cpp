@@ -30,7 +30,7 @@ int F_param=0;                  //structure functions parametrization 0=SLAC, 1=
 // Constant settings
 const int calc=0;
 const int which_wave=1;
-const int decay=0;
+const int Decay=0;
 const int num_res=1;
 
 // Memory
@@ -166,7 +166,7 @@ double InclusiveCS::Density(int nDim, double *args)
   double QEpw, DISpw, DISfsi, DISfsi2;
   
   // Calculate the cross section
-  calc_inclusive2(QEpw, DISpw, DISfsi, DISfsi2, E1, Q2,x, c, d, m, c_length, which_wave, offshellset, decay, num_res, calc);
+  calc_inclusive2(QEpw, DISpw, DISfsi, DISfsi2, E1, Q2,x, c, d, m, c_length, which_wave, offshellset, Decay, num_res, calc);
   double dsigma=DISpw+QEpw-DISfsi;
   double jacobian = x*E1*p_e/(M_PI*nu);
   double differential = (max_theta_e - min_theta_e)*(2.*M_PI)*(max_p_e - min_p_e)*sin(theta_e);
