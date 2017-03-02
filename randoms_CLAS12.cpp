@@ -8,6 +8,7 @@
 #include "TVectorT.h"
 
 #include "constants.h"
+#include "gen_tree.h"
 
 using namespace std;
 
@@ -45,27 +46,27 @@ int main(int argc, char ** argv)
   TVectorT<double> * csVec = (TVectorT<double>*)infile->Get("totalCS");
 
   // Get the tree and assign branches
-  double mom_e[3];
   TTree * inTree = (TTree*) infile->Get("MCout");
-  inTree->SetBranchAddress("x_e",&(mom_e[0]));
-  inTree->SetBranchAddress("y_e",&(mom_e[1]));
-  inTree->SetBranchAddress("z_e",&(mom_e[2]));
+  Gen_Event * inEvent = NULL;
+  inTree->SetBranchAddress("event",&inEvent);
 
   // Produce an output tree
   TTree * outTree = new TTree("MCout","Random Coincidence Output");
-  double mom_r[3];
-  outTree->Branch("x_e",&(mom_e[0]),"x_e/D");
-  outTree->Branch("y_e",&(mom_e[1]),"y_e/D");
-  outTree->Branch("z_e",&(mom_e[2]),"z_e/D");
-  outTree->Branch("x_r",&(mom_r[0]),"x_r/D");
-  outTree->Branch("y_r",&(mom_r[1]),"y_r/D");
-  outTree->Branch("z_r",&(mom_r[2]),"z_r/D");
+  Gen_Event * outEvent = new Gen_Event;
+  outTree->Branch("event",&outEvent);
 
   // Loop over the events
   const int nEvents = inTree->GetEntries();
   for (int i=0 ; i<nEvents ; i++)
     {
       inTree->GetEntry(i);
+
+      // Require that there be one particle in the event
+      if (inEvent->particles.size() != 1)
+	{
+	  cerr << "Event " << i << " is not an inclusive event! It has " << inEvent->particles.size() << "particles!!!\n";
+	  continue;
+	}
 
       // Generate random neutron
       double tR = myRand->Rndm()*timeWindow + fabs(bandZ)/(cAir*maxBetaR);
@@ -75,11 +76,13 @@ int main(int argc, char ** argv)
       double thetaR = acos(cosThetaR);
       double phiR = 2.*M_PI * myRand->Rndm();
 
-      // Fill momentum vector
-      mom_r[0] = momR*sin(thetaR)*cos(phiR);
-      mom_r[1] = momR*sin(thetaR)*sin(phiR);
-      mom_r[2] = momR*cosThetaR;
-
+      // Write tree
+      outEvent->particles.clear();
+      outEvent->particles.push_back(inEvent->particles[0]);
+      Gen_Particle neutron;
+      neutron.type="neutron";
+      neutron.momentum.SetMagThetaPhi(momR,thetaR,phiR);
+      outEvent->particles.push_back(neutron);
       outTree->Fill();
     }
  

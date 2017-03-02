@@ -1,5 +1,9 @@
 #include <cstdlib>
+#include <cstdio>
 #include <iostream>
+
+#include "TFile.h"
+#include "TTree.h"
 
 #include "Randomize.hh"
 #include "G4RunManager.hh"
@@ -28,6 +32,10 @@ int main(int argc, char ** argv)
   G4String macroName=argv[3];
   bool useVis = atoi(argv[4]);
 
+  TFile * inFile = new TFile(inFileName);
+  TTree * inTree = (TTree*) inFile->Get("MCout");
+  const int nEvents = inTree->GetEntries();
+
   cout << "Beginning geant_sim initialization...\n"
        << "\tGenerator file: " << inFileName << "\n"
        << "\tOutput file:    " << outFileName << "\n"
@@ -50,7 +58,7 @@ int main(int argc, char ** argv)
   runManager->SetUserInitialization(physicsList);
 
   // User Action
-  runManager->SetUserInitialization(new NeutronHallBActionInitialization());
+  runManager->SetUserInitialization(new NeutronHallBActionInitialization(inTree));
 
   // Initialize G4 kernel
   runManager->Initialize();
@@ -68,11 +76,19 @@ int main(int argc, char ** argv)
   G4String command = "/control/execute ";
   UImanager->ApplyCommand(command+macroName);
 
-  // Start visualization window
+  // Either start visualization or do the run.
   if (useVis)
     ui->SessionStart();
+  else
+    {
+      // We're in batch mode so let's start the run
+      char runCmd[100];
+      sprintf(runCmd,"/run/beamOn %d",nEvents);
+      UImanager->ApplyCommand(G4String(runCmd));	
+    }
 
   // Clean Up
+  inFile->Close();
   delete runManager;
   if (visManager) delete visManager;
   if (ui) delete ui;

@@ -8,17 +8,13 @@ include_directories(${INCLUDES})
 include(${Geant4_USE_FILE})
 
 add_executable(det_sim ${CMAKE_CURRENT_SOURCE_DIR}/det_sim.cpp)
-target_link_libraries(det_sim ${ROOT_LIBRARIES} )
+target_link_libraries(det_sim ${ROOT_LIBRARIES} deuteron_dis_tree )
 
 file(GLOB G4sources ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
 file(GLOB G4headers ${CMAKE_CURRENT_SOURCE_DIR}/include/*.h)
 
 add_executable(geant_sim ${CMAKE_CURRENT_SOURCE_DIR}/geant_sim.cpp ${G4sources} ${G4headers})
-target_link_libraries(geant_sim ${ROOT_LIBRARIES} ${Geant4_LIBRARIES})
-
-#foreach(g4l ${Geant4_LIBRARIES})
-#  message(STATUS "${g4l}")
-#endforeach()
+target_link_libraries(geant_sim ${ROOT_LIBRARIES} ${Geant4_LIBRARIES} deuteron_dis_tree)
 
 
 
