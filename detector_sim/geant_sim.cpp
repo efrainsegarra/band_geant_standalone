@@ -31,10 +31,15 @@ int main(int argc, char ** argv)
   char * outFileName=argv[2];
   G4String macroName=argv[3];
   bool useVis = atoi(argv[4]);
-
+  
+  // Input tree
   TFile * inFile = new TFile(inFileName);
   TTree * inTree = (TTree*) inFile->Get("MCout");
   const int nEvents = inTree->GetEntries();
+
+  // Output file + tree
+  TFile * outFile = new TFile(outFileName);
+  TTree * outTree = new TTree("PropTree","Propagation Tree");
 
   cout << "Beginning geant_sim initialization...\n"
        << "\tGenerator file: " << inFileName << "\n"
@@ -58,7 +63,7 @@ int main(int argc, char ** argv)
   runManager->SetUserInitialization(physicsList);
 
   // User Action
-  runManager->SetUserInitialization(new NeutronHallBActionInitialization(inTree));
+  runManager->SetUserInitialization(new NeutronHallBActionInitialization(inTree,outTree));
 
   // Initialize G4 kernel
   runManager->Initialize();

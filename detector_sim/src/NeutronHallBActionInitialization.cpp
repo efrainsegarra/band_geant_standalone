@@ -10,10 +10,11 @@
 #include "NeutronHallBEventAction.h"
 
 
-NeutronHallBActionInitialization::NeutronHallBActionInitialization(void * tp)
+NeutronHallBActionInitialization::NeutronHallBActionInitialization(void * itp, void * otp)
  : G4VUserActionInitialization()
 {
-  treePtr = tp;
+  inTreePtr = itp;
+  outTreePtr = otp;
 }
 
 NeutronHallBActionInitialization::~NeutronHallBActionInitialization()
@@ -26,7 +27,7 @@ void NeutronHallBActionInitialization::BuildForMaster() const
 
 void NeutronHallBActionInitialization::Build() const
 {
-  SetUserAction(new NeutronHallBPrimaryGeneratorAction(treePtr));
+  SetUserAction(new NeutronHallBPrimaryGeneratorAction(inTreePtr));
   SetUserAction(new NeutronHallBRunAction);
   SetUserAction(new NeutronHallBEventAction);
 }  

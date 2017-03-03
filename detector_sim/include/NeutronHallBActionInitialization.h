@@ -17,14 +17,15 @@ class B4DetectorConstruction;
 class NeutronHallBActionInitialization : public G4VUserActionInitialization
 {
  public:
-  NeutronHallBActionInitialization(void * tp);
+  NeutronHallBActionInitialization(void * itp, void * otp);
   virtual ~NeutronHallBActionInitialization();
   
   virtual void BuildForMaster() const;
   virtual void Build() const;
   
  private:
-  void * treePtr;
+  void * inTreePtr;
+  void * outTreePtr;
 };
 
 #endif
