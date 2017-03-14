@@ -38,7 +38,7 @@ int main(int argc, char ** argv)
   const int nEvents = inTree->GetEntries();
 
   // Output file + tree
-  TFile * outFile = new TFile(outFileName);
+  TFile * outFile = new TFile(outFileName,"RECREATE");
   TTree * outTree = new TTree("PropTree","Propagation Tree");
 
   cout << "Beginning geant_sim initialization...\n"
@@ -55,7 +55,7 @@ int main(int argc, char ** argv)
   G4RunManager * runManager = new G4RunManager;
 
   // Detector Geometry
-  runManager->SetUserInitialization(new NeutronHallBDetectorConstruction());
+  runManager->SetUserInitialization(new NeutronHallBDetectorConstruction((void*)outTree));
 
   // Physics List
   G4VModularPhysicsList* physicsList = new QGSP_BERT;
@@ -93,7 +93,9 @@ int main(int argc, char ** argv)
     }
 
   // Clean Up
+  outFile->Write();
   inFile->Close();
+  outFile->Close();
   delete runManager;
   if (visManager) delete visManager;
   if (ui) delete ui;

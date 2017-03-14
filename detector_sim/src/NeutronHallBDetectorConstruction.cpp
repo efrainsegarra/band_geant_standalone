@@ -31,46 +31,42 @@
 
 #include "G4SystemOfUnits.hh"
 
-
-
 #include "G4MultiFunctionalDetector.hh"
 #include "G4VPrimitiveScorer.hh"
 #include "G4PSEnergyDeposit.hh"
 #include "G4PSDoseDeposit.hh"
 
+G4ThreadLocal G4GlobalMagFieldMessenger* NeutronHallBDetectorConstruction::fMagFieldMessenger = 0;
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-G4ThreadLocal
-G4GlobalMagFieldMessenger* NeutronHallBDetectorConstruction::fMagFieldMessenger = 0;
-
-NeutronHallBDetectorConstruction::NeutronHallBDetectorConstruction()
-:G4VUserDetectorConstruction(),
-fNbOfChambers(0),
-fLogicTarget(NULL), fLogicChamber(NULL),
-fTargetMaterial(NULL), fChamberMaterial(NULL),
-fStepLimit(NULL),
-fCheckOverlaps(true){
-    fMessenger = new NeutronHallBDetectorMessenger(this);
-    
-    fNbOfChambers = 5;
-    fLogicChamber = new G4LogicalVolume*[fNbOfChambers];
+NeutronHallBDetectorConstruction::NeutronHallBDetectorConstruction(void * t)
+ :G4VUserDetectorConstruction(),
+  fNbOfChambers(0),
+  fLogicTarget(NULL), fLogicChamber(NULL),
+  fTargetMaterial(NULL), fChamberMaterial(NULL),
+  fStepLimit(NULL),
+  fCheckOverlaps(true){
+  fMessenger = new NeutronHallBDetectorMessenger(this);
+  
+  fNbOfChambers = 5;
+  fLogicChamber = new G4LogicalVolume*[fNbOfChambers];
+  
+  treePtr = t;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 NeutronHallBDetectorConstruction::~NeutronHallBDetectorConstruction(){
-    delete [] fLogicChamber;
-    delete fStepLimit;
-    delete fMessenger;
+  delete [] fLogicChamber;
+  delete fStepLimit;
+  delete fMessenger;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 G4VPhysicalVolume* NeutronHallBDetectorConstruction::Construct(){
-    // Define materials
-    DefineMaterials();
-    
-    // Define volumes
-    return DefineVolumes();
+  // Define materials
+  DefineMaterials();
+  
+  // Define volumes
+  return DefineVolumes();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -281,38 +277,17 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
     return physWorld;
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 void NeutronHallBDetectorConstruction::ConstructSDandField()
 {
-    
-    
-    
-    // Neutron Scorrer
-//    G4MultiFunctionalDetector* NeutonScorrer = new G4MultiFunctionalDetector("NeutonScorrer");
-//    G4VPrimitiveScorer* primitiv1 = new G4PSEnergyDeposit("edep");
-//    NeutonScorrer -> RegisterPrimitive(primitiv1);
-//    SetSensitiveDetector("DetectorLV" , NeutonScorrer);
-//    
-    
-    
-    
-    // Sensitive detectors
-    G4String trackerChamberSDname = "Detector/TrackerChamberSD";
-    NeutronHallBTrackerSD* aTrackerSD = new NeutronHallBTrackerSD(trackerChamberSDname,"TrackerHitsCollection");
-    SetSensitiveDetector("DetectorLV" , aTrackerSD , true);
-
-    
-    
-    
-    G4ThreeVector fieldValue = G4ThreeVector();
-    
-    // Register the field messenger for deleting
-    
-    G4AutoDelete::Register(fMagFieldMessenger);
+  // Sensitive detectors
+  G4String nameSD = "BAND";
+  NeutronHallBTrackerSD* bandSD = new NeutronHallBTrackerSD(treePtr,nameSD);
+  SetSensitiveDetector("DetectorLV" , bandSD , true);
+  
+  // Electro-magnetic fields (currently zero)  
+  G4ThreeVector fieldValue = G4ThreeVector();
+  G4AutoDelete::Register(fMagFieldMessenger);
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void NeutronHallBDetectorConstruction::SetTargetMaterial(G4String materialName)
 {
@@ -332,8 +307,6 @@ void NeutronHallBDetectorConstruction::SetTargetMaterial(G4String materialName)
         }
     }
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void NeutronHallBDetectorConstruction::SetChamberMaterial(G4String materialName)
 {
@@ -357,16 +330,13 @@ void NeutronHallBDetectorConstruction::SetChamberMaterial(G4String materialName)
     }
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void NeutronHallBDetectorConstruction::SetMaxStep(G4double maxStep)
 {
-    if ((fStepLimit)&&(maxStep>0.)) fStepLimit->SetMaxAllowedStep(maxStep);
+  if ((fStepLimit)&&(maxStep>0.)) fStepLimit->SetMaxAllowedStep(maxStep);
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void NeutronHallBDetectorConstruction::SetCheckOverlaps(G4bool checkOverlaps)
 {
-    fCheckOverlaps = checkOverlaps;
+  fCheckOverlaps = checkOverlaps;
 }  

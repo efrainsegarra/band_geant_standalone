@@ -16,36 +16,51 @@
 #include "G4UnitsTable.hh"
 #include <iomanip>
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+#include "TTree.h"
 
-NeutronHallBTrackerSD::NeutronHallBTrackerSD(const G4String& name, const G4String& hitsCollectionName) 
- : G4VSensitiveDetector(name),
-   fHitsCollection(NULL)
+#include "prop_tree.h"
+
+using namespace CLHEP;
+
+NeutronHallBTrackerSD::NeutronHallBTrackerSD(void * treePtr, const G4String& name) : G4VSensitiveDetector(name)
 {
-  collectionName.insert(hitsCollectionName);
+  hitList = new BAND_Event;
+  outTree = (TTree*) treePtr;
+  outTree->Branch(name.data(),&hitList);
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 NeutronHallBTrackerSD::~NeutronHallBTrackerSD() 
 {}
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 void NeutronHallBTrackerSD::Initialize(G4HCofThisEvent* hce)
 {
-  // Create hits collection
-  fHitsCollection = new NeutronHallBTrackerHitsCollection(SensitiveDetectorName, collectionName[0]);
-
-  // Add this collection in hce
-  G4int hcID = G4SDManager::GetSDMpointer()->GetCollectionID(collectionName[0]);
-  hce->AddHitsCollection( hcID, fHitsCollection ); 
+  // Clear the last event
+  hitList->hits.clear();
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 G4bool NeutronHallBTrackerSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
-{  
+{ 
+  // create a new band hit and add to the vector!
+  BAND_Hit newHit;
+  
+  // Hit position
+  G4ThreeVector worldPos = aStep->GetPreStepPoint()->GetPosition();
+  newHit.pos = TVector3(worldPos.x() / mm,worldPos.y() / mm,worldPos.z() / mm);
+
+  // Time
+  newHit.time = aStep->GetPreStepPoint()->GetGlobalTime() / ns;
+
+  // Energy deposition
+  newHit.E_dep = aStep->GetTotalEnergyDeposit()/MeV;
+  
+  // Track ID
+  newHit.track = aStep->GetTrack()->GetTrackID();
+
+  // push the hit into the vector
+  hitList->hits.push_back(newHit);
+
+  /*
+  // Stuff that Erez was doing that is not useful.
     NeutronHallBTrackerHit* newHit = new NeutronHallBTrackerHit();
     G4int Track_ID          = aStep ->  GetTrack() ->  GetTrackID();
     G4String particle_Name  = aStep ->  GetTrack() ->  GetDefinition() ->  GetParticleName();
@@ -72,8 +87,7 @@ G4bool NeutronHallBTrackerSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
     newHit -> SetTheta              (Theta);
     newHit -> SetHitTime            (HitTime);
     fHitsCollection -> insert( newHit );
-    
-    
+        
     
 //    G4double dose = aStep -> GetTotalEnergyDeposit()/MassTarget;
 //    Run->AddDose(dose);
@@ -83,19 +97,16 @@ G4bool NeutronHallBTrackerSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
         return false;
     else
         return true;
-    
-}
+  */
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+  return true;
+}
 
 void NeutronHallBTrackerSD::EndOfEvent(G4HCofThisEvent*)
 {
-  if ( verboseLevel>1 ) { 
-     G4int nofHits = fHitsCollection->entries();
-     G4cout << "\n-------->Hits Collection: in this event they are " << nofHits
-            << " hits in the tracker chambers: " << G4endl;
-     for ( G4int i=0; i<nofHits; i++ ) (*fHitsCollection)[i]->Print();
-  }
+  if ( verboseLevel>1 )
+    { 
+      G4int nofHits = hitList->hits.size();
+      G4cout << "\n-------->Hits Collection: in this event they were " << nofHits << G4endl;
+    }
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -13,7 +13,7 @@ class BAND_Hit : public TObject
   TVector3 pos; // in mm
   double time; // in ns
   double E_dep; // in MeV
-  double track;
+  int track;
   
   ClassDef(BAND_Hit,1);
 };

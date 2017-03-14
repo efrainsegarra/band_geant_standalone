@@ -29,5 +29,5 @@ void NeutronHallBActionInitialization::Build() const
 {
   SetUserAction(new NeutronHallBPrimaryGeneratorAction(inTreePtr));
   SetUserAction(new NeutronHallBRunAction);
-  SetUserAction(new NeutronHallBEventAction);
+  SetUserAction(new NeutronHallBEventAction(outTreePtr));
 }  

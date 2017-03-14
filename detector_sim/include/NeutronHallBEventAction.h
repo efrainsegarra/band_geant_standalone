@@ -12,19 +12,22 @@
 
 #include "globals.hh"
 
-/// Event action class
+class TTree;
 
+/// Event action class
 class NeutronHallBEventAction : public G4UserEventAction
 {
-  public:
-    TRandom2 * rand2;
-    NeutronHallBEventAction();
-    virtual ~NeutronHallBEventAction();
+ public:
+  TRandom2 * rand2;
+  NeutronHallBEventAction(void * treePtr);
+  virtual ~NeutronHallBEventAction();
+  
+  virtual void  BeginOfEventAction(const G4Event* );
+  virtual void    EndOfEventAction(const G4Event* );
 
-    virtual void  BeginOfEventAction(const G4Event* );
-    virtual void    EndOfEventAction(const G4Event* );
+ private:
+  TTree * outTree;
 };
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #endif

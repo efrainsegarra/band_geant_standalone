@@ -24,42 +24,43 @@ class NeutronHallBDetectorMessenger;
 
 class NeutronHallBDetectorConstruction : public G4VUserDetectorConstruction
 {
-  public:
-    NeutronHallBDetectorConstruction();
-    virtual ~NeutronHallBDetectorConstruction();
-
-  public:
-    virtual G4VPhysicalVolume* Construct();
-    virtual void ConstructSDandField();
-
-    // Set methods
-    void SetTargetMaterial (G4String );
-    void SetChamberMaterial(G4String );
-    void SetMaxStep (G4double );
-    void SetCheckOverlaps(G4bool );
-
-  private:
-    // methods
-    void DefineMaterials();
-    G4VPhysicalVolume* DefineVolumes();
+ public:
+  NeutronHallBDetectorConstruction(void * t);
+  virtual ~NeutronHallBDetectorConstruction();
   
-    // data members
-    G4int fNbOfChambers;
-
-    G4LogicalVolume*   fLogicTarget;     // pointer to the logical Target
-    G4LogicalVolume**  fLogicChamber;    // pointer to the logical Chamber
-
-    G4Material*        fTargetMaterial;  // pointer to the target  material
-    G4Material*        fChamberMaterial; // pointer to the chamber material
-
-    G4UserLimits* fStepLimit;            // pointer to user step limits
-
-    NeutronHallBDetectorMessenger*  fMessenger;   // messenger
-
-    static G4ThreadLocal G4GlobalMagFieldMessenger*  fMagFieldMessenger; 
-                                         // magnetic field messenger
-    
-    G4bool  fCheckOverlaps; // option to activate checking of volumes overlaps 
+ public:
+  virtual G4VPhysicalVolume* Construct();
+  virtual void ConstructSDandField();
+  
+  // Set methods
+  void SetTargetMaterial (G4String );
+  void SetChamberMaterial(G4String );
+  void SetMaxStep (G4double );
+  void SetCheckOverlaps(G4bool );
+  
+ private:
+  // methods
+  void DefineMaterials();
+  G4VPhysicalVolume* DefineVolumes();
+  
+  // data members
+  void * treePtr;
+  G4int fNbOfChambers;
+  
+  G4LogicalVolume*   fLogicTarget;     // pointer to the logical Target
+  G4LogicalVolume**  fLogicChamber;    // pointer to the logical Chamber
+  
+  G4Material*        fTargetMaterial;  // pointer to the target  material
+  G4Material*        fChamberMaterial; // pointer to the chamber material
+  
+  G4UserLimits* fStepLimit;            // pointer to user step limits
+  
+  NeutronHallBDetectorMessenger*  fMessenger;   // messenger
+  
+  static G4ThreadLocal G4GlobalMagFieldMessenger*  fMagFieldMessenger; 
+  // magnetic field messenger
+  
+  G4bool  fCheckOverlaps; // option to activate checking of volumes overlaps 
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -27,55 +27,49 @@
 #include "G4HCofThisEvent.hh"
 #include "G4THitsMap.hh"
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+#include "TTree.h"
 
-NeutronHallBEventAction::NeutronHallBEventAction()
-: G4UserEventAction()
-{    rand2  = new TRandom2();
+NeutronHallBEventAction::NeutronHallBEventAction(void * treePtr)
+  : G4UserEventAction()
+{
+  rand2  = new TRandom2();
+  outTree = (TTree*) treePtr;
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 NeutronHallBEventAction::~NeutronHallBEventAction()
 {}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void NeutronHallBEventAction::BeginOfEventAction(const G4Event*){
 //    G4cout << "starting event...." << G4endl;
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 void NeutronHallBEventAction::EndOfEventAction(const G4Event* event)
 {
-//    G4UnitDefinition ( "km/hour" , "km/h", "Speed", CLHEP::km/(3600*CLHEP::s) );
-//    G4UnitDefinition ( "meter/ns", "m/ns", "Speed", CLHEP::m/CLHEP::ns );
-
-    // get number of stored trajectories
+  outTree->Fill();
+  /*
+  // get number of stored trajectories
+  G4TrajectoryContainer* trajectoryContainer = event->GetTrajectoryContainer();
+  G4int n_trajectories = 0;
+  if (trajectoryContainer) n_trajectories = trajectoryContainer->entries();
     
-    G4TrajectoryContainer* trajectoryContainer = event->GetTrajectoryContainer();
-    G4int n_trajectories = 0;
-    if (trajectoryContainer) n_trajectories = trajectoryContainer->entries();
-    
-    // periodic printing
-    G4int eventID = event -> GetEventID();
-    bool PrintData = (eventID%100 == 0)? true : false;
-    //    PrintData = false;
-    
-    //generated event
-    G4double rInnerSection      = 3304*tan(17.3*(CLHEP::twopi/360.));   //10.5 + 6.8 = 17.3 is the angle of the inner section
+  // periodic printing
+  G4int eventID = event -> GetEventID();
+  //bool PrintData = (eventID%100 == 0)? true : false;
+  PrintData = false;
+  
+  //generated event
+  G4double rInnerSection      = 3304*tan(17.3*(CLHEP::twopi/360.));   //10.5 + 6.8 = 17.3 is the angle of the inner section
 
-    G4PrimaryParticle * primary_particle = event -> GetPrimaryVertex() -> GetPrimary();
-    G4int       particle_ID_g       = primary_particle -> GetPDGcode();
-    G4double    mass                = primary_particle -> GetMass ();
-    G4double    p_g                 = (primary_particle -> GetMomentum()).mag();
-    G4double    E_kin_g             = mass*( sqrt(p_g*p_g + mass*mass)/mass - 1 );
-    G4double    x_g                 = event -> GetPrimaryVertex() -> GetX0();
-    G4double    y_g                 = event -> GetPrimaryVertex() -> GetY0();
-    G4double    theta_g             = ((primary_particle -> GetMomentum()).theta())*(360./CLHEP::twopi);
-    G4int       Sector_g            = ( (theta_g > 10.5) && (theta_g < 17.3) ) ? 1 : 2 ;  //10.5+6.8=17.3 is the angle of the inner section
-
+  G4PrimaryParticle * primary_particle = event -> GetPrimaryVertex() -> GetPrimary();
+  G4int       particle_ID_g       = primary_particle -> GetPDGcode();
+  G4double    mass                = primary_particle -> GetMass ();
+  G4double    p_g                 = (primary_particle -> GetMomentum()).mag();
+  G4double    E_kin_g             = mass*( sqrt(p_g*p_g + mass*mass)/mass - 1 );
+  G4double    x_g                 = event -> GetPrimaryVertex() -> GetX0();
+  G4double    y_g                 = event -> GetPrimaryVertex() -> GetY0();
+  G4double    theta_g             = ((primary_particle -> GetMomentum()).theta())*(360./CLHEP::twopi);
+  G4int       Sector_g            = ( (theta_g > 10.5) && (theta_g < 17.3) ) ? 1 : 2 ;  //10.5+6.8=17.3 is the angle of the inner section
+  
     
     //event after the wall
     G4VHitsCollection* hc           = event->GetHCofThisEvent()->GetHC(0);
@@ -201,7 +195,6 @@ void NeutronHallBEventAction::EndOfEventAction(const G4Event* event)
     man -> FillNtupleDColumn( 19 , p_reconstructed/CLHEP::MeV  );
     man -> FillNtupleDColumn( 20 , delta_p  );
     man -> AddNtupleRow();
-
+  */
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
