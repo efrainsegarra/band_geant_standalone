@@ -30,3 +30,6 @@ target_link_libraries(inclusive_CLAS12 ${ROOT_LIBRARIES} Foam wim_lib deuteron_d
 
 add_executable(randoms_CLAS12 randoms_CLAS12.cpp )
 target_link_libraries(randoms_CLAS12 ${ROOT_LIBRARIES} deuteron_dis_tree)
+
+add_executable(isotropic_CLAS12 isotropic_CLAS12.cpp )
+target_link_libraries(isotropic_CLAS12 ${ROOT_LIBRARIES} deuteron_dis_tree)

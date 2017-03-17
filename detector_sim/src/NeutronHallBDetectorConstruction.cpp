@@ -10,13 +10,18 @@
 
 #include "G4Material.hh"
 #include "G4MaterialPropertiesTable.hh"
-#include "G4NistManager.hh"
+
+#include "G4VisAttributes.hh"
+#include "G4Colour.hh"
+#include "G4UnitsTable.hh"
 
 #include "G4Sphere.hh"
 #include "G4Box.hh"
 #include "G4Tubs.hh"
-#include "G4LogicalVolume.hh"
-#include "G4PVPlacement.hh"
+#include "G4Cons.hh"
+#include "G4Orb.hh"
+#include "G4Trd.hh"
+
 #include "G4GlobalMagFieldMessenger.hh"
 #include "G4AutoDelete.hh"
 
@@ -25,16 +30,20 @@
 
 #include "G4UserLimits.hh"
 
-#include "G4VisAttributes.hh"
-#include "G4Colour.hh"
-#include "G4UnitsTable.hh"
+#include "G4LogicalVolume.hh"
+#include "G4PVPlacement.hh"
 
-#include "G4SystemOfUnits.hh"
+#include "G4RunManager.hh"
+#include "G4NistManager.hh"
 
 #include "G4MultiFunctionalDetector.hh"
 #include "G4VPrimitiveScorer.hh"
 #include "G4PSEnergyDeposit.hh"
 #include "G4PSDoseDeposit.hh"
+
+#include "G4SystemOfUnits.hh"
+
+
 
 G4ThreadLocal G4GlobalMagFieldMessenger* NeutronHallBDetectorConstruction::fMagFieldMessenger = 0;
 
@@ -113,165 +122,513 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
     G4Material* LeadWall_mat    = nist->FindOrBuildMaterial("G4_Pb");
     G4Material* BAND_mat        = nist->FindOrBuildMaterial("G4_PLASTIC_SC_VINYLTOLUENE");
     
-    bool DoTarget           = false;
-    bool DoSSTube           = true;
-    bool DoElectronicBoxes  = true;
-    bool DoLeadWall         = true;
-    bool DoBandAsFullCircle = true;
-    bool DoBandAsProposed   = !DoBandAsFullCircle;
-    
-    
-    //--------- World --------------//
-    G4double worldXYZ =  8000.*cm;
-    G4Box* solidWorld = new G4Box("World", 0.5*worldXYZ, 0.5*worldXYZ, 0.5*worldXYZ );
-    G4LogicalVolume* logicWorld = new G4LogicalVolume(solidWorld, vacuum, "World");
-    G4VPhysicalVolume* physWorld = new G4PVPlacement(0, G4ThreeVector(), logicWorld,  "World", 0,  false,  0, fCheckOverlaps);
-    
-    
-    //--------- Target --------------//
-    if (DoTarget){
-        G4Sphere* solid_target = new G4Sphere ("target", 0 , 1.*cm , 0., CLHEP::twopi, 0., CLHEP::twopi/2.);
-        G4LogicalVolume* logic_target = new G4LogicalVolume(solid_target, default_mat , "target");
-        new G4PVPlacement( 0, G4ThreeVector(),  logic_target, "target", logicWorld, false,  0,  fCheckOverlaps);
-        logic_target -> SetVisAttributes (G4Colour( 0.65 , 0.82 , 0.77 ));
-    }
-    
-    //--------- Stainless-Steel --------------//
-    if (DoSSTube){
-        G4double length;
-        G4double shift;
-        //Numbers come from counting pixels in Hall-B sketches
-        
-        length = 658.*mm;
-        G4Tubs* solid_SSTube_P1 = new G4Tubs("SSTube_P1", 210.*mm , 213.*mm, length , 0., CLHEP::twopi);
-        G4LogicalVolume* logic_SSTube_P1 = new G4LogicalVolume(solid_SSTube_P1, SS_mat , "SSTube_P1");
-        new G4PVPlacement( 0, G4ThreeVector(),  logic_SSTube_P1, "SSTube_P1", logicWorld, false,  0,  fCheckOverlaps);
-        logic_SSTube_P1 -> SetVisAttributes (G4Colour( 0.99 , 0.88 , 0.66 ));
-        
-        if (DoElectronicBoxes){
-        // 1 cm plastic coating around the pipe to represent the cables going to the electronic box
-        G4Tubs* solid_SSTube_P1_coating = new G4Tubs("SSTube_P1_coating", 214.*mm , 224.*mm, length , 0., CLHEP::twopi);
-        G4LogicalVolume* logic_SSTube_P1_coating = new G4LogicalVolume(solid_SSTube_P1_coating, BAND_mat , "SSTube_P1_coating");
-        new G4PVPlacement( 0, G4ThreeVector(),  logic_SSTube_P1_coating, "SSTube_P1_coating", logicWorld, false,  0,  fCheckOverlaps);
-        logic_SSTube_P1_coating -> SetVisAttributes (G4Colour( 0.75 , 0.6 , 0.75 ));
-        }
-        
-        
-        
-        length = 24.*mm;
-        shift = 658.*mm;
-        G4Tubs* solid_SSTube_Connector1 = new G4Tubs("SSTube_Connector1", 213.*mm , 240.*mm, length , 0., CLHEP::twopi);
-        G4LogicalVolume* logic_SSTube_Connector1 = new G4LogicalVolume(solid_SSTube_Connector1, SS_mat , "SSTube_Connector1");
-        new G4PVPlacement( 0, G4ThreeVector(0,0,length+shift),  logic_SSTube_Connector1, "SSTube_Connector1", logicWorld, false,  0,  fCheckOverlaps);
-        logic_SSTube_Connector1 -> SetVisAttributes (G4Colour( 0.99 , 0.88 , 0.66 ));
+    G4double length;
+    G4double shift;
 
-        if (DoElectronicBoxes){
-        // 1 cm plastic coating around the pipe to represent the cables going to the electronic box
-        G4Tubs* solid_SSTube_Connector1_coating = new G4Tubs("SSTube_Connector1_coating", 241.*mm , 251.*mm, length , 0., CLHEP::twopi);
-        G4LogicalVolume* logic_SSTube_Connector1_coating = new G4LogicalVolume(solid_SSTube_Connector1_coating, BAND_mat , "SSTube_Connector1_coating");
-        new G4PVPlacement( 0, G4ThreeVector(0,0,length+shift),  logic_SSTube_Connector1_coating, "SSTube_Connector1_coating", logicWorld, false,  0,  fCheckOverlaps);
-        logic_SSTube_Connector1_coating -> SetVisAttributes (G4Colour( 0.75 , 0.6 , 0.75 ));
-        }
-        
-        
-        
-        
-        length = 34.*mm;
-        shift = 658.*mm;
-        G4Tubs* solid_SSTube_Connector2 = new G4Tubs("SSTube_Connector2", 240.*mm , 258*mm, length , 0., CLHEP::twopi);
-        G4LogicalVolume* logic_SSTube_Connector2 = new G4LogicalVolume(solid_SSTube_Connector2, SS_mat , "SSTube_Connector2");
-        new G4PVPlacement( 0, G4ThreeVector(0,0,length+shift),  logic_SSTube_Connector2, "SSTube_Connector2", logicWorld, false,  0,  fCheckOverlaps);
-        logic_SSTube_Connector2 -> SetVisAttributes (G4Colour( 0.99 , 0.88 , 0.66 ));
-        
-        if (DoElectronicBoxes){
-            // 1 cm plastic coating around the pipe to represent the cables going to the electronic box
-            G4Tubs* solid_SSTube_Connector2_coating = new G4Tubs("SSTube_Connector2_coating", 259.*mm , 269*mm, length , 0., CLHEP::twopi);
-            G4LogicalVolume* logic_SSTube_Connector2_coating = new G4LogicalVolume(solid_SSTube_Connector2_coating, BAND_mat , "SSTube_Connector2_coating");
-            new G4PVPlacement( 0, G4ThreeVector(0,0,length+shift),  logic_SSTube_Connector2_coating, "SSTube_Connector2_coating", logicWorld, false,  0,  fCheckOverlaps);
-            logic_SSTube_Connector2_coating -> SetVisAttributes (G4Colour( 0.75 , 0.6 , 0.75 ));
-        }
-        
-        
-        length = 1000.*mm;
-        shift = 682.*mm;
-        G4Tubs* solid_SSTube_P2 = new G4Tubs("SSTube_P2", 237.*mm , 240*mm, length , 0., CLHEP::twopi);
-        G4LogicalVolume* logic_SSTube_P2 = new G4LogicalVolume(solid_SSTube_P2, SS_mat , "SSTube_P2");
-        new G4PVPlacement( 0, G4ThreeVector(0,0,length+shift),  logic_SSTube_P2, "SSTube_P2", logicWorld, false,  0,  fCheckOverlaps);
-        logic_SSTube_P2 -> SetVisAttributes (G4Colour( 0.99 , 0.88 , 0.66 ));
-        
-        if (DoElectronicBoxes){
-            // 1 cm plastic coating around the pipe to represent the cables going to the electronic box
-            
-            G4Tubs* solid_SSTube_P2_coating = new G4Tubs("SSTube_P2_coating", 241.*mm , 251*mm, length , 0., CLHEP::twopi);
-            G4LogicalVolume* logic_SSTube_P2_coating = new G4LogicalVolume(solid_SSTube_P2_coating, BAND_mat , "SSTube_P2_coating");
-            new G4PVPlacement( 0, G4ThreeVector(0,0,length+shift),  logic_SSTube_P2_coating, "SSTube_P2", logicWorld, false,  0,  fCheckOverlaps);
-            logic_SSTube_P2_coating -> SetVisAttributes (G4Colour( 0.75 , 0.6 , 0.75 ));
-        }
-    
-    }
-    
-        //--------- electronics boxes --------------//
-    if (DoElectronicBoxes){
-    
-        G4double BoxLength = 20*cm , BoxWidth = 25*cm , BoxThickness = 10*cm;
-        G4double BoxZ = 150*cm , BoxDisFromAxis = 240.*mm + BoxWidth/2. + 5*mm , BoxX , BoxY  , BoxAngle;
-        const int NBoxes = 6;
-        G4Box             * SolidElBox[NBoxes];
-        G4LogicalVolume   * LogicElBox[NBoxes];
-        G4VPhysicalVolume * PhysElBox[NBoxes];
-        G4ThreeVector       posElBox[NBoxes];
-        G4VisAttributes   * ElBoxVisAtt = new G4VisAttributes( true , G4Colour( 0.75 , 0.6 , 0.75 ));
-        G4RotationMatrix    rot_mat;
-        G4Transform3D       transform;
-        
-        for (int i_box = 0; i_box < NBoxes; i_box++) {
-            
-            BoxAngle            = i_box * 60 * deg;
-            BoxX                = BoxDisFromAxis * std::cos(BoxAngle);
-            BoxY                = BoxDisFromAxis * std::sin(BoxAngle);
-            rot_mat = G4RotationMatrix();
-            rot_mat.rotateZ( BoxAngle );
-            posElBox[i_box]     = G4ThreeVector( BoxX , BoxY , BoxZ);
-            transform           = G4Transform3D( rot_mat , posElBox[i_box] );
+    // ------------------ Defining World ---------------- //
+    G4double world_sizeX = 5000.*cm;
+    G4double world_sizeY = 5000.*cm;
+    G4double world_sizeZ = 5000.*cm;
 
-            SolidElBox[i_box]   = new G4Box("ElBox" , BoxLength/2. , BoxWidth/2. , BoxThickness/2.);
-            LogicElBox[i_box]   = new G4LogicalVolume(SolidElBox[i_box], BAND_mat, "ElBoxLV" );
-            LogicElBox[i_box]   -> SetVisAttributes (ElBoxVisAtt);
-            PhysElBox[i_box]    = new G4PVPlacement(transform, LogicElBox[i_box],  "ElBox" , logicWorld,  false,  0, fCheckOverlaps);
-        }
-        
-    
-    }
-    
-   
-    G4double RinDetector,  RoutDetector;
+  
+    G4Box* solidWorld =    
+        new G4Box("World",              // its name
+                  0.5*world_sizeX, 
+                  0.5*world_sizeY, 
+                  0.5*world_sizeZ);     // its size
+      
+    G4LogicalVolume* logicWorld =                         
+        new G4LogicalVolume(solidWorld,          // its solid
+                            vacuum,           // its world material
+                            "World");            // its name
+                                   
+    G4VPhysicalVolume* physWorld = 
+        new G4PVPlacement(0,                     // no rotation
+                          G4ThreeVector(),       // at (0,0,0)
+                          logicWorld,            // its logical volume
+                          "World",               // its name
+                          0,                     // its mother  volume
+                          false,                 // no boolean operation
+                          0,                     // copy number
+                          fCheckOverlaps);        // overlaps checking
+  // ------------------ End Defining World ---------------- //
+
+  // ------------------ Defining Target - in World ---------------- //
+    G4double targetRadius = 10.*mm;
+
+    G4Sphere* solid_target = 
+        new G4Sphere("target",                    // name
+                      0.,                         // inner radius 
+                      targetRadius,               // outer radius
+                      0.,                         // starting phi angle
+                      CLHEP::twopi,               // ending phi angle
+                      0.,                         // starting theta angle
+                      CLHEP::twopi/2.);           // ending theta angle
+
+    G4LogicalVolume* logic_target = 
+        new G4LogicalVolume(solid_target,         // its solid
+                            default_mat,           // its material
+                            "target");            // its name
+
+        new G4PVPlacement(0,                      // no rotation
+                          G4ThreeVector(),          // at 0,0,0
+                          logic_target,             // its logical volume
+                          "target",                 // its name
+                          logicWorld,               // its mother volume
+                          false,                    // no boolean operation
+                          0,                        // copy number
+                          fCheckOverlaps);           // overlap checkign
+
+    logic_target -> SetVisAttributes (G4Colour::G4Colour( 0.65 , 0.82 , 0.77 ));
+  // ------------------ End Defining Target ---------------- //
+
+  // ------------------ Defining BAND Detector - in World ---------------- //
+    G4double RinDetector = 612.*mm;
+    G4double RoutDetector = 1292.*mm;
     G4double BANDThickness = 24.*cm;
-    if (DoBandAsFullCircle){
-        //--------- Full circle Detector for scattering angle --------------//
-        RinDetector = 0.*cm;  RoutDetector = 2.*m;
-    }
-    if (DoBandAsProposed){
-        //--------- BAND proposed Detector ---------------------------------//
-        RinDetector = 612.*mm;  RoutDetector = 1292.;
-    }
-    G4Tubs* solidDetector = new G4Tubs("Detector", RinDetector , RoutDetector , BANDThickness/2. , 0., CLHEP::twopi);
-    G4LogicalVolume* logicDetector = new G4LogicalVolume(solidDetector,BAND_mat,"DetectorLV");
-    new G4PVPlacement(0,G4ThreeVector(0,0,3304*mm+BANDThickness/2.),logicDetector, "Detector",logicWorld, false,  0, fCheckOverlaps);
+    G4double BAND_Z_coord = -(3304*mm+BANDThickness/2.);
+    G4Tubs* solidDetector = 
+        new G4Tubs("Detector",                    // name
+                    RinDetector,                  // inner radius
+                    RoutDetector,                 // outer radius
+                    BANDThickness/2.,             // z extent
+                    0.,                           // starting phi angle
+                    CLHEP::twopi/2.);             // ending phi angle
+
+    G4LogicalVolume* logicDetector =            
+        new G4LogicalVolume(solidDetector,        // its solid
+                            BAND_mat,             // material
+                            "DetectorLV");        // name
+
+        new G4PVPlacement(0,                                   // no rotation
+                          G4ThreeVector(0,0,BAND_Z_coord),     // (0,0,z)
+                          logicDetector,                       // logical volume
+                          "Detector",                          // name
+                          logicWorld,                          // mother volume
+                          false,                               // no boolean operation
+                          0,                                   // copy number
+                          fCheckOverlaps);                      // overlap checking
+
     G4Colour Detec_Color( 0.75 , 0.6 , 0.75 );
     G4VisAttributes* DetecVisAttributes = new G4VisAttributes( true , Detec_Color );
     logicDetector -> SetVisAttributes(DetecVisAttributes);
-    
-    
-    if (DoLeadWall){
-        //--------- Full circle Detector for scattering angle--------------//
-        G4Tubs* solidLeadWall = new G4Tubs("LeadWall", RinDetector , RoutDetector , 3.*cm/2. , 0., CLHEP::twopi);
-        G4LogicalVolume* logicLeadWall = new G4LogicalVolume(solidLeadWall,LeadWall_mat,"LeadWall");
-        new G4PVPlacement(0,G4ThreeVector(0,0,3264*mm),logicLeadWall, "LeadWall",logicWorld, false,  0, fCheckOverlaps);
-        G4Colour LeadWall_Color( 0.25 , 0.38 , 0.25 );
-        G4VisAttributes* LeadWallVisAttributes = new G4VisAttributes( true , LeadWall_Color );
-        logicLeadWall -> SetVisAttributes(LeadWallVisAttributes);
-        
+  // ------------------ END Defining BAND Detector  ---------------- //
+
+// ------------------ Defining Lead Wall  - in World ---------------- //
+    G4double lead_Z_coord = -3264*mm;
+
+    G4Tubs* solidLeadWall = 
+      new G4Tubs("LeadWall",                                // name
+                  RinDetector,                              // inner radius
+                  RoutDetector,                             // outer raidus
+                  3.*cm/2.,                                 // z extent
+                  0.,                                       // starting phi angle
+                  CLHEP::twopi/2.);                            // ending phi angle
+
+    G4LogicalVolume* logicLeadWall = 
+      new G4LogicalVolume(solidLeadWall,                    // its solid
+                          LeadWall_mat,                     // material
+                          "LeadWall");                      // its name
+
+      new G4PVPlacement(0,                                  // no rotation
+                        G4ThreeVector(0, 0,lead_Z_coord),    // its (0,0,z)
+                        logicLeadWall,                      // logical volume
+                        "LeadWall",                         // name
+                        logicWorld,                         // mother volume
+                        false,                              // no boolean operation
+                        0,                                  // copy number
+                        fCheckOverlaps);                     // overlap checking
+
+    G4Colour LeadWall_Color( 0.25 , 0.38 , 0.25 );
+    G4VisAttributes* LeadWallVisAttributes = new G4VisAttributes( true , LeadWall_Color );
+    logicLeadWall -> SetVisAttributes(LeadWallVisAttributes);
+    // ------------------ END Defining Lead Wall  - in World ---------------- //
+
+    // ------------------ Defining Solenoid ---------------- //
+    length = 480.*mm; // length of the first tube pipe
+
+    G4Tubs* solid_solenoid =     
+        new G4Tubs("Solenoid",           // name
+                    476.*mm ,             // inner radius
+                    1200.*mm,              // outer radius
+                    length ,              // z-extent
+                    0.,                   // starting phi
+                    CLHEP::twopi);        // ending phi
+
+    G4LogicalVolume* logic_solenoid =      
+        new G4LogicalVolume(solid_solenoid,  // solid logic volume
+                            BAND_mat,           // material
+                            "Solenoid");     // name
+  
+        new G4PVPlacement(0,                  // rotation
+                          G4ThreeVector(),    // at (0,0,0)
+                          logic_solenoid,    // logical volume
+                          "Solenoid",        // name
+                          logicWorld,         // mother volume
+                          false,              // no boolean operation
+                          0,                  // copy number
+                          fCheckOverlaps);     // checking overlap
+
+    logic_solenoid -> SetVisAttributes (G4Colour::G4Colour( 0.99 , 0.88 , 0.66 ));
+
+
+    const int NTOFs = 4;                          // Creating 6 boxes that will go around the beam line
+    G4Tubs                *SolidTOF[NTOFs];    // solid box
+    G4LogicalVolume       *LogicTOF[NTOFs];    // the logical volumes
+    G4VPhysicalVolume     *PhysTOF[NTOFs];     // the physical volume
+    G4ThreeVector         posTOF[NTOFs];       // the vector for the position of the boxes
+  
+    for (int i_tof = 0; i_tof < NTOFs; i_tof++) {
+        posTOF[i_tof]     = G4ThreeVector();             // defining position vector for box
+
+        SolidTOF[i_tof] =                                     // solid volume for each box
+            new G4Tubs("TOF",                                    // name
+                (252.+50.8*i_tof)*mm,             // inner radius
+                (252.+50.8*(i_tof+1))*mm,              // outer radius
+                length ,              // z-extent
+                0.,                   // starting phi
+                CLHEP::twopi);        // ending phi                         // thickness of box
+
+        LogicTOF[i_tof] =                                     // logical volume for each box
+            new G4LogicalVolume(SolidTOF[i_tof],                // box is solid
+                                BAND_mat,                         // material for each box
+                                "TOF" );                      // name for each logical volume box
+
+        LogicTOF[i_tof]->SetVisAttributes (G4Colour::G4Colour( 0.75+(i_tof/10.) , 0.6-(i_tof/10.) , 0.75 ));      // setting color
+      
+        PhysTOF[i_tof]=                                       // physical volume for box
+            new G4PVPlacement(0,   
+                              G4ThreeVector(),                       // rotation for each box
+                              LogicTOF[i_tof],                  // logical volume of each box
+                              "TOF",                            // name of each box
+                              logicWorld,                         // mother volume for box
+                              false,                              // no boolean operation
+                              0,                                  // copy number
+                              fCheckOverlaps);                     // checking overlap
     }
+
+    length = 1200/2.*mm;
+    shift = 480*mm;
+      // 30 degrees for 3 CND and 25 degrees for 1 TOF
+    const int slanted_TOFs = 4;                          // Creating 6 boxes that will go around the beam line
+
+    G4Cons                *Solid_slantedTOF_front[slanted_TOFs];    // solid box
+    G4LogicalVolume       *Logic_slantedTOF_front[slanted_TOFs];    // the logical volumes
+    G4VPhysicalVolume     *Phys_slantedTOF_front[slanted_TOFs];     // the physical volume
+    G4ThreeVector         pos_slantedTOF_front[slanted_TOFs];       // the vector for the position of the boxes
+
+    for (int i_tof = 0; i_tof < slanted_TOFs; i_tof++) {
+        pos_slantedTOF_front[i_tof]     = G4ThreeVector();             // defining position vector for box
+
+        if(i_tof==0){
+            Solid_slantedTOF_front[i_tof] =                                     // solid volume for each box
+                new G4Cons("slanted_TOF_front",                                    // name
+                           (560+252.)*mm,
+                           (560+252.+50.8)*mm,
+                           (252.)*mm,
+                           (252.+50.8)*mm,
+                           length ,              // z-extent
+                           0.,                   // starting phi
+                           CLHEP::twopi);        // ending phi                         // thickness of box
+        }
+        else{
+            Solid_slantedTOF_front[i_tof] =                                     // solid volume for each box
+                new G4Cons("slanted_TOF_front",                                    // name
+                           (695+252.+50.8*(i_tof))*mm,
+                           (695+252.+50.8*(i_tof+1))*mm,
+                           (252.+50.8*(i_tof))*mm,
+                           (252.+50.8*(i_tof+1))*mm,
+                           length ,              // z-extent
+                           0.,                   // starting phi
+                           CLHEP::twopi);        // ending phi                         // thickness of box
+        }
+        Logic_slantedTOF_front[i_tof] =                                     // logical volume for each box
+            new G4LogicalVolume(Solid_slantedTOF_front[i_tof],                // box is solid
+                                BAND_mat,                         // material for each box
+                                "slanted_TOF_front" );                      // name for each logical volume box
+
+        Logic_slantedTOF_front[i_tof]->SetVisAttributes(G4Colour::G4Colour( 0.75 , 0.6+(i_tof/10.) , 0.75-(i_tof/10.) ));      // setting color
+          
+        Phys_slantedTOF_front[i_tof]=                                       // physical volume for box
+            new G4PVPlacement(0,   
+                              G4ThreeVector(0,0,-1.*(shift+length)),                       // rotation for each box
+                              Logic_slantedTOF_front[i_tof],                  // logical volume of each box
+                              "slanted_TOF_front",                            // name of each box
+                              logicWorld,                         // mother volume for box
+                              false,                              // no boolean operation
+                              0,                                  // copy number
+                              fCheckOverlaps);                     // checking overlap
+    }
+    // ------------------ END Defining Solenoid  - in World ---------------- //
+
+    // ------------------ Defining SS Tubing around beam pipe ---------------- //
+    length = 658.*mm; // length of the first tube pipe
+
+    G4Tubs* solid_SSTube_P1 =     
+        new G4Tubs("SSTube_P1",           // name
+                    210.*mm ,             // inner radius
+                    213.*mm,              // outer radius
+                    length ,              // z-extent
+                    0.,                   // starting phi
+                    CLHEP::twopi);        // ending phi
+
+    G4LogicalVolume* logic_SSTube_P1 =      
+        new G4LogicalVolume(solid_SSTube_P1,  // solid logic volume
+                            SS_mat,           // material
+                            "SSTube_P1");     // name
+      
+        new G4PVPlacement(0,                  // rotation
+                          G4ThreeVector(),    // at (0,0,0)
+                          logic_SSTube_P1,    // logical volume
+                          "SSTube_P1",        // name
+                          logicWorld,         // mother volume
+                          false,              // no boolean operation
+                          0,                  // copy number
+                          fCheckOverlaps);     // checking overlap
+
+    logic_SSTube_P1 -> SetVisAttributes (G4Colour::G4Colour( 0.99 , 0.88 , 0.66 ));
+
+        //  ----------1 cm plastic coating around tub to represent cables ---------- //
+    G4Tubs* solid_SSTube_P1_coating = 
+        new G4Tubs("SSTube_P1_coating",                   // name
+                    214.*mm ,                             // inner radius -- starting at outer radius of 1st pipe
+                    224.*mm,                              // outer radius
+                    length ,                              // z extent
+                    0.,                                   // starting phi
+                    CLHEP::twopi);                        // ending phi
+
+    G4LogicalVolume* logic_SSTube_P1_coating =      
+        new G4LogicalVolume(solid_SSTube_P1_coating,      // solid logic volume
+                            BAND_mat ,                    // material
+                            "SSTube_P1_coating");         // name
+
+        new G4PVPlacement(0,                              // no rotation
+                          G4ThreeVector(),                // at (0,0,0)
+                          logic_SSTube_P1_coating,        // logical volume
+                          "SSTube_P1_coating",            // name
+                          logicWorld,                     // mother volume
+                          false,                          // no boolean operation
+                          0,                              // copy number
+                          fCheckOverlaps);                 // checking overlaps
+
+    logic_SSTube_P1_coating -> SetVisAttributes (G4Colour::G4Colour( 0.75 , 0.6 , 0.75 ));
+  
+        //  ---------- SS connector from target tube to beam tube ---------- //
+    length = 24.*mm;
+    shift = 658.*mm;
+
+    G4Tubs* solid_SSTube_Connector1 =         
+        new G4Tubs("SSTube_Connector1",     // name
+                    213.*mm ,               // inner radius
+                    240.*mm,                // outer radius
+                    length ,                // z extent
+                    0.,                     // starting phi
+                    CLHEP::twopi);          // ending phi
+
+    G4LogicalVolume* logic_SSTube_Connector1 = 
+        new G4LogicalVolume(solid_SSTube_Connector1,    // solid object
+                            SS_mat ,                    // material
+                            "SSTube_Connector1");       // name
+
+        new G4PVPlacement(0,                                    // no rotation
+                          G4ThreeVector(0,0,-(length+shift)),      // at (x,y,z)
+                          logic_SSTube_Connector1,              // logical volume
+                          "SSTube_Connector1",                  // name
+                          logicWorld,                           // mother volume
+                          false,                                // boolean operation  
+                          0,                                    // copy number
+                          fCheckOverlaps);                       // checking overlaps
+    
+    logic_SSTube_Connector1 -> SetVisAttributes (G4Colour::G4Colour( 0.99 , 0.88 , 0.66 ));
+  
+      //  ---------- SS connector coating to represent cables ---------- //
+    G4Tubs* solid_SSTube_Connector1_coating = 
+        new G4Tubs("SSTube_Connector1_coating", 
+                   241.*mm, 
+                   251.*mm, 
+                   length, 
+                   0.,
+                   CLHEP::twopi);
+
+    G4LogicalVolume* logic_SSTube_Connector1_coating = 
+        new G4LogicalVolume(solid_SSTube_Connector1_coating, 
+                            BAND_mat , 
+                            "SSTube_Connector1_coating");
+
+        new G4PVPlacement(0, 
+                          G4ThreeVector(0,0,-(length+shift)),
+                          logic_SSTube_Connector1_coating,
+                          "SSTube_Connector1_coating",
+                          logicWorld,
+                          false,
+                          0,
+                          fCheckOverlaps);
+
+    logic_SSTube_Connector1_coating -> SetVisAttributes (G4Colour::G4Colour( 0.75 , 0.6 , 0.75 ));
+     
+  
+      //  ---------- SS connector #2 from target tube to beam tube ---------- //
+    length = 34.*mm;
+    shift = 658.*mm;
+
+    G4Tubs* solid_SSTube_Connector2 = 
+        new G4Tubs("SSTube_Connector2",
+                   240.*mm,
+                   258*mm,
+                   length,
+                   0.,
+                   CLHEP::twopi);
+
+    G4LogicalVolume* logic_SSTube_Connector2 = 
+        new G4LogicalVolume(solid_SSTube_Connector2, 
+                            SS_mat, 
+                            "SSTube_Connector2");
+
+        new G4PVPlacement(0, 
+                          G4ThreeVector(0,0,-(length+shift)),
+                          logic_SSTube_Connector2, 
+                          "SSTube_Connector2",
+                          logicWorld, 
+                          false,  
+                          0,  
+                          fCheckOverlaps);
+
+    logic_SSTube_Connector2 -> SetVisAttributes (G4Colour::G4Colour( 0.99 , 0.88 , 0.66 ));
+     
+      //  ---------- SS connector #2 coating to represent cables ---------- //
+    G4Tubs* solid_SSTube_Connector2_coating = 
+        new G4Tubs("SSTube_Connector2_coating", 
+                   259.*mm, 
+                   269*mm, 
+                   length, 
+                   0., 
+                   CLHEP::twopi);
+
+    G4LogicalVolume* logic_SSTube_Connector2_coating = 
+        new G4LogicalVolume(solid_SSTube_Connector2_coating, 
+                            BAND_mat, 
+                            "SSTube_Connector2_coating");
+
+        new G4PVPlacement(0, 
+                          G4ThreeVector(0,0,-(length+shift)),
+                          logic_SSTube_Connector2_coating, 
+                          "SSTube_Connector2_coating", 
+                          logicWorld, 
+                          false,  
+                          0,  
+                          fCheckOverlaps);
+
+    logic_SSTube_Connector2_coating -> SetVisAttributes (G4Colour::G4Colour( 0.75 , 0.6 , 0.75 ));
+              
+      //  ---------- SS tube from connector #2 to BAND detector ---------- //
+    length = 3304*mm+BANDThickness/2.*mm-1750*mm;
+    shift = 682.*mm;
+
+    G4Tubs* solid_SSTube_P2 = 
+        new G4Tubs("SSTube_P2", 
+                   237.*mm, 
+                   240*mm, 
+                   length, 
+                   0., 
+                   CLHEP::twopi);
+
+    G4LogicalVolume* logic_SSTube_P2 = 
+        new G4LogicalVolume(solid_SSTube_P2, 
+                            SS_mat, 
+                            "SSTube_P2");
+
+        new G4PVPlacement(0, 
+                          G4ThreeVector(0,0,-(length+shift)),
+                          logic_SSTube_P2, 
+                          "SSTube_P2", 
+                          logicWorld, 
+                          false,  
+                          0,  
+                          fCheckOverlaps);
+
+    logic_SSTube_P2 -> SetVisAttributes (G4Colour::G4Colour( 0.99 , 0.88 , 0.66 ));
+  
+      //  ---------- SS tube coatings from connector #2 to BAND detector ---------- //
+      
+    G4Tubs* solid_SSTube_P2_coating = 
+        new G4Tubs("SSTube_P2_coating", 
+                   241.*mm, 
+                   251*mm, 
+                   length, 
+                   0., 
+                   CLHEP::twopi);
+
+    G4LogicalVolume* logic_SSTube_P2_coating = 
+        new G4LogicalVolume(solid_SSTube_P2_coating, 
+                            BAND_mat, 
+                            "SSTube_P2_coating");
+
+        new G4PVPlacement(0, 
+                          G4ThreeVector(0,0,-(length+shift)),  
+                          logic_SSTube_P2_coating, 
+                          "SSTube_P2", 
+                          logicWorld, 
+                          false,  
+                          0,  
+                          fCheckOverlaps);
+
+    logic_SSTube_P2_coating -> SetVisAttributes (G4Colour::G4Colour( 0.75 , 0.6 , 0.75 ));
+  // ------------------ END SS Tubing around beam pipe ---------------- //
+
+
+// ------------------ Defining Electronic Boxes  - in World ---------------- //
+    G4double BoxLength = 20*cm;
+    G4double BoxWidth = 25*cm;
+    G4double BoxThickness = 10*cm;
+    G4double BoxZ = -150*cm;
+    G4double BoxDisFromAxis = 240.*mm + BoxWidth/2. + 5*mm;
+
+    G4double BoxX;
+    G4double BoxY;
+    G4double BoxAngle;
+
+    const int NBoxes = 6;                          // Creating 6 boxes that will go around the beam line
+    G4Box                 *SolidElBox[NBoxes];    // solid box
+    G4LogicalVolume       *LogicElBox[NBoxes];    // the logical volumes
+    G4VPhysicalVolume     *PhysElBox[NBoxes];     // the physical volume
+    G4ThreeVector         posElBox[NBoxes];       // the vector for the position of the boxes
+    G4VisAttributes       *ElBoxVisAtt = new G4VisAttributes( true , G4Colour::G4Colour( 0.75 , 0.6 , 0.75 ));   // setting color
+    G4RotationMatrix      rot_mat;                // rotation matrix to rotate each box
+    G4Transform3D         transform;              // the rotation that will be applied to the placement
+    
+    for (int i_box = 0; i_box < NBoxes; i_box++) {
+        BoxAngle            = i_box * 60 * deg;                               // this box's angle around beam line
+        BoxX                = BoxDisFromAxis * std::cos(BoxAngle);            // the x-placement based on angle
+        BoxY                = BoxDisFromAxis * std::sin(BoxAngle);            // the y-placement based on angle
+        rot_mat             = G4RotationMatrix();                             // initializing rotation matrix
+        rot_mat.rotateZ(BoxAngle);                                            // defining rotation matrix around z-beamLine for box
+        posElBox[i_box]     = G4ThreeVector( BoxX , BoxY , BoxZ);             // defining position vector for box
+        transform           = G4Transform3D( rot_mat , posElBox[i_box] );     // creating rotation of each box 
+
+        SolidElBox[i_box] =                                     // solid volume for each box
+            new G4Box("ElBox",                                    // name
+                     BoxLength/2.,                              // length of box
+                     BoxWidth/2.,                               // width of box
+                     BoxThickness/2.);                          // thickness of box
+
+        LogicElBox[i_box] =                                     // logical volume for each box
+            new G4LogicalVolume(SolidElBox[i_box],                // box is solid
+                              BAND_mat,                         // material for each box
+                              "ElBoxLV" );                      // name for each logical volume box
+
+        LogicElBox[i_box]->SetVisAttributes (ElBoxVisAtt);      // setting color
+        
+        PhysElBox[i_box]=                                       // physical volume for box
+            new G4PVPlacement(transform,                          // rotation for each box
+                            LogicElBox[i_box],                  // logical volume of each box
+                            "ElBox",                            // name of each box
+                            logicWorld,                         // mother volume for box
+                            false,                              // no boolean operation
+                            0,                                  // copy number
+                            fCheckOverlaps);                     // checking overlap
+    }
+  // ------------------ END Defining Electronic Boxes  ---------------- //
+    
     
     // Always return the physical world
     return physWorld;

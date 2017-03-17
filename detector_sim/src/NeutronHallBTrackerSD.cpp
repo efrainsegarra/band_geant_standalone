@@ -41,14 +41,21 @@ void NeutronHallBTrackerSD::Initialize(G4HCofThisEvent* hce)
 G4bool NeutronHallBTrackerSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
 { 
   // create a new band hit and add to the vector!
+  if (aStep->GetTotalEnergyDeposit() < 1*eV){
+    return false;
+  }
+  // asks only if the particle in BAND is a neutron
+  if (aStep->GetTrack()->GetDefinition()->GetPDGEncoding() != 2112){
+    return false;
+  }
   BAND_Hit newHit;
-  
+
   // Hit position
-  G4ThreeVector worldPos = aStep->GetPreStepPoint()->GetPosition();
+  G4ThreeVector worldPos = aStep->GetPostStepPoint()->GetPosition();
   newHit.pos = TVector3(worldPos.x() / mm,worldPos.y() / mm,worldPos.z() / mm);
 
   // Time
-  newHit.time = aStep->GetPreStepPoint()->GetGlobalTime() / ns;
+  newHit.time = aStep->GetPostStepPoint()->GetGlobalTime() / ns;
 
   // Energy deposition
   newHit.E_dep = aStep->GetTotalEnergyDeposit()/MeV;
