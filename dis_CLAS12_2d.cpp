@@ -14,6 +14,7 @@ using namespace std;
 #include "constants.h"
 #include "deuteronwf.h"
 #include "crossdis.h"
+#include "gen_tree.h"
 
 // Settings for cross section: 
 double sigmainput=40.;          //sigma parameter in rescattering amplitude [mb], default value
@@ -80,13 +81,8 @@ int main(int argc, char *argv[])
   TTree * outputTree = new TTree("MCout","Generator Output");
   
   // Initialize the branches
-  double mom_e[3], mom_r[3];
-  outputTree->Branch("x_e",&(mom_e[0]),"x_e/D");
-  outputTree->Branch("y_e",&(mom_e[1]),"y_e/D");
-  outputTree->Branch("z_e",&(mom_e[2]),"z_e/D");
-  outputTree->Branch("x_r",&(mom_r[0]),"x_r/D");
-  outputTree->Branch("y_r",&(mom_r[1]),"y_r/D");
-  outputTree->Branch("z_r",&(mom_r[2]),"z_r/D");
+  Gen_Event * thisEvent = new Gen_Event;
+  outputTree->Branch("event",&thisEvent);
 
   // Random number generator
   TRandom3 * rand = new TRandom3(0);
@@ -128,12 +124,15 @@ int main(int argc, char *argv[])
 	phi_r -= 2.*M_PI;
 
       // Write to tree
-      mom_e[0] = p_e*sin(theta_e)*cos(phi_e);
-      mom_e[1] = p_e*sin(theta_e)*sin(phi_e);
-      mom_e[2] = p_e*cos(theta_e);
-      mom_r[0] = p_r*sin(theta_r)*cos(phi_r);
-      mom_r[1] = p_r*sin(theta_r)*sin(phi_r);
-      mom_r[2] = p_r*cos(theta_r);
+      thisEvent->particles.clear();
+      Gen_Particle electron;
+      electron.type="e-";
+      electron.momentum.SetMagThetaPhi(p_e,theta_e,phi_e);
+      thisEvent->particles.push_back(electron);
+      Gen_Particle neutron;
+      neutron.type="neutron";
+      neutron.momentum.SetMagThetaPhi(p_r,theta_r,phi_r);
+      thisEvent->particles.push_back(neutron);
       outputTree->Fill();
     }
    

@@ -15,6 +15,7 @@ using namespace std;
 #include "deuteronwf.h"
 #include "crossdis.h"
 #include "crossincl.h"
+#include "gen_tree.h"
 
 // Settings for cross section: 
 double sigmainput=40.;          //sigma parameter in rescattering amplitude [mb], default value
@@ -86,10 +87,8 @@ int main(int argc, char *argv[])
   TTree * outputTree = new TTree("MCout","Generator Output");
   
   // Initialize the branches
-  double mom_e[3];
-  outputTree->Branch("x_e",&(mom_e[0]),"x_e/D");
-  outputTree->Branch("y_e",&(mom_e[1]),"y_e/D");
-  outputTree->Branch("z_e",&(mom_e[2]),"z_e/D");
+  Gen_Event * thisEvent = new Gen_Event;
+  outputTree->Branch("event",&thisEvent);
 
   // Random number generator
   TRandom3 * rand = new TRandom3(0);
@@ -126,9 +125,11 @@ int main(int argc, char *argv[])
       double phi_e = 2.*M_PI * rand->Rndm();
 
       // Write to tree
-      mom_e[0] = p_e*sin(theta_e)*cos(phi_e);
-      mom_e[1] = p_e*sin(theta_e)*sin(phi_e);
-      mom_e[2] = p_e*cos(theta_e);
+      thisEvent->particles.clear();
+      Gen_Particle electron;
+      electron.type="e-";
+      electron.momentum.SetMagThetaPhi(p_e,theta_e,phi_e);
+      thisEvent->particles.push_back(electron);
       outputTree->Fill();
     }
    
