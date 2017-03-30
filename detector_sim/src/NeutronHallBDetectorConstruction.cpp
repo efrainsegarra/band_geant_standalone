@@ -339,7 +339,7 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
                            length ,                               // z-extent
                            0.,                                    // starting phi
                            CLHEP::twopi);                         // ending phi             
-        
+        }
         else{           // These are the TOFs
             Solid_slantedTOF_front[i_tof] =                       // solid volume for each TOF
                 new G4Cons("slanted_TOF_front",                   // name
