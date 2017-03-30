@@ -8,6 +8,10 @@
 #include "NeutronHallBDetectorMessenger.h"
 #include "NeutronHallBTrackerSD.h"
 
+#include "G4SDManager.hh"
+#include "G4VSensitiveDetector.hh"
+#include "G4GenericMessenger.hh"
+
 #include "G4Material.hh"
 #include "G4MaterialPropertiesTable.hh"
 
@@ -53,6 +57,7 @@ NeutronHallBDetectorConstruction::NeutronHallBDetectorConstruction(void * t)
   fLogicTarget(NULL), fLogicChamber(NULL),
   fTargetMaterial(NULL), fChamberMaterial(NULL),
   fStepLimit(NULL),
+  fVisAttributes(),
   fCheckOverlaps(true){
   fMessenger = new NeutronHallBDetectorMessenger(this);
   
@@ -67,6 +72,9 @@ NeutronHallBDetectorConstruction::~NeutronHallBDetectorConstruction(){
   delete [] fLogicChamber;
   delete fStepLimit;
   delete fMessenger;
+  for (auto visAttributes: fVisAttributes) {
+    delete visAttributes;
+  }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -154,7 +162,7 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
   // ------------------ End Defining World ---------------- //
 
   // ------------------ Defining Target - in World ---------------- //
-    G4double targetRadius = 10.*mm;
+    G4double targetRadius = 1.*mm;
 
     G4Sphere* solid_target = 
         new G4Sphere("target",                    // name
@@ -180,6 +188,7 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
                           fCheckOverlaps);           // overlap checkign
 
     logic_target -> SetVisAttributes (G4Colour::G4Colour( 0.65 , 0.82 , 0.77 ));
+
   // ------------------ End Defining Target ---------------- //
 
   // ------------------ Defining BAND Detector - in World ---------------- //
@@ -195,7 +204,7 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
                     0.,                           // starting phi angle
                     CLHEP::twopi/2.);             // ending phi angle
 
-    G4LogicalVolume* logicDetector =            
+    logicDetector =            
         new G4LogicalVolume(solidDetector,        // its solid
                             BAND_mat,             // material
                             "DetectorLV");        // name
@@ -211,6 +220,7 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
 
     G4Colour Detec_Color( 0.75 , 0.6 , 0.75 );
     G4VisAttributes* DetecVisAttributes = new G4VisAttributes( true , Detec_Color );
+    fVisAttributes.push_back(DetecVisAttributes);
     logicDetector -> SetVisAttributes(DetecVisAttributes);
   // ------------------ END Defining BAND Detector  ---------------- //
 
@@ -225,7 +235,7 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
                   0.,                                       // starting phi angle
                   CLHEP::twopi/2.);                            // ending phi angle
 
-    G4LogicalVolume* logicLeadWall = 
+    logicLeadWall = 
       new G4LogicalVolume(solidLeadWall,                    // its solid
                           LeadWall_mat,                     // material
                           "LeadWall");                      // its name
@@ -241,6 +251,7 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
 
     G4Colour LeadWall_Color( 0.25 , 0.38 , 0.25 );
     G4VisAttributes* LeadWallVisAttributes = new G4VisAttributes( true , LeadWall_Color );
+    fVisAttributes.push_back(LeadWallVisAttributes);
     logicLeadWall -> SetVisAttributes(LeadWallVisAttributes);
     // ------------------ END Defining Lead Wall  - in World ---------------- //
 
@@ -255,7 +266,7 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
                     0.,                   // starting phi
                     CLHEP::twopi);        // ending phi
 
-    G4LogicalVolume* logic_solenoid =      
+    logic_solenoid =      
         new G4LogicalVolume(solid_solenoid,  // solid logic volume
                             BAND_mat,           // material
                             "Solenoid");     // name
@@ -272,9 +283,9 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
     logic_solenoid -> SetVisAttributes (G4Colour::G4Colour( 0.99 , 0.88 , 0.66 ));
 
 
-    const int NTOFs = 4;                          // Creating 6 boxes that will go around the beam line
+    const int NTOFs = 4; // if you edit this must edit .h file             // Creating 6 boxes that will go around the beam line
     G4Tubs                *SolidTOF[NTOFs];    // solid box
-    G4LogicalVolume       *LogicTOF[NTOFs];    // the logical volumes
+    //G4LogicalVolume       *LogicTOF[NTOFs];    // the logical volumes
     G4VPhysicalVolume     *PhysTOF[NTOFs];     // the physical volume
     G4ThreeVector         posTOF[NTOFs];       // the vector for the position of the boxes
   
@@ -310,10 +321,10 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
     length = 1200/2.*mm;
     shift = 480*mm;
       // 30 degrees for 3 CND and 25 degrees for 1 TOF
-    const int slanted_TOFs = 4;                          // Creating 6 boxes that will go around the beam line
+    const int slanted_TOFs = 4;        // if you edit this, must edit .h file                  // Creating 6 boxes that will go around the beam line
 
     G4Cons                *Solid_slantedTOF_front[slanted_TOFs];    // solid box
-    G4LogicalVolume       *Logic_slantedTOF_front[slanted_TOFs];    // the logical volumes
+    //G4LogicalVolume       *Logic_slantedTOF_front[slanted_TOFs];    // the logical volumes
     G4VPhysicalVolume     *Phys_slantedTOF_front[slanted_TOFs];     // the physical volume
     G4ThreeVector         pos_slantedTOF_front[slanted_TOFs];       // the vector for the position of the boxes
 
@@ -372,7 +383,7 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
                     0.,                   // starting phi
                     CLHEP::twopi);        // ending phi
 
-    G4LogicalVolume* logic_SSTube_P1 =      
+    logic_SSTube_P1 =      
         new G4LogicalVolume(solid_SSTube_P1,  // solid logic volume
                             SS_mat,           // material
                             "SSTube_P1");     // name
@@ -397,7 +408,7 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
                     0.,                                   // starting phi
                     CLHEP::twopi);                        // ending phi
 
-    G4LogicalVolume* logic_SSTube_P1_coating =      
+    logic_SSTube_P1_coating =      
         new G4LogicalVolume(solid_SSTube_P1_coating,      // solid logic volume
                             BAND_mat ,                    // material
                             "SSTube_P1_coating");         // name
@@ -425,7 +436,7 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
                     0.,                     // starting phi
                     CLHEP::twopi);          // ending phi
 
-    G4LogicalVolume* logic_SSTube_Connector1 = 
+    logic_SSTube_Connector1 = 
         new G4LogicalVolume(solid_SSTube_Connector1,    // solid object
                             SS_mat ,                    // material
                             "SSTube_Connector1");       // name
@@ -450,7 +461,7 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
                    0.,
                    CLHEP::twopi);
 
-    G4LogicalVolume* logic_SSTube_Connector1_coating = 
+    logic_SSTube_Connector1_coating = 
         new G4LogicalVolume(solid_SSTube_Connector1_coating, 
                             BAND_mat , 
                             "SSTube_Connector1_coating");
@@ -479,7 +490,7 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
                    0.,
                    CLHEP::twopi);
 
-    G4LogicalVolume* logic_SSTube_Connector2 = 
+    logic_SSTube_Connector2 = 
         new G4LogicalVolume(solid_SSTube_Connector2, 
                             SS_mat, 
                             "SSTube_Connector2");
@@ -504,7 +515,7 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
                    0., 
                    CLHEP::twopi);
 
-    G4LogicalVolume* logic_SSTube_Connector2_coating = 
+    logic_SSTube_Connector2_coating = 
         new G4LogicalVolume(solid_SSTube_Connector2_coating, 
                             BAND_mat, 
                             "SSTube_Connector2_coating");
@@ -532,7 +543,7 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
                    0., 
                    CLHEP::twopi);
 
-    G4LogicalVolume* logic_SSTube_P2 = 
+    logic_SSTube_P2 = 
         new G4LogicalVolume(solid_SSTube_P2, 
                             SS_mat, 
                             "SSTube_P2");
@@ -558,7 +569,7 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
                    0., 
                    CLHEP::twopi);
 
-    G4LogicalVolume* logic_SSTube_P2_coating = 
+    logic_SSTube_P2_coating = 
         new G4LogicalVolume(solid_SSTube_P2_coating, 
                             BAND_mat, 
                             "SSTube_P2_coating");
@@ -587,12 +598,13 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
     G4double BoxY;
     G4double BoxAngle;
 
-    const int NBoxes = 6;                          // Creating 6 boxes that will go around the beam line
+    const int NBoxes = 6;      //if edit this, must edit .h file  // Creating 6 boxes that will go around the beam line
     G4Box                 *SolidElBox[NBoxes];    // solid box
-    G4LogicalVolume       *LogicElBox[NBoxes];    // the logical volumes
+    //G4LogicalVolume       *LogicElBox[NBoxes];    // the logical volumes
     G4VPhysicalVolume     *PhysElBox[NBoxes];     // the physical volume
     G4ThreeVector         posElBox[NBoxes];       // the vector for the position of the boxes
     G4VisAttributes       *ElBoxVisAtt = new G4VisAttributes( true , G4Colour::G4Colour( 0.75 , 0.6 , 0.75 ));   // setting color
+    fVisAttributes.push_back(ElBoxVisAtt);
     G4RotationMatrix      rot_mat;                // rotation matrix to rotate each box
     G4Transform3D         transform;              // the rotation that will be applied to the placement
     
@@ -637,9 +649,20 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
 void NeutronHallBDetectorConstruction::ConstructSDandField()
 {
   // Sensitive detectors
-  G4String nameSD = "BAND";
-  NeutronHallBTrackerSD* bandSD = new NeutronHallBTrackerSD(treePtr,nameSD);
-  SetSensitiveDetector("DetectorLV" , bandSD , true);
+  auto sdManager = G4SDManager::GetSDMpointer();
+  G4String SDname;
+
+  NeutronHallBTrackerSD* bandSD = new NeutronHallBTrackerSD(treePtr,SDname="/band");
+  sdManager->AddNewDetector(bandSD);
+  logicDetector->SetSensitiveDetector(bandSD);
+
+
+
+
+
+  //G4String nameSD = "BAND";
+  //NeutronHallBTrackerSD* bandSD = new NeutronHallBTrackerSD(treePtr,nameSD);
+  //SetSensitiveDetector("DetectorLV" , bandSD , true);
   
   // Electro-magnetic fields (currently zero)  
   G4ThreeVector fieldValue = G4ThreeVector();

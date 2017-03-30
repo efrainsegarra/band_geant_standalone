@@ -10,12 +10,14 @@
 #include "globals.hh"
 #include "G4VUserDetectorConstruction.hh"
 #include "tls.hh"
+#include <vector>
 
 class G4VPhysicalVolume;
 class G4LogicalVolume;
 class G4Material;
 class G4UserLimits;
 class G4GlobalMagFieldMessenger;
+class G4VisAttributes;
 
 class NeutronHallBDetectorMessenger;
 
@@ -49,14 +51,31 @@ class NeutronHallBDetectorConstruction : public G4VUserDetectorConstruction
   
   G4LogicalVolume*   fLogicTarget;     // pointer to the logical Target
   G4LogicalVolume**  fLogicChamber;    // pointer to the logical Chamber
+  G4LogicalVolume* logicDetector;
+  G4LogicalVolume* logicLeadWall;
+  G4LogicalVolume* logic_solenoid;
+  G4LogicalVolume       *LogicTOF[4];
+  G4LogicalVolume       *Logic_slantedTOF_front[4];
+  G4LogicalVolume* logic_SSTube_P1;
+  G4LogicalVolume* logic_SSTube_P1_coating;
+  G4LogicalVolume* logic_SSTube_Connector1;
+  G4LogicalVolume* logic_SSTube_Connector1_coating;
+  G4LogicalVolume* logic_SSTube_Connector2;
+  G4LogicalVolume* logic_SSTube_Connector2_coating;
+  G4LogicalVolume* logic_SSTube_P2;
+  G4LogicalVolume* logic_SSTube_P2_coating;
+  G4LogicalVolume       *LogicElBox[6];
   
   G4Material*        fTargetMaterial;  // pointer to the target  material
   G4Material*        fChamberMaterial; // pointer to the chamber material
+
+
   
   G4UserLimits* fStepLimit;            // pointer to user step limits
   
   NeutronHallBDetectorMessenger*  fMessenger;   // messenger
-  
+  std::vector<G4VisAttributes*> fVisAttributes;
+
   static G4ThreadLocal G4GlobalMagFieldMessenger*  fMagFieldMessenger; 
   // magnetic field messenger
   
