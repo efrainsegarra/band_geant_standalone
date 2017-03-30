@@ -93,7 +93,6 @@ void NeutronHallBDetectorConstruction::DefineMaterials(){
     
     G4NistManager* man = G4NistManager::Instance();
     
-    
     // Define StainlessSteel not in NIST, following http://hypernews.slac.stanford.edu/HyperNews/geant4/get/geometry/915.html?inline=1
     G4Element* C  = man->FindOrBuildElement("C");
     G4Element* Si = man->FindOrBuildElement("Si");
@@ -140,52 +139,52 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
 
   
     G4Box* solidWorld =    
-        new G4Box("World",              // its name
+        new G4Box("World",                                     // its name
                   0.5*world_sizeX, 
                   0.5*world_sizeY, 
-                  0.5*world_sizeZ);     // its size
+                  0.5*world_sizeZ);                            // its size
       
     G4LogicalVolume* logicWorld =                         
-        new G4LogicalVolume(solidWorld,          // its solid
-                            vacuum,           // its world material
-                            "World");            // its name
+        new G4LogicalVolume(solidWorld,                        // its solid
+                            vacuum,                            // its world material
+                            "World");                          // its name
                                    
     G4VPhysicalVolume* physWorld = 
-        new G4PVPlacement(0,                     // no rotation
-                          G4ThreeVector(),       // at (0,0,0)
-                          logicWorld,            // its logical volume
-                          "World",               // its name
-                          0,                     // its mother  volume
-                          false,                 // no boolean operation
-                          0,                     // copy number
-                          fCheckOverlaps);        // overlaps checking
+        new G4PVPlacement(0,                                   // no rotation
+                          G4ThreeVector(),                     // at (0,0,0)
+                          logicWorld,                          // its logical volume
+                          "World",                             // its name
+                          0,                                   // its mother  volume
+                          false,                               // no boolean operation
+                          0,                                   // copy number
+                          fCheckOverlaps);                     // overlaps checking
   // ------------------ End Defining World ---------------- //
 
   // ------------------ Defining Target - in World ---------------- //
     G4double targetRadius = 1.*mm;
 
     G4Sphere* solid_target = 
-        new G4Sphere("target",                    // name
-                      0.,                         // inner radius 
-                      targetRadius,               // outer radius
-                      0.,                         // starting phi angle
-                      CLHEP::twopi,               // ending phi angle
-                      0.,                         // starting theta angle
-                      CLHEP::twopi/2.);           // ending theta angle
+        new G4Sphere("target",                                 // name
+                      0.,                                      // inner radius 
+                      targetRadius,                            // outer radius
+                      0.,                                      // starting phi angle
+                      CLHEP::twopi,                            // ending phi angle
+                      0.,                                      // starting theta angle
+                      CLHEP::twopi/2.);                        // ending theta angle
 
     G4LogicalVolume* logic_target = 
-        new G4LogicalVolume(solid_target,         // its solid
-                            default_mat,           // its material
-                            "target");            // its name
+        new G4LogicalVolume(solid_target,                      // its solid
+                            default_mat,                       // its material
+                            "target");                         // its name
 
-        new G4PVPlacement(0,                      // no rotation
-                          G4ThreeVector(),          // at 0,0,0
-                          logic_target,             // its logical volume
-                          "target",                 // its name
-                          logicWorld,               // its mother volume
-                          false,                    // no boolean operation
-                          0,                        // copy number
-                          fCheckOverlaps);           // overlap checkign
+        new G4PVPlacement(0,                                   // no rotation
+                          G4ThreeVector(),                     // at 0,0,0
+                          logic_target,                        // its logical volume
+                          "target",                            // its name
+                          logicWorld,                          // its mother volume
+                          false,                               // no boolean operation
+                          0,                                   // copy number
+                          fCheckOverlaps);                     // overlap checkign
 
     logic_target -> SetVisAttributes (G4Colour::G4Colour( 0.65 , 0.82 , 0.77 ));
 
@@ -197,17 +196,17 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
     G4double BANDThickness = 24.*cm;
     G4double BAND_Z_coord = -(3304*mm+BANDThickness/2.);
     G4Tubs* solidDetector = 
-        new G4Tubs("Detector",                    // name
-                    RinDetector,                  // inner radius
-                    RoutDetector,                 // outer radius
-                    BANDThickness/2.,             // z extent
-                    0.,                           // starting phi angle
-                    CLHEP::twopi/2.);             // ending phi angle
+        new G4Tubs("Detector",                                 // name
+                    RinDetector,                               // inner radius
+                    RoutDetector,                              // outer radius
+                    BANDThickness/2.,                          // z extent
+                    0.,                                        // starting phi angle
+                    CLHEP::twopi/2.);                          // ending phi angle
 
     logicDetector =            
-        new G4LogicalVolume(solidDetector,        // its solid
-                            BAND_mat,             // material
-                            "DetectorLV");        // name
+        new G4LogicalVolume(solidDetector,                     // its solid
+                            BAND_mat,                          // material
+                            "DetectorLV");                     // name
 
         new G4PVPlacement(0,                                   // no rotation
                           G4ThreeVector(0,0,BAND_Z_coord),     // (0,0,z)
@@ -216,7 +215,7 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
                           logicWorld,                          // mother volume
                           false,                               // no boolean operation
                           0,                                   // copy number
-                          fCheckOverlaps);                      // overlap checking
+                          fCheckOverlaps);                     // overlap checking
 
     G4Colour Detec_Color( 0.75 , 0.6 , 0.75 );
     G4VisAttributes* DetecVisAttributes = new G4VisAttributes( true , Detec_Color );
@@ -228,26 +227,26 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
     G4double lead_Z_coord = -3264*mm;
 
     G4Tubs* solidLeadWall = 
-      new G4Tubs("LeadWall",                                // name
-                  RinDetector,                              // inner radius
-                  RoutDetector,                             // outer raidus
-                  3.*cm/2.,                                 // z extent
-                  0.,                                       // starting phi angle
+      new G4Tubs("LeadWall",                                   // name
+                  RinDetector,                                 // inner radius
+                  RoutDetector,                                // outer raidus
+                  3.*cm/2.,                                    // z extent
+                  0.,                                          // starting phi angle
                   CLHEP::twopi/2.);                            // ending phi angle
 
     logicLeadWall = 
-      new G4LogicalVolume(solidLeadWall,                    // its solid
-                          LeadWall_mat,                     // material
-                          "LeadWall");                      // its name
+      new G4LogicalVolume(solidLeadWall,                       // its solid
+                          LeadWall_mat,                        // material
+                          "LeadWall");                         // its name
 
-      new G4PVPlacement(0,                                  // no rotation
-                        G4ThreeVector(0, 0,lead_Z_coord),    // its (0,0,z)
-                        logicLeadWall,                      // logical volume
-                        "LeadWall",                         // name
-                        logicWorld,                         // mother volume
-                        false,                              // no boolean operation
-                        0,                                  // copy number
-                        fCheckOverlaps);                     // overlap checking
+      new G4PVPlacement(0,                                     // no rotation
+                        G4ThreeVector(0, 0,lead_Z_coord),      // its (0,0,z)
+                        logicLeadWall,                         // logical volume
+                        "LeadWall",                            // name
+                        logicWorld,                            // mother volume
+                        false,                                 // no boolean operation
+                        0,                                     // copy number
+                        fCheckOverlaps);                       // overlap checking
 
     G4Colour LeadWall_Color( 0.25 , 0.38 , 0.25 );
     G4VisAttributes* LeadWallVisAttributes = new G4VisAttributes( true , LeadWall_Color );
@@ -256,118 +255,118 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
     // ------------------ END Defining Lead Wall  - in World ---------------- //
 
     // ------------------ Defining Solenoid ---------------- //
-    length = 480.*mm; // length of the first tube pipe
+    length = 480.*mm;                                          // length of the first tube pipe
 
     G4Tubs* solid_solenoid =     
-        new G4Tubs("Solenoid",           // name
-                    476.*mm ,             // inner radius
-                    1200.*mm,              // outer radius
-                    length ,              // z-extent
-                    0.,                   // starting phi
-                    CLHEP::twopi);        // ending phi
+        new G4Tubs("Solenoid",                                 // name
+                    476.*mm ,                                  // inner radius
+                    1200.*mm,                                  // outer radius
+                    length ,                                   // z-extent
+                    0.,                                        // starting phi
+                    CLHEP::twopi);                             // ending phi
 
     logic_solenoid =      
-        new G4LogicalVolume(solid_solenoid,  // solid logic volume
-                            BAND_mat,           // material
-                            "Solenoid");     // name
+        new G4LogicalVolume(solid_solenoid,                    // solid logic volume
+                            BAND_mat,                          // material
+                            "Solenoid");                       // name
   
-        new G4PVPlacement(0,                  // rotation
-                          G4ThreeVector(),    // at (0,0,0)
-                          logic_solenoid,    // logical volume
-                          "Solenoid",        // name
-                          logicWorld,         // mother volume
-                          false,              // no boolean operation
-                          0,                  // copy number
-                          fCheckOverlaps);     // checking overlap
+        new G4PVPlacement(0,                                   // rotation
+                          G4ThreeVector(),                     // at (0,0,0)
+                          logic_solenoid,                      // logical volume
+                          "Solenoid",                          // name
+                          logicWorld,                          // mother volume
+                          false,                               // no boolean operation
+                          0,                                   // copy number
+                          fCheckOverlaps);                     // checking overlap
 
     logic_solenoid -> SetVisAttributes (G4Colour::G4Colour( 0.99 , 0.88 , 0.66 ));
 
 
-    const int NTOFs = 4; // if you edit this must edit .h file             // Creating 6 boxes that will go around the beam line
-    G4Tubs                *SolidTOF[NTOFs];    // solid box
-    //G4LogicalVolume       *LogicTOF[NTOFs];    // the logical volumes
-    G4VPhysicalVolume     *PhysTOF[NTOFs];     // the physical volume
-    G4ThreeVector         posTOF[NTOFs];       // the vector for the position of the boxes
+    const int NTOFs = 4; //CAUTION -->                         // if you edit this must edit .h file  
+    G4Tubs                *SolidTOF[NTOFs];                    // solid 
+    G4VPhysicalVolume     *PhysTOF[NTOFs];                     // the physical volume
+    G4ThreeVector         posTOF[NTOFs];                       // the vector for the position of the boxes
   
-    for (int i_tof = 0; i_tof < NTOFs; i_tof++) {
-        posTOF[i_tof]     = G4ThreeVector();             // defining position vector for box
+    for (int i_tof = 0; i_tof < NTOFs; i_tof++) {              // for each TOF we want to add
+        posTOF[i_tof]     = G4ThreeVector();                   // defining position vector for box
 
-        SolidTOF[i_tof] =                                     // solid volume for each box
-            new G4Tubs("TOF",                                    // name
-                (252.+50.8*i_tof)*mm,             // inner radius
-                (252.+50.8*(i_tof+1))*mm,              // outer radius
-                length ,              // z-extent
-                0.,                   // starting phi
-                CLHEP::twopi);        // ending phi                         // thickness of box
+        SolidTOF[i_tof] =                                      // solid volume for each box
+            new G4Tubs("TOF",                                  // name
+                (252.+50.8*i_tof)*mm,                          // inner radius
+                (252.+50.8*(i_tof+1))*mm,                      // outer radius
+                length ,                                       // z-extent
+                0.,                                            // starting phi
+                CLHEP::twopi);                                 // ending phi 
 
-        LogicTOF[i_tof] =                                     // logical volume for each box
-            new G4LogicalVolume(SolidTOF[i_tof],                // box is solid
-                                BAND_mat,                         // material for each box
-                                "TOF" );                      // name for each logical volume box
+        LogicTOF[i_tof] =                                      // logical volume for each
+            new G4LogicalVolume(SolidTOF[i_tof],               // TOF is solid
+                                BAND_mat,                      // material for each TOF
+                                "TOF" );                       // name for each logical volume TOF
 
-        LogicTOF[i_tof]->SetVisAttributes (G4Colour::G4Colour( 0.75+(i_tof/10.) , 0.6-(i_tof/10.) , 0.75 ));      // setting color
+        LogicTOF[i_tof]->SetVisAttributes (G4Colour::G4Colour( 0.75+(i_tof/10.) , 0.6-(i_tof/10.) , 0.75 ));
       
-        PhysTOF[i_tof]=                                       // physical volume for box
-            new G4PVPlacement(0,   
-                              G4ThreeVector(),                       // rotation for each box
-                              LogicTOF[i_tof],                  // logical volume of each box
-                              "TOF",                            // name of each box
-                              logicWorld,                         // mother volume for box
-                              false,                              // no boolean operation
-                              0,                                  // copy number
-                              fCheckOverlaps);                     // checking overlap
+        PhysTOF[i_tof]=                                        // physical volume for TOF
+            new G4PVPlacement(0,                               // rotation
+                              G4ThreeVector(),                 // at 0,0,0
+                              LogicTOF[i_tof],                 // logical volume of each TOF
+                              "TOF",                           // name of each TOF
+                              logicWorld,                      // mother volume for TOF
+                              false,                           // no boolean operation
+                              0,                               // copy number
+                              fCheckOverlaps);                 // checking overlap
     }
 
     length = 1200/2.*mm;
     shift = 480*mm;
-      // 30 degrees for 3 CND and 25 degrees for 1 TOF
-    const int slanted_TOFs = 4;        // if you edit this, must edit .h file                  // Creating 6 boxes that will go around the beam line
 
-    G4Cons                *Solid_slantedTOF_front[slanted_TOFs];    // solid box
-    //G4LogicalVolume       *Logic_slantedTOF_front[slanted_TOFs];    // the logical volumes
-    G4VPhysicalVolume     *Phys_slantedTOF_front[slanted_TOFs];     // the physical volume
-    G4ThreeVector         pos_slantedTOF_front[slanted_TOFs];       // the vector for the position of the boxes
+    // 30 degrees for 3 TOF and 25 degrees for 1 CND
+    const int slanted_TOFs = 4; // CAUTION -->                    // if you edit this, must edit .h file
+
+    G4Cons                *Solid_slantedTOF_front[slanted_TOFs];  // solid TOF
+    G4VPhysicalVolume     *Phys_slantedTOF_front[slanted_TOFs];   // the physical volume
+    G4ThreeVector         pos_slantedTOF_front[slanted_TOFs];     // the vector for the position of the TOF
 
     for (int i_tof = 0; i_tof < slanted_TOFs; i_tof++) {
-        pos_slantedTOF_front[i_tof]     = G4ThreeVector();             // defining position vector for box
+        pos_slantedTOF_front[i_tof]     = G4ThreeVector();        // defining position vector for TOF
 
-        if(i_tof==0){
-            Solid_slantedTOF_front[i_tof] =                                     // solid volume for each box
-                new G4Cons("slanted_TOF_front",                                    // name
-                           (560+252.)*mm,
-                           (560+252.+50.8)*mm,
-                           (252.)*mm,
-                           (252.+50.8)*mm,
-                           length ,              // z-extent
-                           0.,                   // starting phi
-                           CLHEP::twopi);        // ending phi                         // thickness of box
+        if(i_tof==0){  // This is the CND
+            Solid_slantedTOF_front[i_tof] =                       // solid volume for CND
+                new G4Cons("slanted_TOF_front",                   // name
+                           (560+252.)*mm,                         // inner radius 1
+                           (560+252.+50.8)*mm,                    // outer raidus 1
+                           (252.)*mm,                             // inner radius 2
+                           (252.+50.8)*mm,                        // outer radius 2
+                           length ,                               // z-extent
+                           0.,                                    // starting phi
+                           CLHEP::twopi);                         // ending phi             
+        
+        else{           // These are the TOFs
+            Solid_slantedTOF_front[i_tof] =                       // solid volume for each TOF
+                new G4Cons("slanted_TOF_front",                   // name
+                           (695+252.+50.8*(i_tof))*mm,            // inner radius 1
+                           (695+252.+50.8*(i_tof+1))*mm,          // outer radius 1
+                           (252.+50.8*(i_tof))*mm,                // inner radius 2
+                           (252.+50.8*(i_tof+1))*mm,              // outer radius 2
+                           length ,                               // z-extent
+                           0.,                                    // starting phi
+                           CLHEP::twopi);                         // ending phi 
         }
-        else{
-            Solid_slantedTOF_front[i_tof] =                                     // solid volume for each box
-                new G4Cons("slanted_TOF_front",                                    // name
-                           (695+252.+50.8*(i_tof))*mm,
-                           (695+252.+50.8*(i_tof+1))*mm,
-                           (252.+50.8*(i_tof))*mm,
-                           (252.+50.8*(i_tof+1))*mm,
-                           length ,              // z-extent
-                           0.,                   // starting phi
-                           CLHEP::twopi);        // ending phi                         // thickness of box
-        }
-        Logic_slantedTOF_front[i_tof] =                                     // logical volume for each box
-            new G4LogicalVolume(Solid_slantedTOF_front[i_tof],                // box is solid
-                                BAND_mat,                         // material for each box
-                                "slanted_TOF_front" );                      // name for each logical volume box
 
-        Logic_slantedTOF_front[i_tof]->SetVisAttributes(G4Colour::G4Colour( 0.75 , 0.6+(i_tof/10.) , 0.75-(i_tof/10.) ));      // setting color
-          
-        Phys_slantedTOF_front[i_tof]=                                       // physical volume for box
-            new G4PVPlacement(0,   
-                              G4ThreeVector(0,0,-1.*(shift+length)),                       // rotation for each box
-                              Logic_slantedTOF_front[i_tof],                  // logical volume of each box
-                              "slanted_TOF_front",                            // name of each box
-                              logicWorld,                         // mother volume for box
-                              false,                              // no boolean operation
-                              0,                                  // copy number
+        Logic_slantedTOF_front[i_tof] =                           // logical volume for each TOF
+            new G4LogicalVolume(Solid_slantedTOF_front[i_tof],    // TOF is solid
+                                BAND_mat,                         // material for each TOF
+                                "slanted_TOF_front" );            // name for each logical volume TOF
+
+        Logic_slantedTOF_front[i_tof]->SetVisAttributes(G4Colour::G4Colour( 0.75 , 0.6+(i_tof/10.) , 0.75-(i_tof/10.) ));   
+
+        Phys_slantedTOF_front[i_tof]=                              // physical volume for TOF
+            new G4PVPlacement(0,                                   // rotation
+                              G4ThreeVector(0,0,-1.*(shift+length)),// position for each TOF
+                              Logic_slantedTOF_front[i_tof],       // logical volume of each TOF
+                              "slanted_TOF_front",                 // name of each TOF
+                              logicWorld,                          // mother volume for TOF
+                              false,                               // no boolean operation
+                              0,                                   // copy number
                               fCheckOverlaps);                     // checking overlap
     }
     // ------------------ END Defining Solenoid  - in World ---------------- //
@@ -376,51 +375,51 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
     length = 658.*mm; // length of the first tube pipe
 
     G4Tubs* solid_SSTube_P1 =     
-        new G4Tubs("SSTube_P1",           // name
-                    210.*mm ,             // inner radius
-                    213.*mm,              // outer radius
-                    length ,              // z-extent
-                    0.,                   // starting phi
-                    CLHEP::twopi);        // ending phi
+        new G4Tubs("SSTube_P1",                                // name
+                    210.*mm ,                                  // inner radius
+                    213.*mm,                                   // outer radius
+                    length ,                                   // z-extent
+                    0.,                                        // starting phi
+                    CLHEP::twopi);                             // ending phi
 
     logic_SSTube_P1 =      
-        new G4LogicalVolume(solid_SSTube_P1,  // solid logic volume
-                            SS_mat,           // material
-                            "SSTube_P1");     // name
+        new G4LogicalVolume(solid_SSTube_P1,                   // solid logic volume
+                            SS_mat,                            // material
+                            "SSTube_P1");                      // name
       
-        new G4PVPlacement(0,                  // rotation
-                          G4ThreeVector(),    // at (0,0,0)
-                          logic_SSTube_P1,    // logical volume
-                          "SSTube_P1",        // name
-                          logicWorld,         // mother volume
-                          false,              // no boolean operation
-                          0,                  // copy number
-                          fCheckOverlaps);     // checking overlap
+        new G4PVPlacement(0,                                   // rotation
+                          G4ThreeVector(),                     // at (0,0,0)
+                          logic_SSTube_P1,                     // logical volume
+                          "SSTube_P1",                         // name
+                          logicWorld,                          // mother volume
+                          false,                               // no boolean operation
+                          0,                                   // copy number
+                          fCheckOverlaps);                     // checking overlap
 
     logic_SSTube_P1 -> SetVisAttributes (G4Colour::G4Colour( 0.99 , 0.88 , 0.66 ));
 
         //  ----------1 cm plastic coating around tub to represent cables ---------- //
     G4Tubs* solid_SSTube_P1_coating = 
-        new G4Tubs("SSTube_P1_coating",                   // name
-                    214.*mm ,                             // inner radius -- starting at outer radius of 1st pipe
-                    224.*mm,                              // outer radius
-                    length ,                              // z extent
-                    0.,                                   // starting phi
-                    CLHEP::twopi);                        // ending phi
+        new G4Tubs("SSTube_P1_coating",                        // name
+                    214.*mm ,                                  // inner radius -- starting at outer radius of 1st pipe
+                    224.*mm,                                   // outer radius
+                    length ,                                   // z extent
+                    0.,                                        // starting phi
+                    CLHEP::twopi);                             // ending phi
 
     logic_SSTube_P1_coating =      
-        new G4LogicalVolume(solid_SSTube_P1_coating,      // solid logic volume
-                            BAND_mat ,                    // material
-                            "SSTube_P1_coating");         // name
+        new G4LogicalVolume(solid_SSTube_P1_coating,           // solid logic volume
+                            BAND_mat ,                         // material
+                            "SSTube_P1_coating");              // name
 
-        new G4PVPlacement(0,                              // no rotation
-                          G4ThreeVector(),                // at (0,0,0)
-                          logic_SSTube_P1_coating,        // logical volume
-                          "SSTube_P1_coating",            // name
-                          logicWorld,                     // mother volume
-                          false,                          // no boolean operation
-                          0,                              // copy number
-                          fCheckOverlaps);                 // checking overlaps
+        new G4PVPlacement(0,                                   // no rotation
+                          G4ThreeVector(),                     // at (0,0,0)
+                          logic_SSTube_P1_coating,             // logical volume
+                          "SSTube_P1_coating",                 // name
+                          logicWorld,                          // mother volume
+                          false,                               // no boolean operation
+                          0,                                   // copy number
+                          fCheckOverlaps);                     // checking overlaps
 
     logic_SSTube_P1_coating -> SetVisAttributes (G4Colour::G4Colour( 0.75 , 0.6 , 0.75 ));
   
@@ -429,26 +428,26 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
     shift = 658.*mm;
 
     G4Tubs* solid_SSTube_Connector1 =         
-        new G4Tubs("SSTube_Connector1",     // name
-                    213.*mm ,               // inner radius
-                    240.*mm,                // outer radius
-                    length ,                // z extent
-                    0.,                     // starting phi
-                    CLHEP::twopi);          // ending phi
+        new G4Tubs("SSTube_Connector1",                        // name
+                    213.*mm ,                                  // inner radius
+                    240.*mm,                                   // outer radius
+                    length ,                                   // z extent
+                    0.,                                        // starting phi
+                    CLHEP::twopi);                             // ending phi
 
     logic_SSTube_Connector1 = 
-        new G4LogicalVolume(solid_SSTube_Connector1,    // solid object
-                            SS_mat ,                    // material
-                            "SSTube_Connector1");       // name
+        new G4LogicalVolume(solid_SSTube_Connector1,           // solid object
+                            SS_mat ,                           // material
+                            "SSTube_Connector1");              // name
 
-        new G4PVPlacement(0,                                    // no rotation
-                          G4ThreeVector(0,0,-(length+shift)),      // at (x,y,z)
-                          logic_SSTube_Connector1,              // logical volume
-                          "SSTube_Connector1",                  // name
-                          logicWorld,                           // mother volume
-                          false,                                // boolean operation  
-                          0,                                    // copy number
-                          fCheckOverlaps);                       // checking overlaps
+        new G4PVPlacement(0,                                   // no rotation
+                          G4ThreeVector(0,0,-(length+shift)),  // at (x,y,z)
+                          logic_SSTube_Connector1,             // logical volume
+                          "SSTube_Connector1",                 // name
+                          logicWorld,                          // mother volume
+                          false,                               // boolean operation  
+                          0,                                   // copy number
+                          fCheckOverlaps);                     // checking overlaps
     
     logic_SSTube_Connector1 -> SetVisAttributes (G4Colour::G4Colour( 0.99 , 0.88 , 0.66 ));
   
@@ -599,14 +598,14 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
     G4double BoxAngle;
 
     const int NBoxes = 6;      //if edit this, must edit .h file  // Creating 6 boxes that will go around the beam line
-    G4Box                 *SolidElBox[NBoxes];    // solid box
-    //G4LogicalVolume       *LogicElBox[NBoxes];    // the logical volumes
-    G4VPhysicalVolume     *PhysElBox[NBoxes];     // the physical volume
-    G4ThreeVector         posElBox[NBoxes];       // the vector for the position of the boxes
+    G4Box                 *SolidElBox[NBoxes];                 // solid box
+    //G4LogicalVolume       *LogicElBox[NBoxes];               // the logical volumes
+    G4VPhysicalVolume     *PhysElBox[NBoxes];                  // the physical volume
+    G4ThreeVector         posElBox[NBoxes];                    // the vector for the position of the boxes
     G4VisAttributes       *ElBoxVisAtt = new G4VisAttributes( true , G4Colour::G4Colour( 0.75 , 0.6 , 0.75 ));   // setting color
     fVisAttributes.push_back(ElBoxVisAtt);
-    G4RotationMatrix      rot_mat;                // rotation matrix to rotate each box
-    G4Transform3D         transform;              // the rotation that will be applied to the placement
+    G4RotationMatrix      rot_mat;                             // rotation matrix to rotate each box
+    G4Transform3D         transform;                           // the rotation that will be applied to the placement
     
     for (int i_box = 0; i_box < NBoxes; i_box++) {
         BoxAngle            = i_box * 60 * deg;                               // this box's angle around beam line
@@ -617,27 +616,27 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
         posElBox[i_box]     = G4ThreeVector( BoxX , BoxY , BoxZ);             // defining position vector for box
         transform           = G4Transform3D( rot_mat , posElBox[i_box] );     // creating rotation of each box 
 
-        SolidElBox[i_box] =                                     // solid volume for each box
-            new G4Box("ElBox",                                    // name
-                     BoxLength/2.,                              // length of box
-                     BoxWidth/2.,                               // width of box
-                     BoxThickness/2.);                          // thickness of box
+        SolidElBox[i_box] =                                    // solid volume for each box
+            new G4Box("ElBox",                                 // name
+                     BoxLength/2.,                             // length of box
+                     BoxWidth/2.,                              // width of box
+                     BoxThickness/2.);                         // thickness of box
 
-        LogicElBox[i_box] =                                     // logical volume for each box
-            new G4LogicalVolume(SolidElBox[i_box],                // box is solid
-                              BAND_mat,                         // material for each box
-                              "ElBoxLV" );                      // name for each logical volume box
+        LogicElBox[i_box] =                                    // logical volume for each box
+            new G4LogicalVolume(SolidElBox[i_box],             // box is solid
+                              BAND_mat,                        // material for each box
+                              "ElBoxLV" );                     // name for each logical volume box
 
-        LogicElBox[i_box]->SetVisAttributes (ElBoxVisAtt);      // setting color
+        LogicElBox[i_box]->SetVisAttributes (ElBoxVisAtt);     // setting color
         
-        PhysElBox[i_box]=                                       // physical volume for box
-            new G4PVPlacement(transform,                          // rotation for each box
-                            LogicElBox[i_box],                  // logical volume of each box
-                            "ElBox",                            // name of each box
-                            logicWorld,                         // mother volume for box
-                            false,                              // no boolean operation
-                            0,                                  // copy number
-                            fCheckOverlaps);                     // checking overlap
+        PhysElBox[i_box]=                                      // physical volume for box
+            new G4PVPlacement(transform,                       // rotation for each box
+                            LogicElBox[i_box],                 // logical volume of each box
+                            "ElBox",                           // name of each box
+                            logicWorld,                        // mother volume for box
+                            false,                             // no boolean operation
+                            0,                                 // copy number
+                            fCheckOverlaps);                   // checking overlap
     }
   // ------------------ END Defining Electronic Boxes  ---------------- //
     
@@ -655,9 +654,6 @@ void NeutronHallBDetectorConstruction::ConstructSDandField()
   NeutronHallBTrackerSD* bandSD = new NeutronHallBTrackerSD(treePtr,SDname="/band");
   sdManager->AddNewDetector(bandSD);
   logicDetector->SetSensitiveDetector(bandSD);
-
-
-
 
 
   //G4String nameSD = "BAND";
