@@ -40,31 +40,44 @@ void NeutronHallBTrackerSD::Initialize(G4HCofThisEvent* hce)
 
 G4bool NeutronHallBTrackerSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
 { 
+  // only enters this loop 709 times but saves 133k events in the root file...?
+
+
+
+
   // create a new band hit and add to the vector!
   if (aStep->GetTotalEnergyDeposit() < 1*eV){
     return false;
   }
+  
   // asks only if the particle in BAND is a neutron
-  if (aStep->GetTrack()->GetDefinition()->GetPDGEncoding() != 2112){
+  if (aStep->GetTrack()->GetDefinition()->GetPDGEncoding() != 2112){ // particleID
     return false;
   }
   BAND_Hit newHit;
 
   // Hit position
-  G4ThreeVector worldPos = aStep->GetPostStepPoint()->GetPosition();
+        // MUST USE PRESTEPPOINT FOR GEOMETRY
+  G4ThreeVector worldPos = aStep->GetPreStepPoint()->GetPosition();
   newHit.pos = TVector3(worldPos.x() / mm,worldPos.y() / mm,worldPos.z() / mm);
 
   // Time
-  newHit.time = aStep->GetPostStepPoint()->GetGlobalTime() / ns;
+  newHit.time = aStep->GetPreStepPoint()->GetGlobalTime() / ns;
 
   // Energy deposition
   newHit.E_dep = aStep->GetTotalEnergyDeposit()/MeV;
   
   // Track ID
   newHit.track = aStep->GetTrack()->GetTrackID();
-
+  
+  G4cout << aStep->GetTrack()->GetCurrentStepNumber() << G4endl;
   // push the hit into the vector
   hitList->hits.push_back(newHit);
+
+  //G4cout << aStep->GetTrack()->GetTrackID() << G4endl;
+  //G4cout << newHit.track << G4endl;
+  //G4cout << newHit << G4endl;
+
 
   /*
   // Stuff that Erez was doing that is not useful.
