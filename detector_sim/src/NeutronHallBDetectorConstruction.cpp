@@ -651,7 +651,7 @@ void NeutronHallBDetectorConstruction::ConstructSDandField()
   auto sdManager = G4SDManager::GetSDMpointer();
   G4String SDname;
 
-  NeutronHallBTrackerSD* bandSD = new NeutronHallBTrackerSD(treePtr,SDname="/band");
+  NeutronHallBTrackerSD* bandSD = new NeutronHallBTrackerSD(treePtr,SDname="band");
   sdManager->AddNewDetector(bandSD);
   logicDetector->SetSensitiveDetector(bandSD);
 

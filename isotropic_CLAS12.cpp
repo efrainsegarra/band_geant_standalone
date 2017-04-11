@@ -19,7 +19,7 @@ const double max_theta_e = 35.*M_PI/180.;
 const double min_p_e = 2.;
 const double max_p_e = 8.;
 const double min_theta_r =90.*M_PI/180.;
-const double max_theta_r =159.*M_PI/180.;
+const double max_theta_r =180.*M_PI/180.;
 const double min_p_r =0.275;
 const double max_p_r =0.600;
 const double min_phi_er=0.;
@@ -70,10 +70,10 @@ int main(int argc, char *argv[])
 
       // Write to tree
       thisEvent->particles.clear();
-      Gen_Particle electron;
-      electron.type="e-";
-      electron.momentum.SetMagThetaPhi(p_e,theta_e,phi_e);
-      thisEvent->particles.push_back(electron);
+      //Gen_Particle electron;
+      //electron.type="e-";
+      //electron.momentum.SetMagThetaPhi(p_e,theta_e,phi_e);
+      //thisEvent->particles.push_back(electron);
       Gen_Particle neutron;
       neutron.type="neutron";
       neutron.momentum.SetMagThetaPhi(p_r,theta_r,phi_r);

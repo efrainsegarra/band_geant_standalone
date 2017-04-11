@@ -22,8 +22,11 @@
 
 using namespace CLHEP;
 
-NeutronHallBTrackerSD::NeutronHallBTrackerSD(void * treePtr, const G4String& name) : G4VSensitiveDetector(name)
+NeutronHallBTrackerSD::NeutronHallBTrackerSD(void * treePtr, const G4String& name)
+ : G4VSensitiveDetector(name)
+   //fEventAction(eventAction)
 {
+  //fEventAction(eventAction)
   hitList = new BAND_Event;
   outTree = (TTree*) treePtr;
   outTree->Branch(name.data(),&hitList);
@@ -34,16 +37,24 @@ NeutronHallBTrackerSD::~NeutronHallBTrackerSD()
 
 void NeutronHallBTrackerSD::Initialize(G4HCofThisEvent* hce)
 {
+  EventEdep = 0;
+  EventTime = 0;
+  EventPos *= 0;
   // Clear the last event
   hitList->hits.clear();
 }
 
 G4bool NeutronHallBTrackerSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
 { 
-  // only enters this loop 709 times but saves 133k events in the root file...?
+  G4double hitE = aStep->GetTotalEnergyDeposit()/MeV;
 
+  EventEdep += hitE;
 
+  EventTime += (aStep->GetPreStepPoint()->GetGlobalTime()/ns)*(hitE);
+  EventPos += (aStep->GetPreStepPoint()->GetPosition())*(hitE);
+  
 
+  /*
 
   // create a new band hit and add to the vector!
   if (aStep->GetTotalEnergyDeposit() < 1*eV){
@@ -72,7 +83,9 @@ G4bool NeutronHallBTrackerSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
   
   G4cout << aStep->GetTrack()->GetCurrentStepNumber() << G4endl;
   // push the hit into the vector
-  hitList->hits.push_back(newHit);
+  hitList->hits.push_back(newHit);*/
+  //G4double edepStep = aStep->GetTotalEnergyDeposit();
+  //fEventAction->AddEdep(edepStep);
 
   //G4cout << aStep->GetTrack()->GetTrackID() << G4endl;
   //G4cout << newHit.track << G4endl;
@@ -124,9 +137,21 @@ G4bool NeutronHallBTrackerSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
 
 void NeutronHallBTrackerSD::EndOfEvent(G4HCofThisEvent*)
 {
-  if ( verboseLevel>1 )
-    { 
-      G4int nofHits = hitList->hits.size();
-      G4cout << "\n-------->Hits Collection: in this event they were " << nofHits << G4endl;
-    }
+
+  if ( EventEdep!=0 ){
+    BAND_Hit newHit;
+    newHit.E_dep = EventEdep;
+    newHit.time = EventTime/EventEdep;
+
+    EventPos *= (1./EventEdep);
+    newHit.pos = TVector3(EventPos.x() / mm,EventPos.y() / mm,EventPos.z() / mm);
+
+    hitList->hits.push_back(newHit);
+
+    if ( verboseLevel>1 )
+      { 
+        G4int nofHits = hitList->hits.size();
+        G4cout << "\n-------->Hits Collection: in this event they were " << nofHits << G4endl;
+      }
+  }
 }
