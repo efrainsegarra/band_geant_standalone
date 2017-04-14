@@ -33,3 +33,6 @@ target_link_libraries(randoms_CLAS12 ${ROOT_LIBRARIES} deuteron_dis_tree)
 
 add_executable(isotropic_CLAS12 isotropic_CLAS12.cpp )
 target_link_libraries(isotropic_CLAS12 ${ROOT_LIBRARIES} deuteron_dis_tree)
+
+add_executable(dis_HallC dis_HallC.cpp ${HEADERS} )
+target_link_libraries(dis_HallC ${ROOT_LIBRARIES} Foam wim_lib deuteron_dis_tree)
