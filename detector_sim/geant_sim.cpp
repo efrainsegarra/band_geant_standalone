@@ -8,6 +8,8 @@
 #include "Randomize.hh"
 #include "G4RunManager.hh"
 #include "QGSP_BERT.hh"
+#include "FTFP_BERT.hh"
+#include "FTFP_BERT_HP.hh"
 #include "G4StepLimiterPhysics.hh"
 #include "G4VisExecutive.hh"
 #include "G4UIExecutive.hh"
@@ -58,7 +60,7 @@ int main(int argc, char ** argv)
   runManager->SetUserInitialization(new NeutronHallBDetectorConstruction((void*)outTree));
 
   // Physics List
-  G4VModularPhysicsList* physicsList = new QGSP_BERT;
+  G4VModularPhysicsList* physicsList = new QGSP_BERT;//FTFP_BERT_HP;//FTFP_BERT;
   physicsList->RegisterPhysics(new G4StepLimiterPhysics());
   runManager->SetUserInitialization(physicsList);
 

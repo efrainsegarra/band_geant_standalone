@@ -13,9 +13,9 @@ class BAND_Hit : public TObject
   TVector3 pos; // in mm
   double time; // in ns
   double E_dep; // in MeV
-  int track;
+  int barNo; // indicating what bar
   
-  ClassDef(BAND_Hit,1);
+  ClassDef(BAND_Hit,7);
 };
 
 class BAND_Event : public TObject
@@ -25,7 +25,7 @@ class BAND_Event : public TObject
   ~BAND_Event();
   std::vector<BAND_Hit> hits;
 
-  ClassDef(BAND_Event,1);
+  ClassDef(BAND_Event,2);
 };
 
 #endif
