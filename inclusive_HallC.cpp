@@ -75,20 +75,20 @@ int main(int argc, char *argv[])
   if (atoi(argv[3])==0)
     {
       min_theta_e=9. * M_PI/180.;
-      max_theta_e=92.*M_PI/180.;
+      max_theta_e=30.*M_PI/180.;
       min_p_e=0.4;
       max_p_e=9.0;
-      min_phi_e=175.*M_PI/180.;
-      max_phi_e=185.*M_PI/180.;
+      min_phi_e=M_PI-hms_acc_phi;
+      max_phi_e=M_PI+hms_acc_phi;
     }
   else if (atoi(argv[3])==1)
     {
       min_theta_e=4. * M_PI/180.;
-      max_theta_e=42.*M_PI/180.;
+      max_theta_e=30.*M_PI/180.;
       min_p_e=1.8;
       max_p_e=10.;
-      min_phi_e=-3.*M_PI/180.;
-      max_phi_e=3.*M_PI/180.;
+      min_phi_e=-shms_acc_phi;
+      max_phi_e= shms_acc_phi;
     }
 
   // Run sanity check on parameters
@@ -109,7 +109,9 @@ int main(int argc, char *argv[])
   
   // Initialize the branches
   Gen_Event * thisEvent = new Gen_Event;
+  double ze;
   outputTree->Branch("event",&thisEvent);
+  outputTree->Branch("ze",&ze,"ze/D");
 
   // Random number generator
   TRandom3 * rand = new TRandom3(0);
@@ -144,6 +146,9 @@ int main(int argc, char *argv[])
 
       // Handle phi
       double phi_e = min_phi_e + (max_phi_e-min_phi_e)*rand->Rndm();
+
+      // Vertex
+      ze = lad_target_z*(rand->Rndm()-0.5);
 
       // Write to tree
       thisEvent->particles.clear();

@@ -13,6 +13,7 @@ add_subdirectory(detector_sim)
 add_subdirectory(wim_lib)
 add_subdirectory(analysis)
 add_subdirectory(tree)
+add_subdirectory(lad_sim)
 
 file( GLOB HEADERS ${CMAKE_SOURCE_DIR}/*.h )
 
@@ -39,3 +40,6 @@ target_link_libraries(dis_HallC ${ROOT_LIBRARIES} Foam wim_lib deuteron_dis_tree
 
 add_executable(inclusive_HallC inclusive_HallC.cpp ${HEADERS} )
 target_link_libraries(inclusive_HallC ${ROOT_LIBRARIES} Foam wim_lib deuteron_dis_tree)
+
+add_executable(randoms_HallC randoms_HallC.cpp )
+target_link_libraries(randoms_HallC ${ROOT_LIBRARIES} deuteron_dis_tree)

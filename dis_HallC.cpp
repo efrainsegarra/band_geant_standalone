@@ -46,8 +46,8 @@ double max_phi_e;
 double min_phi_er;
 double max_phi_er;
 const double max_lad_phi=20.*M_PI/180.;
-const double min_theta_r =100.*M_PI/180.;
-const double max_theta_r =157.*M_PI/180.;
+const double min_theta_r =lad_min_theta_deg*M_PI/180.;
+const double max_theta_r =lad_max_theta_deg*M_PI/180.;
 const double min_p_r =0.2;
 const double max_p_r =1.0;
 
@@ -73,12 +73,12 @@ int main(int argc, char *argv[])
   if (atoi(argv[3])==0)
     {
       // Simulating HMS
-      min_theta_e=9. * M_PI/180.;
-      max_theta_e=92.*M_PI/180.;
+      min_theta_e=9.* M_PI/180.;
+      max_theta_e=30.*M_PI/180.;
       min_p_e=0.4;
       max_p_e=9.0;
-      min_phi_e=175.*M_PI/180.;
-      max_phi_e=185.*M_PI/180.;
+      min_phi_e=M_PI-hms_acc_phi;
+      max_phi_e=M_PI+hms_acc_phi;
       max_phi_er=max_phi_e + max_lad_phi;
       min_phi_er=min_phi_e - max_lad_phi;
     }
@@ -86,11 +86,11 @@ int main(int argc, char *argv[])
     {
       // Simulating the SHMS
       min_theta_e=4. * M_PI/180.;
-      max_theta_e=42.*M_PI/180.;
+      max_theta_e=30.*M_PI/180.;
       min_p_e=1.8;
       max_p_e=10.;
-      min_phi_e=-3.*M_PI/180.;
-      max_phi_e=3.*M_PI/180.;
+      min_phi_e=-shms_acc_phi;
+      max_phi_e= shms_acc_phi;
       max_phi_er=max_lad_phi+max_phi_e;      
       min_phi_er=-max_phi_er;
     }
@@ -113,7 +113,12 @@ int main(int argc, char *argv[])
   
   // Initialize the branches
   Gen_Event * thisEvent = new Gen_Event;
+  double zr, ze, t0;
   outputTree->Branch("event",&thisEvent);
+  outputTree->Branch("ze",&ze,"ze/D");
+  outputTree->Branch("zr",&zr,"zr/D");
+  outputTree->Branch("t0",&t0,"t0/D");
+  t0=0.;
 
   // Random number generator
   TRandom3 * rand = new TRandom3(0);
@@ -153,6 +158,10 @@ int main(int argc, char *argv[])
       double phi_e = min_phi_e + (max_phi_e - min_phi_e) * rand->Rndm();
       double phi_r = phi_e - phi_er;
 
+      // Figure out the vertex
+      ze = lad_target_z*(rand->Rndm()-0.5);
+      zr = ze;
+
       // Write to tree
       thisEvent->particles.clear();
       Gen_Particle electron;
@@ -183,7 +192,7 @@ int main(int argc, char *argv[])
   return 0;
 }
 
-inline double sq(double x) {return x*x;};
+inline double sq(double x) {return x*x;}
 
 double disCS::Density(int nDim, double *args)
 {
