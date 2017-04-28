@@ -161,7 +161,7 @@ int main(int argc, char ** argv)
       // Cut on recon_mom
       if (recon_mom < 0.275) continue;
       // Cut on LAD eDep vs timing (to be made better later)
-      if (fabs(recon_mom_from_edep - recon_mom)>0.04) continue;
+      if (fabs(recon_mom_from_edep - recon_mom)>0.0404) continue;
 
       // Fill other histograms
       histT0True->Fill(proton_t0);

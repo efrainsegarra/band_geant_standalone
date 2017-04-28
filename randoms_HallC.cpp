@@ -19,7 +19,7 @@ const double maxThetaR = lad_max_theta_deg*M_PI/180.;
 const double minThetaR = lad_min_theta_deg*M_PI/180.;
 const double max_lad_phi=20.*M_PI/180.;
 const double csP = 500.; // nb
-const double timeWindow = 20.; // ns
+const double timeWindow = 30.; // ns
 
 inline double sq(double x){ return x*x; }
 inline double beta(double p){ return 1./sqrt(1. + sq(mP/p)); }

@@ -158,6 +158,9 @@ int main(int argc, char ** argv)
 
 double multScatTheta(double xOverX0, double beta, double mom)
 {
+  if (log(xOverX0) < -1./0.038)
+    return 0.;
+
   double theta_space= sqrt(2.*xOverX0)*0.0136/(beta*mom)*(1.+0.038*log(xOverX0));
   //cout << "Beta = " << beta << "   x = " << xOverX0 << "     Typical rotation is " << theta_space * rtd << " degrees\n";
   return theta_space;
