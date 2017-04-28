@@ -12,7 +12,7 @@
 
 using namespace std;
 
-const double tResPMT = 0.5; // 500 ps
+const double tResPMT = 0.35; // 350 ps
 const double cScint = 15.;
 
 int main(int argc, char ** argv)
@@ -46,7 +46,7 @@ int main(int argc, char ** argv)
 
   // Get the input tree
   TTree * inTree = (TTree*) inFile->Get("PropTree");
-  double gem1_x, gem1_y, gem1_z, gem2_x, gem2_y, gem2_z, lad_x, lad_y, lad_z, path_length, flight_time;
+  double gem1_x, gem1_y, gem1_z, gem2_x, gem2_y, gem2_z, lad_x, lad_y, lad_z, path_length, hit_time, mom_at_lad, recon_ze,t0;
   int lad_plane;
   inTree->SetBranchAddress("gem1_x",&gem1_x);
   inTree->SetBranchAddress("gem1_y",&gem1_y);
@@ -57,18 +57,24 @@ int main(int argc, char ** argv)
   inTree->SetBranchAddress("lad_x",&lad_x);
   inTree->SetBranchAddress("lad_y",&lad_y);
   inTree->SetBranchAddress("lad_z",&lad_z);
+  inTree->SetBranchAddress("t0",&t0);
   inTree->SetBranchAddress("path_length",&path_length);
-  inTree->SetBranchAddress("flight_time",&flight_time);
+  inTree->SetBranchAddress("hit_time",&hit_time);
+  inTree->SetBranchAddress("mom_at_lad",&mom_at_lad);
+  inTree->SetBranchAddress("recon_ze",&recon_ze);
   inTree->SetBranchAddress("lad_plane",&lad_plane);
 
   // Set up the output tree
   outFile->cd();
   TTree * outTree = new TTree("ReconTree","Reconstructed values for the recoil protons");
-  double mom_recon, theta_recon, phi_recon, z_recon;
+  double mom_recon, theta_recon, phi_recon, z_recon, path_recon, mom_from_edep_recon;
   outTree->Branch("mom_recon",&mom_recon,"mom_recon/D");
   outTree->Branch("theta_recon",&theta_recon,"theta_recon/D");
   outTree->Branch("phi_recon",&phi_recon,"phi_recon/D");
   outTree->Branch("z_recon",&z_recon,"z_recon/D");
+  outTree->Branch("mom_from_edep_recon",&mom_from_edep_recon,"mom_from_edep_recon/D");
+  outTree->Branch("path_recon",&path_recon,"path_recon/D");
+  outTree->Branch("ze_recon",&recon_ze,"ze_recon/D");
   
   int nEvents = inTree->GetEntries();
   for (int event=0 ; event<nEvents ; event++)
@@ -116,14 +122,16 @@ int main(int argc, char ** argv)
 	  double lad_x_smeared = lad_radii[lad_plane]*sin(lad_angles[lad_plane]) - lad_local_x_smeared*cos(lad_angles[lad_plane]);
 	  double lad_y_smeared = lad_local_y_smeared;
 	  double lad_z_smeared = lad_radii[lad_plane]*cos(lad_angles[lad_plane]) + lad_local_x_smeared*sin(lad_angles[lad_plane]);
-	  double recon_path_length = sqrt(sq(lad_x_smeared) + sq(lad_y_smeared) + sq(lad_z_smeared - z_recon));
+	  path_recon = sqrt(sq(lad_x_smeared) + sq(lad_y_smeared) + sq(lad_z_smeared - z_recon));
 	  
 	  // Smear LAD Timing
-	  double flight_time_recon = flight_time + myRand->Gaus()*tResPMT/sqrt(2.);
-	  double beta_recon = recon_path_length/(cAir * flight_time_recon);
+	  double flight_time_recon = hit_time + myRand->Gaus()*tResPMT/sqrt(2.);
+	  double beta_recon = path_recon/(cAir * flight_time_recon);
 	  if (beta_recon > 1.) beta_recon=0.99999999;
 	  mom_recon = mP/sqrt(1./sq(beta_recon) - 1.);
-	 
+
+	  // Energy deposition reconstruction
+	  mom_from_edep_recon = mom_at_lad + myRand->Gaus()*0.02; // 20 MeV resolution
 	} 
       // Write the tree
       outTree->Fill();

@@ -42,11 +42,13 @@ int main(int argc, char ** argv)
   const double gemXOverX0 = atof(argv[3]);
 
   // Set up the branches
-  double zr, gem1_x, gem1_y, gem1_z, gem2_x, gem2_y, gem2_z, lad_x, lad_y, lad_z, path_length, flight_time, t0;
+  double zr, ze, gem1_x, gem1_y, gem1_z, gem2_x, gem2_y, gem2_z, lad_x, lad_y, lad_z, path_length, hit_time, t0, mom_at_lad, recon_ze;
   int lad_plane;
   Gen_Event * thisEvent = NULL;
+  inTree->SetBranchAddress("ze",&ze);
   inTree->SetBranchAddress("zr",&zr);
   inTree->SetBranchAddress("event",&thisEvent);
+  inTree->SetBranchAddress("t0",&t0);
   outTree->Branch("gem1_x",&gem1_x,"gem1_x/D");
   outTree->Branch("gem1_y",&gem1_y,"gem1_y/D");
   outTree->Branch("gem1_z",&gem1_z,"gem1_z/D");
@@ -56,9 +58,11 @@ int main(int argc, char ** argv)
   outTree->Branch("lad_x",&lad_x,"lad_x/D");
   outTree->Branch("lad_y",&lad_y,"lad_y/D");
   outTree->Branch("lad_z",&lad_z,"lad_z/D");
-  outTree->Branch("path_length",&path_length,"path_length/D");
-  outTree->Branch("flight_time",&flight_time,"flight_time/D");
   outTree->Branch("t0",&t0,"t0/D");
+  outTree->Branch("path_length",&path_length,"path_length/D");
+  outTree->Branch("hit_time",&hit_time,"hit_time/D");
+  outTree->Branch("mom_at_lad",&mom_at_lad,"mom_at_lad/D");
+  outTree->Branch("recon_ze",&recon_ze,"recon_ze/D");
   outTree->Branch("lad_plane",&lad_plane,"lad_plane/I");
 
   // Copy the cross section
@@ -92,7 +96,8 @@ int main(int argc, char ** argv)
       double protonTheta = protonMomVect.Theta();
       double protonMom = protonMomVect.Mag();
       double protonBeta = protonMom/sqrt(sq(mP) + sq(protonMom));
-
+      recon_ze = ze + myRand->Gaus()*0.3/sin(thisEvent->particles[0].momentum.Theta());
+      
       // Adjust for multiple scattering in the target
       //cout << " Target\n";
       adjustMomVector(protonMomVect,multScatTheta((1./769.1 + 0.02/8.897)/(cos(protonPhi)*sin(protonTheta)),protonBeta, protonMom));
@@ -132,8 +137,11 @@ int main(int argc, char ** argv)
       lad_y = protonPosVect.Y();
       lad_z = protonPosVect.Z();
 
-      // Set the flight time
-      flight_time = path_length/(cAir * protonBeta) + t0;
+      // Set the hit time
+      hit_time = path_length/(cAir * protonBeta) + t0;
+
+      // Set up the momentum
+      mom_at_lad = protonMom;
 
       // Fill the tree
       outTree->Fill();
@@ -193,19 +201,19 @@ int whichLADPlane(TVector3 &pos, const TVector3 &mom, double &path)
 
   hitPlane(pos,mom,path,incidence,lad_radii[1],lad_angles[1]);
   
-  if ((fabs(pos.Y()) < 2.)&&(distInPlane(pos,lad_radii[1],lad_angles[1]) < 121.))
+  if ((fabs(pos.Y()) < 200.)&&(distInPlane(pos,lad_radii[1],lad_angles[1]) < 121.))
     return 1;
 
   pos = origPos;
   path=origPath;
   hitPlane(pos,mom,path,incidence,lad_radii[0],lad_angles[0]);
-  if ((fabs(pos.Y()) < 2.)&&(distInPlane(pos,lad_radii[0],lad_angles[0]) < 121.))
+  if ((fabs(pos.Y()) < 200.)&&(distInPlane(pos,lad_radii[0],lad_angles[0]) < 121.))
     return 0;
 
   pos = origPos;
   path=origPath;
   hitPlane(pos,mom,path,incidence,lad_radii[2],lad_angles[2]);
-  if ((fabs(pos.Y()) < 2.)&&(distInPlane(pos,lad_radii[2],lad_angles[2]) < 121.))
+  if ((fabs(pos.Y()) < 200.)&&(distInPlane(pos,lad_radii[2],lad_angles[2]) < 121.))
     return 2;
 
   path=0.;
