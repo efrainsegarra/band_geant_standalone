@@ -234,7 +234,7 @@ double disCS::Density(int nDim, double *args)
 
   double crosstotal1 = calc_cross(E1, Q2, x, p_r, theta_rq, phi_er, disSpecies, which_wave, decay, num_res, 0);
   double jacobian = x*E1*p_e*p_r/(M_PI*nu);
-  double differential_e = (max_theta_e - min_theta_e)*(2.*M_PI)*(max_p_e - min_p_e)*sin(theta_e);
+  double differential_e = (max_theta_e - min_theta_e)*(max_phi_e - min_phi_e)*(max_p_e - min_p_e)*sin(theta_e);
   double differential_p = (max_theta_r - min_theta_r)*(max_phi_er - min_phi_er)*(max_p_r - min_p_r)*sin(theta_r)*p_r/E_r;
   
   double result = crosstotal1 * jacobian * differential_e * differential_p;

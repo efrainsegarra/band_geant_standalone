@@ -4,6 +4,7 @@
 
 #include "TTree.h"
 #include "TFile.h"
+#include "TF1.h"
 #include "TH1.h"
 #include "TH2.h"
 #include "TH3.h"
@@ -55,7 +56,8 @@ int main(int argc, char ** argv)
     }
 
   // Prep some histograms
-  TH1D * histZRecon = new TH1D("z_res","Vertex resolution;z_recon - z_gen [cm];Counts",100,-10.,10.);
+  TH2D * histZRecon = new TH2D("z_res","Vertex resolution;theta_e [deg.];zp_recon - ze_recon [cm];Counts",100,4.,24.,100,-10.,10.);
+  TH1D * histZPRecon = new TH1D("zp_res","Proton Vertex resolution;zp_recon - ze_gen [cm];Counts",100,-10.,10.);
   TH1D * histT0True = new TH1D("t0","Events of interest;true t0 [ns];Counts",100,-20,20.);
   TH2D * histEdepRes = new TH2D("edep_res","Events hitting lad;Momentum (tof);Mom_edep - mom_tof;Counts",100,0.,1.,100.,-0.1,0.1);
   TH2D * histMomRes = new TH2D("mom_res","Recoil protons;true mom [GeV];Recon - true [GeV];Counts",100,0.,1.,100,-0.05,0.05);
@@ -64,8 +66,8 @@ int main(int argc, char ** argv)
   TH3D * shmsHist = new TH3D("shms","shms_acceptance;x_prime;angle;momentum",100,0.,1.,200,4.,24.,200,0.,10.0);
 
   // Some rate plots
-  TH1D * histLoXRate = new TH1D("loX_rate","0.25 < x' < 0.35;alpha_s; counts/hr",8,1.15,1.55);
-  TH1D * histHiXRate = new TH1D("hiX_rate","x' > 0.45;alpha_s; counts/hr",8,1.15,1.55);
+  TH2D * histLoXRate = new TH2D("loX_rate","low x' settings;x';alpha_s; counts/hr",20,0.,1.,8,1.15,1.55);
+  TH2D * histHiXRate = new TH2D("hiX_rate","high x' settings;x';alpha_s; counts/hr",20,0.,1.,8,1.15,1.55);
 
   // Get the trees
   TTree * genTree = (TTree*) genFile->Get("MCout");
@@ -86,6 +88,7 @@ int main(int argc, char ** argv)
       exit(-2);
     }
 
+  // Normalize the weight by the total number of generated events.
   weight = weight/((double)genTree->GetEntries());
 
   // Load the branches
@@ -105,6 +108,25 @@ int main(int argc, char ** argv)
   digTree->SetBranchAddress("ze_recon",&recon_ze);
   digTree->SetBranchAddress("mom_from_edep_recon",&recon_mom_from_edep);
 
+  // Do preliminary loop to fit vertex position
+  cerr << "Doing preliminary loop through events to establish vertex cuts...\n";
+  for (int i=0 ; i<genTree->GetEntries() ; i++)
+    {
+      genTree->GetEntry(i);
+      proTree->GetEntry(i);
+      digTree->GetEntry(i);
+
+      // Test if we hit LAD
+      if (lad_plane <0)
+	continue;
+
+      histZPRecon->Fill(recon_zr - true_zr,weight);
+    }
+  // Do a fit to establish proton vertex reconstruction resolution
+  histZPRecon->Fit("gaus");
+  double zr_width=histZPRecon->GetFunction("gaus")->GetParameter(2);
+
+  // Do a second loop through, once the width of the vertex resolution has been established
   for (int i=0 ; i<genTree->GetEntries() ; i++)
     {
       if (i%100000==0)
@@ -118,8 +140,7 @@ int main(int argc, char ** argv)
       if (lad_plane <0)
 	continue;
 
-      histZRecon->Fill(recon_zr - recon_ze);
-      histEdepRes->Fill(recon_mom,recon_mom_from_edep - recon_mom);
+      histEdepRes->Fill(recon_mom,recon_mom_from_edep - recon_mom,weight);
 
       // Reconstruct some important quantities
       TVector3 electron_mom_recon = genData->particles[0].momentum;
@@ -127,6 +148,8 @@ int main(int argc, char ** argv)
 				recon_mom*sin(recon_theta)*sin(recon_phi),
 				recon_mom*cos(recon_theta));
       TVector3 q_recon = TVector3(0.,0.,E1) - electron_mom_recon;
+
+      histZRecon->Fill(electron_mom_recon.Theta()*180./M_PI,recon_zr - recon_ze,weight);
       
       double omega_recon = E1 - electron_mom_recon.Mag();
       double QSq_recon = 2.*E1*electron_mom_recon.Mag()*(1.-cos(electron_mom_recon.Theta()));
@@ -151,20 +174,26 @@ int main(int argc, char ** argv)
       // Cut on QSq
       if (QSq_recon < 2.) continue;
       // Cut on Wprime
-      if (Wprime_recon < 1.8) continue;
+      //if (Wprime_recon < 1.8) continue;
+      if (Wprime_recon < 2.) continue;
       // Cut on phi
       if (fabs(recon_phi) > 17.*M_PI/180.) continue;
-      // Cut on z
-      if (fabs(recon_zr - true_ze) > 3.6) continue;
       // Cut on the theta_qs
       if (theta_qs_recon < 110.*M_PI/180.) continue;
       // Cut on recon_mom
       if (recon_mom < 0.275) continue;
+
+      // Background reduction cuts
+      // Cut on z
+      if (fabs(recon_zr - recon_ze) > 2.*sqrt(sq(zr_width) + sq(0.3/sin(electron_mom_recon.Theta())))) continue;
       // Cut on LAD eDep vs timing (to be made better later)
       if (fabs(recon_mom_from_edep - recon_mom)>0.0404) continue;
 
+      // This cut was present in Or's 2015 calculation
+      //if (genData->particles[1].momentum.Mag() > 0.6) continue;
+
       // Fill other histograms
-      histT0True->Fill(proton_t0);
+      histT0True->Fill(proton_t0,weight);
       histMomRes->Fill(genData->particles[1].momentum.Mag(),recon_mom- genData->particles[1].momentum.Mag(),weight);
 
       // Test if we are in the spectrometer acceptance
@@ -181,7 +210,7 @@ int main(int argc, char ** argv)
 	      (electron_mom_true.Mag() < 4.4*1.22) &&
 	      (electron_mom_true.Mag() > 4.4/1.1))
 	    {
-	      histLoXRate->Fill(alpha_s_true,weight);
+	      histLoXRate->Fill(xprime_true,alpha_s_true,weight);
 	    }
 	  
 	  // Test if we are in the nominal high x' spectrometer acceptance
@@ -189,7 +218,7 @@ int main(int argc, char ** argv)
 	      (electron_mom_true.Mag() < 4.4*1.22) &&
 	      (electron_mom_true.Mag() > 4.4/1.1))
 	    {
-	      histHiXRate->Fill(alpha_s_true,weight);
+	      histHiXRate->Fill(xprime_true,alpha_s_true,weight);
 	    }
 	}
       
@@ -203,7 +232,7 @@ int main(int argc, char ** argv)
 	      (electron_mom_true.Mag() < 4.4*1.1) &&
 	      (electron_mom_true.Mag() > 4.4/1.1))
 	    {
-	      histLoXRate->Fill(alpha_s_true,weight);
+	      histLoXRate->Fill(xprime_true,alpha_s_true,weight);
 	    }
 
 	  // Test if we are in the nominal high x' spectrometer acceptance
@@ -211,7 +240,7 @@ int main(int argc, char ** argv)
 	      (electron_mom_true.Mag() < 4.4*1.1) &&
 	      (electron_mom_true.Mag() > 4.4/1.1))
 	    {
-	      histHiXRate->Fill(alpha_s_true,weight);
+	      histHiXRate->Fill(xprime_true,alpha_s_true,weight);
 	    }
 	}
 
@@ -223,6 +252,7 @@ int main(int argc, char ** argv)
 
   outFile->cd();
   histZRecon->Write();
+  histZPRecon->Write();
   histT0True->Write();
   histEdepRes->Write();
   histMomRes->Write();

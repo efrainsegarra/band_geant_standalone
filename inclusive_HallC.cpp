@@ -49,6 +49,8 @@ extern "C"{
 // Foam ranges
 double min_theta_e;
 double max_theta_e;
+double max_phi_e;
+double min_phi_e;
 double min_p_e;
 double max_p_e;
 
@@ -71,7 +73,6 @@ int main(int argc, char *argv[])
   TFile * outputFile = new TFile(argv[2],"RECREATE");
 
   // Set ranges
-  double min_phi_e, max_phi_e;
   if (atoi(argv[3])==0)
     {
       min_theta_e=9. * M_PI/180.;
@@ -196,7 +197,7 @@ double InclusiveCS::Density(int nDim, double *args)
   calc_inclusive2(QEpw, DISpw, DISfsi, DISfsi2, E1, Q2,x, c, d, m, c_length, which_wave, offshellset, this_decay, num_res, calc);
   double dsigma=DISpw+QEpw-DISfsi;
   double jacobian = x*E1*p_e/(M_PI*nu);
-  double differential = (max_theta_e - min_theta_e)*(2.*M_PI)*(max_p_e - min_p_e)*sin(theta_e);
+  double differential = (max_theta_e - min_theta_e)*(max_phi_e - min_phi_e)*(max_p_e - min_p_e)*sin(theta_e);
 
   return dsigma*jacobian*differential;
 }
