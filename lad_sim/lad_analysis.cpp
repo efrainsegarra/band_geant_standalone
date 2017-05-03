@@ -201,7 +201,7 @@ int main(int argc, char ** argv)
       if (e_phi < -M_PI) e_phi += 2.*M_PI;
       
       // SHMS
-      if (fabs(e_phi) < shms_acc_phi)
+      if (fabs(e_phi) < 0.5*shms_acc/(2.*shms_acc_theta*sin(electron_mom_true.Theta())))
 	{
 	  shmsHist->Fill(xprime_recon,electron_mom_recon.Theta()*180./M_PI,electron_mom_recon.Mag(),weight);
 	  
@@ -223,7 +223,7 @@ int main(int argc, char ** argv)
 	}
       
       // HMS
-      if (fabs(e_phi-M_PI) < hms_acc_phi)
+      if (fabs(e_phi-M_PI) < 0.5*hms_acc/(2.*hms_acc_theta*sin(electron_mom_true.Theta())))
 	{
 	  hmsHist->Fill(xprime_recon,electron_mom_recon.Theta()*180./M_PI,electron_mom_recon.Mag(),weight);
 

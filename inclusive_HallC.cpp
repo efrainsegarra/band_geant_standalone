@@ -47,8 +47,8 @@ extern "C"{
 }//shared fortran variables
 
 // Foam ranges
-double min_theta_e;
-double max_theta_e;
+const double min_theta_e=hallc_min_theta;
+const double max_theta_e=hallc_max_theta;
 double max_phi_e;
 double min_phi_e;
 double min_p_e;
@@ -75,21 +75,17 @@ int main(int argc, char *argv[])
   // Set ranges
   if (atoi(argv[3])==0)
     {
-      min_theta_e=9. * M_PI/180.;
-      max_theta_e=30.*M_PI/180.;
       min_p_e=0.4;
       max_p_e=9.0;
-      min_phi_e=M_PI-hms_acc_phi;
-      max_phi_e=M_PI+hms_acc_phi;
+      min_phi_e=M_PI-hallc_phi_range;
+      max_phi_e=M_PI+hallc_phi_range;
     }
   else if (atoi(argv[3])==1)
     {
-      min_theta_e=4. * M_PI/180.;
-      max_theta_e=30.*M_PI/180.;
       min_p_e=1.8;
       max_p_e=10.;
-      min_phi_e=-shms_acc_phi;
-      max_phi_e= shms_acc_phi;
+      min_phi_e=-hallc_phi_range;
+      max_phi_e= hallc_phi_range;
     }
 
   // Run sanity check on parameters
