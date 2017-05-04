@@ -21,7 +21,7 @@ int main(int argc, char ** argv)
 
   if (argc != 3)
     {
-      cerr << "Wrong number of arguments. Instead use\n\tdet_sim /path/to/input/file /path/to/output/file\n";
+      cerr << "Wrong number of arguments. Instead use\n\tlad_digi /path/to/input/file /path/to/output/file\n";
       exit(-1);
     }
 
@@ -68,6 +68,7 @@ int main(int argc, char ** argv)
   outFile->cd();
   TTree * outTree = new TTree("ReconTree","Reconstructed values for the recoil protons");
   double mom_recon, theta_recon, phi_recon, z_recon, path_recon, mom_from_edep_recon;
+  int lad_bar;
   outTree->Branch("mom_recon",&mom_recon,"mom_recon/D");
   outTree->Branch("theta_recon",&theta_recon,"theta_recon/D");
   outTree->Branch("phi_recon",&phi_recon,"phi_recon/D");
@@ -75,7 +76,8 @@ int main(int argc, char ** argv)
   outTree->Branch("mom_from_edep_recon",&mom_from_edep_recon,"mom_from_edep_recon/D");
   outTree->Branch("path_recon",&path_recon,"path_recon/D");
   outTree->Branch("ze_recon",&recon_ze,"ze_recon/D");
-  
+  outTree->Branch("lad_bar",&lad_bar,"lad_bar/I");
+
   int nEvents = inTree->GetEntries();
   for (int event=0 ; event<nEvents ; event++)
     {
@@ -104,7 +106,6 @@ int main(int argc, char ** argv)
 	  
 	  // Reconstruct the vertex
 	  z_recon = (gem1_z_smeared*gem2_x_smeared - gem2_z_smeared*gem1_x_smeared)/(gem2_x_smeared - gem1_x_smeared);
-	    //gem1_z_smeared - (gem2_z_smeared-gem1_z_smeared)/(gem2_x_smeared-gem1_x_smeared)*gem1_x_smeared;
 	  
 	  // Angle reconstruction
 	  theta_recon = acos((gem2_z_smeared-gem1_z_smeared)/
@@ -115,8 +116,8 @@ int main(int argc, char ** argv)
 			   sqrt(sq(gem2_z_smeared-gem1_z_smeared) + sq(gem2_x_smeared-gem1_x_smeared)));
 	  
 	  // Reconstruct at LAD
-	  double lad_local_x = distInPlane(TVector3(lad_x,lad_y,lad_z), lad_radii[lad_plane], lad_angles[lad_plane])
-	    * ((lad_z > lad_radii[lad_plane]*cos(lad_angles[lad_plane]))? 1. : -1.);
+	  double lad_local_x = (lad_radii[lad_plane]*sin(lad_angles[lad_plane]) - lad_x)/cos(lad_angles[lad_plane]);
+	  lad_bar = floor((121.-lad_local_x)/22.);
 	  double lad_local_x_smeared = 22. * floor((lad_local_x+11.)/22.);
 	  double lad_local_y_smeared = lad_y + myRand->Gaus() * cScint * tResPMT/sqrt(2.);
 	  double lad_x_smeared = lad_radii[lad_plane]*sin(lad_angles[lad_plane]) - lad_local_x_smeared*cos(lad_angles[lad_plane]);

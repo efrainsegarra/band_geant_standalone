@@ -203,7 +203,6 @@ int whichLADPlane(TVector3 &pos, const TVector3 &mom, double &path)
   double incidence = 0.;
 
   hitPlane(pos,mom,path,incidence,lad_radii[1],lad_angles[1]);
-  
   if ((fabs(pos.Y()) < 200.)&&(distInPlane(pos,lad_radii[1],lad_angles[1]) < 121.))
     return 1;
 

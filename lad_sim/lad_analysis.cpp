@@ -61,7 +61,8 @@ int main(int argc, char ** argv)
   TH1D * histT0True = new TH1D("t0","Events of interest;true t0 [ns];Counts",100,-20,20.);
   TH2D * histEdepRes = new TH2D("edep_res","Events hitting lad;Momentum (tof);Mom_edep - mom_tof;Counts",100,0.,1.,100.,-0.1,0.1);
   TH2D * histMomRes = new TH2D("mom_res","Recoil protons;true mom [GeV];Recon - true [GeV];Counts",100,0.,1.,100,-0.05,0.05);
-
+  TH2D * histLAD_y = new TH2D("lad_y","Good events;LAD Bar; y_pos ; Counts",33,-0.5,32.5,84,-210.,210.);
+  TH2D * histGenPhi = new TH2D("gen_phi","Good events;LAD Bar;Proton Phi [deg];Counts",33,-0.5,32.5,200,-lad_max_phi*180./M_PI,lad_max_phi*180./M_PI);
   TH3D * hmsHist = new TH3D("hms","hms_acceptance;x_prime;angle;momentum",100,0.,1.,200,4.,24.,200,0.,10.0);
   TH3D * shmsHist = new TH3D("shms","shms_acceptance;x_prime;angle;momentum",100,0.,1.,200,4.,24.,200,0.,10.0);
 
@@ -94,13 +95,18 @@ int main(int argc, char ** argv)
   // Load the branches
   Gen_Event * genData = NULL;
   double true_ze,true_zr,proton_t0;
+  double lad_x,lad_y,lad_z;
   double recon_theta, recon_mom, recon_phi, recon_zr, recon_mom_from_edep, recon_ze;
-  int lad_plane;
+  int lad_plane, lad_bar;
   genTree->SetBranchAddress("event",&genData);
   genTree->SetBranchAddress("ze",&true_ze);
   genTree->SetBranchAddress("zr",&true_zr);
   genTree->SetBranchAddress("t0",&proton_t0);
   proTree->SetBranchAddress("lad_plane",&lad_plane);
+  proTree->SetBranchAddress("lad_x",&lad_x);
+  proTree->SetBranchAddress("lad_y",&lad_y);
+  proTree->SetBranchAddress("lad_z",&lad_z);
+  digTree->SetBranchAddress("lad_bar",&lad_bar);
   digTree->SetBranchAddress("mom_recon",&recon_mom);
   digTree->SetBranchAddress("theta_recon",&recon_theta);
   digTree->SetBranchAddress("phi_recon",&recon_phi);
@@ -177,7 +183,7 @@ int main(int argc, char ** argv)
       //if (Wprime_recon < 1.8) continue;
       if (Wprime_recon < 2.) continue;
       // Cut on phi
-      if (fabs(recon_phi) > 17.*M_PI/180.) continue;
+      //if (fabs(recon_phi) > 17.*M_PI/180.) continue;
       // Cut on the theta_qs
       if (theta_qs_recon < 110.*M_PI/180.) continue;
       // Cut on recon_mom
@@ -195,6 +201,8 @@ int main(int argc, char ** argv)
       // Fill other histograms
       histT0True->Fill(proton_t0,weight);
       histMomRes->Fill(genData->particles[1].momentum.Mag(),recon_mom- genData->particles[1].momentum.Mag(),weight);
+      histLAD_y->Fill(11*lad_plane + lad_bar,lad_y,weight);
+      histGenPhi->Fill(11*lad_plane + lad_bar,proton_mom_true.Phi()*180/M_PI);
 
       // Test if we are in the spectrometer acceptance
       double e_phi = genData->particles[0].momentum.Phi();
@@ -256,6 +264,8 @@ int main(int argc, char ** argv)
   histT0True->Write();
   histEdepRes->Write();
   histMomRes->Write();
+  histLAD_y->Write();
+  histGenPhi->Write();
   histLoXRate->Write();
   histHiXRate->Write();
   shmsHist->Write();

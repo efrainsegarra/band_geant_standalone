@@ -45,7 +45,6 @@ double min_phi_e;
 double max_phi_e;
 const double min_theta_e = hallc_min_theta;
 const double max_theta_e = hallc_max_theta;
-const double max_lad_phi=20.*M_PI/180.;
 const double min_theta_r =lad_min_theta_deg*M_PI/180.;
 const double max_theta_r =lad_max_theta_deg*M_PI/180.;
 const double min_p_r =0.2;
@@ -77,8 +76,8 @@ int main(int argc, char *argv[])
       max_p_e=9.0;
       min_phi_e=M_PI-hallc_phi_range;
       max_phi_e=M_PI+hallc_phi_range;
-      max_phi_er=max_phi_e + max_lad_phi;
-      min_phi_er=min_phi_e - max_lad_phi;
+      max_phi_er=max_phi_e + lad_max_phi;
+      min_phi_er=min_phi_e - lad_max_phi;
     }
   else if (atoi(argv[3])==1)
     {
@@ -87,7 +86,7 @@ int main(int argc, char *argv[])
       max_p_e=10.;
       min_phi_e=-hallc_phi_range;
       max_phi_e= hallc_phi_range;
-      max_phi_er=max_lad_phi+max_phi_e;      
+      max_phi_er=lad_max_phi+max_phi_e;      
       min_phi_er=-max_phi_er;
     }
 

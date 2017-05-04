@@ -17,7 +17,6 @@ const double minMomR = 0.2;
 const double maxMomR = 1.0;
 const double maxThetaR = lad_max_theta_deg*M_PI/180.;
 const double minThetaR = lad_min_theta_deg*M_PI/180.;
-const double max_lad_phi=20.*M_PI/180.;
 const double csP = 500.; // nb
 const double timeWindow = 30.; // ns
 
@@ -88,7 +87,7 @@ int main(int argc, char ** argv)
       double momR = protonMomDist->GetRandom();
       double cosThetaR = minCosThetaR + myRand->Rndm()*(maxCosThetaR-minCosThetaR);
       double thetaR = acos(cosThetaR);
-      double phiR = 2.*max_lad_phi * (myRand->Rndm()-0.5);
+      double phiR = 2.*lad_max_phi * (myRand->Rndm()-0.5);
 
       // Vertex
       zr = lad_target_z*(myRand->Rndm()-0.5);
@@ -104,7 +103,7 @@ int main(int argc, char ** argv)
     }
  
   // Update cross section info
-  double protonCS = csP * (2.*max_lad_phi)*(maxCosThetaR - minCosThetaR);
+  double protonCS = csP * (2.*lad_max_phi)*(maxCosThetaR - minCosThetaR);
   TVectorT<double> csSqVec(3);
   csSqVec[0]=protonCS*timeWindow*(*csVec)[0]; // Units of nb^2 * s
   csSqVec[1]=protonCS*timeWindow*(*csVec)[1];
