@@ -38,6 +38,9 @@ target_link_libraries(isotropic_CLAS12 ${ROOT_LIBRARIES} deuteron_dis_tree)
 add_executable(dis_HallC dis_HallC.cpp ${HEADERS} )
 target_link_libraries(dis_HallC ${ROOT_LIBRARIES} Foam wim_lib deuteron_dis_tree)
 
+add_executable(dis_HallC_2d dis_HallC_2d.cpp ${HEADERS} )
+target_link_libraries(dis_HallC_2d ${ROOT_LIBRARIES} Foam wim_lib deuteron_dis_tree)
+
 add_executable(inclusive_HallC inclusive_HallC.cpp ${HEADERS} )
 target_link_libraries(inclusive_HallC ${ROOT_LIBRARIES} Foam wim_lib deuteron_dis_tree)
 

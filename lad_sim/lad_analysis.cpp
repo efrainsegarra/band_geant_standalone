@@ -143,8 +143,8 @@ int main(int argc, char ** argv)
       digTree->GetEntry(i);
 
       // Test if we hit LAD
-      if (lad_plane <0)
-	continue;
+      //if (lad_plane <0)
+      //continue;
 
       histEdepRes->Fill(recon_mom,recon_mom_from_edep - recon_mom,weight);
 
@@ -178,22 +178,26 @@ int main(int argc, char ** argv)
 
       // Restrict our events of interest
       // Cut on QSq
-      if (QSq_recon < 2.) continue;
+      //if (QSq_recon < 2.) continue;
+      if (QSq_true < 2.) continue;
       // Cut on Wprime
       //if (Wprime_recon < 1.8) continue;
-      if (Wprime_recon < 2.) continue;
+      //if (Wprime_recon < 2.) continue;
+      if (Wprime_true < 2.) continue;
       // Cut on phi
       //if (fabs(recon_phi) > 17.*M_PI/180.) continue;
       // Cut on the theta_qs
-      if (theta_qs_recon < 110.*M_PI/180.) continue;
+      //if (theta_qs_recon < 110.*M_PI/180.) continue;
+      if (theta_qs_true < 110.*M_PI/180.) continue;
       // Cut on recon_mom
-      if (recon_mom < 0.275) continue;
+      //if (recon_mom < 0.275) continue;
+      if (proton_mom_true.Mag() < 0.275) continue;
 
       // Background reduction cuts
       // Cut on z
-      if (fabs(recon_zr - recon_ze) > 2.*sqrt(sq(zr_width) + sq(0.3/sin(electron_mom_recon.Theta())))) continue;
+      //if (fabs(recon_zr - recon_ze) > 2.*sqrt(sq(zr_width) + sq(0.3/sin(electron_mom_recon.Theta())))) continue;
       // Cut on LAD eDep vs timing (to be made better later)
-      if (fabs(recon_mom_from_edep - recon_mom)>0.0404) continue;
+      //if (fabs(recon_mom_from_edep - recon_mom)>0.0404) continue;
 
       // This cut was present in Or's 2015 calculation
       //if (genData->particles[1].momentum.Mag() > 0.6) continue;
@@ -214,7 +218,7 @@ int main(int argc, char ** argv)
 	  shmsHist->Fill(xprime_recon,electron_mom_recon.Theta()*180./M_PI,electron_mom_recon.Mag(),weight);
 	  
 	  // Test if we are in the nominal low x' spectrometer acceptance
-	  if ((fabs(electron_mom_true.Theta() - 13.5*M_PI/180.)<.024) &&
+	  if ((fabs(electron_mom_true.Theta() - 13.5*M_PI/180.)<shms_acc_theta) &&
 	      (electron_mom_true.Mag() < 4.4*1.22) &&
 	      (electron_mom_true.Mag() > 4.4/1.1))
 	    {
@@ -222,7 +226,7 @@ int main(int argc, char ** argv)
 	    }
 	  
 	  // Test if we are in the nominal high x' spectrometer acceptance
-	  if ((fabs(electron_mom_true.Theta() - 17.*M_PI/180.)<.024) &&
+	  if ((fabs(electron_mom_true.Theta() - 17.*M_PI/180.)<shms_acc_theta) &&
 	      (electron_mom_true.Mag() < 4.4*1.22) &&
 	      (electron_mom_true.Mag() > 4.4/1.1))
 	    {
@@ -236,7 +240,7 @@ int main(int argc, char ** argv)
 	  hmsHist->Fill(xprime_recon,electron_mom_recon.Theta()*180./M_PI,electron_mom_recon.Mag(),weight);
 
 	  // Test if we are in the nominal low x' spectrometer acceptance
-	  if ((fabs(electron_mom_true.Theta() - 13.5*M_PI/180.)<.032) &&
+	  if ((fabs(electron_mom_true.Theta() - 13.5*M_PI/180.)<hms_acc_theta) &&
 	      (electron_mom_true.Mag() < 4.4*1.1) &&
 	      (electron_mom_true.Mag() > 4.4/1.1))
 	    {
@@ -244,7 +248,7 @@ int main(int argc, char ** argv)
 	    }
 
 	  // Test if we are in the nominal high x' spectrometer acceptance
-	  if ((fabs(electron_mom_true.Theta() - 17.*M_PI/180.)<.032) &&
+	  if ((fabs(electron_mom_true.Theta() - 17.*M_PI/180.)<hms_acc_theta) &&
 	      (electron_mom_true.Mag() < 4.4*1.1) &&
 	      (electron_mom_true.Mag() > 4.4/1.1))
 	    {

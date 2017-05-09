@@ -100,7 +100,7 @@ int main(int argc, char ** argv)
       
       // Adjust for multiple scattering in the target
       //cout << " Target\n";
-      adjustMomVector(protonMomVect,multScatTheta((1./769.1 + 0.02/8.897)/(cos(protonPhi)*sin(protonTheta)),protonBeta, protonMom));
+      adjustMomVector(protonMomVect,multScatTheta((1./769.1 + 0.01*2.54/8.897)/(cos(protonPhi)*sin(protonTheta)),protonBeta, protonMom));
      
       // Multiple scattering at the scattering chamber window
       const double scatteringChamberR=30.;
