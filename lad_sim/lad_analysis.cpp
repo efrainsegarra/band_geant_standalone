@@ -91,6 +91,7 @@ int main(int argc, char ** argv)
 
   // Normalize the weight by the total number of generated events.
   weight = weight/((double)genTree->GetEntries());
+  cerr << "The weight for this run is " << weight << "\n";
 
   // Load the branches
   Gen_Event * genData = NULL;
@@ -143,8 +144,8 @@ int main(int argc, char ** argv)
       digTree->GetEntry(i);
 
       // Test if we hit LAD
-      //if (lad_plane <0)
-      //continue;
+      if (lad_plane <0)
+      continue;
 
       histEdepRes->Fill(recon_mom,recon_mom_from_edep - recon_mom,weight);
 
@@ -161,8 +162,8 @@ int main(int argc, char ** argv)
       double QSq_recon = 2.*E1*electron_mom_recon.Mag()*(1.-cos(electron_mom_recon.Theta()));
       double theta_qs_recon = q_recon.Angle(proton_mom_recon);
       double Es_recon = sqrt(sq(recon_mom) + sq(mP));
-      double Wprime_recon = sqrt(sq(mP) - QSq_recon + 2.*omega_recon*(mD - Es_recon) + 2.*recon_mom*q_recon.Mag()*cos(theta_qs_recon));
-      double xprime_recon = QSq_recon/(2.*((mD - Es_recon)*omega_recon + recon_mom*q_recon.Mag()*cos(theta_qs_recon)));
+      double Wprime_recon = sqrt(sq(mD) + sq(mP) - QSq_recon + 2.*omega_recon*(mD - Es_recon) - 2.*mD*Es_recon + 2.*proton_mom_recon.Dot(q_recon));
+      double xprime_recon = QSq_recon/(2.*((mD - Es_recon)*omega_recon + proton_mom_recon.Dot(q_recon)));
 
       // True quantities
       TVector3 electron_mom_true = genData->particles[0].momentum;
@@ -172,35 +173,30 @@ int main(int argc, char ** argv)
       double QSq_true = 2.*E1*electron_mom_true.Mag()*(1.-cos(electron_mom_true.Theta()));
       double theta_qs_true = q_true.Angle(proton_mom_true);
       double Es_true = sqrt(proton_mom_true.Mag2() + sq(mP));
-      double Wprime_true = sqrt(sq(mP) - QSq_true + 2.*omega_true*(mD - Es_true) + 2.*proton_mom_true.Mag()*q_true.Mag()*cos(theta_qs_true));
-      double xprime_true = QSq_true/(2.*((mD - Es_true)*omega_true + proton_mom_true.Mag()*q_true.Mag()*cos(theta_qs_true)));
+      double Wprime_true = sqrt(sq(mD) + sq(mP) - QSq_true + 2.*omega_true*(mD - Es_true) -2.*mD*Es_true + 2.*proton_mom_true.Dot(q_true));
+      double xprime_true = QSq_true/(2.*((mD - Es_true)*omega_true + proton_mom_true.Dot(q_true)));
       double alpha_s_true = (Es_true - proton_mom_true.Dot(q_true)/q_true.Mag())/mP;
 
       // Restrict our events of interest
       // Cut on QSq
-      //if (QSq_recon < 2.) continue;
-      if (QSq_true < 2.) continue;
+      if (QSq_recon < 2.) continue;
+      //if (QSq_true < 2.) continue;
       // Cut on Wprime
       //if (Wprime_recon < 1.8) continue;
-      //if (Wprime_recon < 2.) continue;
-      if (Wprime_true < 2.) continue;
-      // Cut on phi
-      //if (fabs(recon_phi) > 17.*M_PI/180.) continue;
+      if (Wprime_recon < 2.) continue;
+      //if (Wprime_true < 2.) continue;
       // Cut on the theta_qs
-      //if (theta_qs_recon < 110.*M_PI/180.) continue;
-      if (theta_qs_true < 110.*M_PI/180.) continue;
+      if (theta_qs_recon < 110.*M_PI/180.) continue;
+      //if (theta_qs_true < 110.*M_PI/180.) continue;
       // Cut on recon_mom
-      //if (recon_mom < 0.275) continue;
-      if (proton_mom_true.Mag() < 0.275) continue;
+      if (recon_mom < 0.275) continue;
+      //if (proton_mom_true.Mag() < 0.275) continue;
 
       // Background reduction cuts
       // Cut on z
-      //if (fabs(recon_zr - recon_ze) > 2.*sqrt(sq(zr_width) + sq(0.3/sin(electron_mom_recon.Theta())))) continue;
+      if (fabs(recon_zr - recon_ze) > 2.*sqrt(sq(zr_width) + sq(0.3/sin(electron_mom_recon.Theta())))) continue;
       // Cut on LAD eDep vs timing (to be made better later)
-      //if (fabs(recon_mom_from_edep - recon_mom)>0.0404) continue;
-
-      // This cut was present in Or's 2015 calculation
-      //if (genData->particles[1].momentum.Mag() > 0.6) continue;
+      if (fabs(recon_mom_from_edep - recon_mom)>0.0404) continue;
 
       // Fill other histograms
       histT0True->Fill(proton_t0,weight);
@@ -210,7 +206,7 @@ int main(int argc, char ** argv)
 
       // Test if we are in the spectrometer acceptance
       double e_phi = genData->particles[0].momentum.Phi();
-      if (e_phi < -M_PI) e_phi += 2.*M_PI;
+      if (e_phi < -0.5*M_PI) e_phi += 2.*M_PI;
       
       // SHMS
       if (fabs(e_phi) < 0.5*shms_acc/(2.*shms_acc_theta*sin(electron_mom_true.Theta())))
@@ -227,7 +223,7 @@ int main(int argc, char ** argv)
 	  
 	  // Test if we are in the nominal high x' spectrometer acceptance
 	  if ((fabs(electron_mom_true.Theta() - 17.*M_PI/180.)<shms_acc_theta) &&
-	      (electron_mom_true.Mag() < 4.4*1.22) &&
+	      (electron_mom_true.Mag() < 4.4*1.2) &&
 	      (electron_mom_true.Mag() > 4.4/1.1))
 	    {
 	      histHiXRate->Fill(xprime_true,alpha_s_true,weight);

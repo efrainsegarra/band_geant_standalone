@@ -39,10 +39,10 @@ extern "C"{
 // Foam ranges
 double min_p_e;
 double max_p_e;
-double min_phi_er;
-double max_phi_er;
 double min_phi_e;
 double max_phi_e;
+const double min_phi_r = -lad_max_phi;
+const double max_phi_r = lad_max_phi;
 const double min_theta_e = hallc_min_theta;
 const double max_theta_e = hallc_max_theta;
 const double min_theta_r =lad_min_theta_deg*M_PI/180.;
@@ -76,8 +76,6 @@ int main(int argc, char *argv[])
       max_p_e=9.0;
       min_phi_e=M_PI-hallc_phi_range;
       max_phi_e=M_PI+hallc_phi_range;
-      max_phi_er=max_phi_e + lad_max_phi;
-      min_phi_er=min_phi_e - lad_max_phi;
     }
   else if (atoi(argv[3])==1)
     {
@@ -86,8 +84,6 @@ int main(int argc, char *argv[])
       max_p_e=10.;
       min_phi_e=-hallc_phi_range;
       max_phi_e= hallc_phi_range;
-      max_phi_er=lad_max_phi+max_phi_e;      
-      min_phi_er=-max_phi_er;
     }
 
   // Set external variables
@@ -121,7 +117,7 @@ int main(int argc, char *argv[])
   // Initialize the foam
   TFoam * csFoam = new TFoam("csFoam");
   disCS * csTotal = new disCS();
-  csFoam->SetkDim(5);
+  csFoam->SetkDim(6);
   csFoam->SetRho(csTotal);
   csFoam->SetPseRan(rand);
   // optional
@@ -147,11 +143,8 @@ int main(int argc, char *argv[])
       double p_e = min_p_e + eventData[1]*(max_p_e - min_p_e);
       double theta_r = min_theta_r + eventData[2]*(max_theta_r - min_theta_r);
       double p_r = min_p_r + eventData[3]*(max_p_r - min_p_r);
-      double phi_er = min_phi_er + eventData[4]*(max_phi_er - min_phi_er);
-
-      // Handle phi (** DANGER ** )
-      double phi_e = min_phi_e + (max_phi_e - min_phi_e) * rand->Rndm();
-      double phi_r = phi_e - phi_er;
+      double phi_e = min_phi_e + eventData[4]*(max_phi_e - min_phi_e);
+      double phi_r = min_phi_r + eventData[5]*(max_phi_r - min_phi_r);
 
       // Figure out the vertex
       ze = lad_target_z*(rand->Rndm()-0.5);
@@ -204,11 +197,13 @@ double disCS::Density(int nDim, double *args)
   double p_e = min_p_e + args[1]*(max_p_e - min_p_e);
   double theta_r = min_theta_r + args[2]*(max_theta_r - min_theta_r);
   double p_r = min_p_r + args[3]*(max_p_r - min_p_r);
-  double phi_er = min_phi_er + args[4]*(max_phi_er - min_phi_er);
+  double phi_e = min_phi_e + args[4]*(max_phi_e - min_phi_e);
+  double phi_r = min_phi_r + args[5]*(max_phi_r - min_phi_r);
 
   //cout << theta_e*180/M_PI << " " << p_e << " " << theta_r*180./M_PI << " " << p_r << " " << phi_er*180./M_PI << "\n";
 
   // Develop derived quantities
+  double phi_er = phi_e - phi_r;
   double E_r = sqrt(sq(mP) + sq(p_r));
   double Q2 = 4.*E1*p_e * sq(sin(0.5*theta_e));
   double nu = E1 - p_e;
@@ -230,7 +225,7 @@ double disCS::Density(int nDim, double *args)
   double crosstotal1 = calc_cross(E1, Q2, x, p_r, theta_rq, phi_er, disSpecies, which_wave, decay, num_res, 0);
   double jacobian = x*E1*p_e*p_r/(M_PI*nu);
   double differential_e = (max_theta_e - min_theta_e)*(max_phi_e - min_phi_e)*(max_p_e - min_p_e)*sin(theta_e);
-  double differential_p = (max_theta_r - min_theta_r)*(max_phi_er - min_phi_er)*(max_p_r - min_p_r)*sin(theta_r)*p_r/E_r;
+  double differential_p = (max_theta_r - min_theta_r)*(max_phi_r - min_phi_r)*(max_p_r - min_p_r)*sin(theta_r)*p_r/E_r;
   
   double result = crosstotal1 * jacobian * differential_e * differential_p;
 
