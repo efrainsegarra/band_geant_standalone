@@ -17,6 +17,11 @@
 
 using namespace std;
 
+const double loXAng = 12.5*M_PI/180.;
+const double loXMom = 4.8;
+const double hiXAng = 14.5*M_PI/180.;
+const double hiXMom = 5.2;
+
 int main(int argc, char ** argv)
 {
   if (argc != 5)
@@ -57,6 +62,8 @@ int main(int argc, char ** argv)
 
   // Prep some histograms
   TH2D * histZRecon = new TH2D("z_res","Vertex resolution;theta_e [deg.];zp_recon - ze_recon [cm];Counts",100,4.,24.,100,-10.,10.);
+  TH2D * histZPRecon_byTheta = new TH2D("zp_res_by_theta","Vertex resolution;theta_p [deg.];zp_recon - ze_recon [cm];Counts",
+				       100.,lad_min_theta_deg,lad_max_theta_deg,100,-10.,10.);
   TH1D * histZPRecon = new TH1D("zp_res","Proton Vertex resolution;zp_recon - ze_gen [cm];Counts",100,-10.,10.);
   TH1D * histT0True = new TH1D("t0","Events of interest;true t0 [ns];Counts",100,-20,20.);
   TH2D * histEdepRes = new TH2D("edep_res","Events hitting lad;Momentum (tof);Mom_edep - mom_tof;Counts",100,0.,1.,100.,-0.1,0.1);
@@ -127,7 +134,12 @@ int main(int argc, char ** argv)
       if (lad_plane <0)
 	continue;
 
-      histZPRecon->Fill(recon_zr - true_zr,weight);
+      double theta_r_deg = genData->particles[1].momentum.Theta()*180./M_PI;
+
+      histZPRecon_byTheta->Fill(theta_r_deg,recon_zr - true_zr,weight);
+      
+      if ((theta_r_deg < 105) && ( theta_r_deg > 90))
+	histZPRecon->Fill(recon_zr - true_zr,weight);
     }
   // Do a fit to establish proton vertex reconstruction resolution
   histZPRecon->Fit("gaus");
@@ -194,7 +206,7 @@ int main(int argc, char ** argv)
 
       // Background reduction cuts
       // Cut on z
-      if (fabs(recon_zr - recon_ze) > 2.*sqrt(sq(zr_width) + sq(0.3/sin(electron_mom_recon.Theta())))) continue;
+      if (fabs(recon_zr - recon_ze) > 2.*sqrt(sq(zr_width/sin(recon_theta)) + sq(0.3/sin(electron_mom_recon.Theta())))) continue;
       // Cut on LAD eDep vs timing (to be made better later)
       if (fabs(recon_mom_from_edep - recon_mom)>0.0404) continue;
 
@@ -214,17 +226,17 @@ int main(int argc, char ** argv)
 	  shmsHist->Fill(xprime_recon,electron_mom_recon.Theta()*180./M_PI,electron_mom_recon.Mag(),weight);
 	  
 	  // Test if we are in the nominal low x' spectrometer acceptance
-	  if ((fabs(electron_mom_true.Theta() - 13.5*M_PI/180.)<shms_acc_theta) &&
-	      (electron_mom_true.Mag() < 4.4*1.22) &&
-	      (electron_mom_true.Mag() > 4.4/1.1))
+	  if ((fabs(electron_mom_true.Theta() - loXAng)<shms_acc_theta) &&
+	      (electron_mom_true.Mag() < loXMom*1.22) &&
+	      (electron_mom_true.Mag() > loXMom/1.1))
 	    {
 	      histLoXRate->Fill(xprime_true,alpha_s_true,weight);
 	    }
 	  
 	  // Test if we are in the nominal high x' spectrometer acceptance
-	  if ((fabs(electron_mom_true.Theta() - 17.*M_PI/180.)<shms_acc_theta) &&
-	      (electron_mom_true.Mag() < 4.4*1.2) &&
-	      (electron_mom_true.Mag() > 4.4/1.1))
+	  if ((fabs(electron_mom_true.Theta() - hiXAng)<shms_acc_theta) &&
+	      (electron_mom_true.Mag() < hiXMom*1.22) &&
+	      (electron_mom_true.Mag() > hiXMom/1.1))
 	    {
 	      histHiXRate->Fill(xprime_true,alpha_s_true,weight);
 	    }
@@ -236,17 +248,17 @@ int main(int argc, char ** argv)
 	  hmsHist->Fill(xprime_recon,electron_mom_recon.Theta()*180./M_PI,electron_mom_recon.Mag(),weight);
 
 	  // Test if we are in the nominal low x' spectrometer acceptance
-	  if ((fabs(electron_mom_true.Theta() - 13.5*M_PI/180.)<hms_acc_theta) &&
-	      (electron_mom_true.Mag() < 4.4*1.1) &&
-	      (electron_mom_true.Mag() > 4.4/1.1))
+	  if ((fabs(electron_mom_true.Theta() - loXAng)<hms_acc_theta) &&
+	      (electron_mom_true.Mag() < loXMom*1.1) &&
+	      (electron_mom_true.Mag() > loXMom/1.1))
 	    {
 	      histLoXRate->Fill(xprime_true,alpha_s_true,weight);
 	    }
 
 	  // Test if we are in the nominal high x' spectrometer acceptance
-	  if ((fabs(electron_mom_true.Theta() - 17.*M_PI/180.)<hms_acc_theta) &&
-	      (electron_mom_true.Mag() < 4.4*1.1) &&
-	      (electron_mom_true.Mag() > 4.4/1.1))
+	  if ((fabs(electron_mom_true.Theta() - hiXAng)<hms_acc_theta) &&
+	      (electron_mom_true.Mag() < hiXMom*1.1) &&
+	      (electron_mom_true.Mag() > hiXMom/1.1))
 	    {
 	      histHiXRate->Fill(xprime_true,alpha_s_true,weight);
 	    }
@@ -261,6 +273,7 @@ int main(int argc, char ** argv)
   outFile->cd();
   histZRecon->Write();
   histZPRecon->Write();
+  histZPRecon_byTheta->Write();
   histT0True->Write();
   histEdepRes->Write();
   histMomRes->Write();
