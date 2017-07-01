@@ -5,7 +5,13 @@ cmake_minimum_required (VERSION 2.6)
 enable_language(Fortran)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake_modules")
 find_package(ROOT REQUIRED)
-find_package(Geant4 REQUIRED ui_all vis_all)
+
+option(Build_Geant "Build the Geant4 Monte Carlo Simulations."
+         ON)
+
+if(Build_Geant)
+	find_package(Geant4 REQUIRED ui_all vis_all)
+endif()
 
 project (deuteron_dis)
 
