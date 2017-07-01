@@ -31,6 +31,7 @@
 
 NeutronHallBEventAction::NeutronHallBEventAction(void * treePtr)
   : G4UserEventAction()
+  //fEdep(0.)
 {
   rand2  = new TRandom2();
   outTree = (TTree*) treePtr;
@@ -40,12 +41,26 @@ NeutronHallBEventAction::~NeutronHallBEventAction()
 {}
 
 void NeutronHallBEventAction::BeginOfEventAction(const G4Event*){
+    //fEdep = 0.;
 //    G4cout << "starting event...." << G4endl;
 }
 
 void NeutronHallBEventAction::EndOfEventAction(const G4Event* event)
 {
-  outTree->Fill();
+    //fRunAction->AddEdep(fEdep);
+    G4TrajectoryContainer* trajectoryContainer = event->GetTrajectoryContainer();
+    G4int n_trajectories = 0;
+    if (trajectoryContainer) n_trajectories = trajectoryContainer->entries();
+    G4int eventID = event->GetEventID();
+    if ( eventID < 100 || eventID % 100 == 0) {
+        G4cout << ">>> Event: " << eventID  << G4endl;
+        if ( trajectoryContainer ) {
+          G4cout << "    " << n_trajectories
+                 << " trajectories stored in this event." << G4endl;
+        }
+    }
+
+    outTree->Fill();
   /*
   // get number of stored trajectories
   G4TrajectoryContainer* trajectoryContainer = event->GetTrajectoryContainer();

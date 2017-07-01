@@ -18,5 +18,6 @@ if(Build_Geant)
 	target_link_libraries(geant_sim ${ROOT_LIBRARIES} ${Geant4_LIBRARIES} deuteron_dis_tree)
 endif()
 
-
+add_executable(digitze ${CMAKE_CURRENT_SOURCE_DIR}/digitize.cpp )
+target_link_libraries(digitze deuteron_dis_tree ${ROOT_LIBRARIES})
 

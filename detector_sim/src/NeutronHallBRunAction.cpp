@@ -57,6 +57,7 @@ NeutronHallBRunAction::NeutronHallBRunAction()
 NeutronHallBRunAction::~NeutronHallBRunAction()
 {
 //    G4cout << "ending NeutronHallBRunAction" << G4endl;
+  delete G4AnalysisManager::Instance();  
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
