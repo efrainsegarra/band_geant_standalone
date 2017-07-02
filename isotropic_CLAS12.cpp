@@ -14,16 +14,20 @@
 using namespace std;
 
 // Foam ranges
-const double min_theta_e = 5.*M_PI/180.;
-const double max_theta_e = 35.*M_PI/180.;
-const double min_p_e = 2.;
-const double max_p_e = 8.;
-const double min_theta_r =90.*M_PI/180.;
-const double max_theta_r =180.*M_PI/180.;
-const double min_p_r =0.275;
-const double max_p_r =0.600;
-const double min_phi_er=0.;
-const double max_phi_er=2.*M_PI;
+//const double min_theta_e = 5.*M_PI/180.;
+//const double max_theta_e = 35.*M_PI/180.;
+//const double min_p_e = 2.;
+//const double max_p_e = 8.;
+
+const double min_theta_r =155*M_PI/180.;
+const double max_theta_r =175.75*M_PI/180.;
+const double min_p_r =0.55;
+const double max_p_r =0.55;
+const double min_phi_r=0.;
+const double max_phi_r=M_PI;
+
+//const double min_phi_er=0.;
+//const double max_phi_er=2.*M_PI;
 
 int main(int argc, char *argv[])
 {
@@ -56,17 +60,10 @@ int main(int argc, char *argv[])
 
 
       // Extract useful quantities
-      double theta_e = min_theta_e + (max_theta_e - min_theta_e) * rand->Rndm();
-      double p_e = min_p_e + (max_p_e - min_p_e) * rand->Rndm();
       double theta_r = min_theta_r + (max_theta_r - min_theta_r) * rand->Rndm();
       double p_r = min_p_r + (max_p_r - min_p_r) * rand->Rndm();
-      double phi_er = 2.*M_PI * rand->Rndm();
+      double phi_r = min_phi_r + (max_phi_r - min_phi_r) * rand->Rndm();
 
-      // Handle phi (** DANGER ** )
-      double phi_e = 2.*M_PI * rand->Rndm();
-      double phi_r = phi_e + phi_er;
-      if (phi_r > 2.*M_PI)
-	       phi_r -= 2.*M_PI;
 
       // Write to tree
       thisEvent->particles.clear();

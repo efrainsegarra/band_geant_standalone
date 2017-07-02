@@ -8,10 +8,12 @@
 #define NeutronHallBTrackerSD_h 1
 
 #include "G4VSensitiveDetector.hh"
+#include "prop_tree.h"
+#include <vector>
+#include <map>
 
 class G4Step;
 class G4HCofThisEvent;
-class BAND_Event;
 class TTree;
 
 /// NeutronHallBTracker sensitive detector class
@@ -22,7 +24,7 @@ class TTree;
 
 class NeutronHallBTrackerSD : public G4VSensitiveDetector
 {
- public:
+  public:
   NeutronHallBTrackerSD(void * treePtr, const G4String& name);
   virtual ~NeutronHallBTrackerSD();
   
@@ -32,11 +34,25 @@ class NeutronHallBTrackerSD : public G4VSensitiveDetector
   virtual void   EndOfEvent(G4HCofThisEvent* hitCollection);
 
  private:
+  G4int hitBarNo;
+  G4double hitE;
+  G4double hitTime;
+  G4ThreeVector hitPos;
+
+  G4double eventE;
+
   BAND_Event * hitList;
   TTree * outTree;
-  G4double EventEdep;
-  G4double EventTime;
-  G4ThreeVector EventPos;
+
+  std::vector < std::map < G4int , BAND_Hit > > vecOfbarHits;
+  std::map < G4int , BAND_Hit > barHits;
+
+  G4int ind;
+
+  G4double eff_energy;
+  G4double eff_time;
+  G4ThreeVector eff_pos;
+
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

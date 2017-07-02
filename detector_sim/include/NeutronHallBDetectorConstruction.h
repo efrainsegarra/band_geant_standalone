@@ -53,8 +53,17 @@ class NeutronHallBDetectorConstruction : public G4VUserDetectorConstruction
   G4LogicalVolume*   fLogicTarget;     
   G4LogicalVolume**  fLogicChamber;    
   G4LogicalVolume*   logicDetector;
+  G4LogicalVolume*   logicDetectorWall[5];
+  G4LogicalVolume*   logicDetectorBarsE[5];
+  G4LogicalVolume*   logicDetectorBarsD[5];
+  G4LogicalVolume*   logicDetectorBarsC[5];
+  G4LogicalVolume*   logicDetectorBarsB[5];
+  G4LogicalVolume*   logicDetectorBarsA[5];
+  //G4LogicalVolume*   wedge_logical[4];
+
   G4LogicalVolume*   logicLeadWall;
   G4LogicalVolume*   logic_solenoid;
+  
   G4LogicalVolume*   LogicTOF[4];
   G4LogicalVolume*   Logic_slantedTOF_front[4];
   G4LogicalVolume*   logic_SSTube_P1;
@@ -66,6 +75,7 @@ class NeutronHallBDetectorConstruction : public G4VUserDetectorConstruction
   G4LogicalVolume*   logic_SSTube_P2;
   G4LogicalVolume*   logic_SSTube_P2_coating;
   G4LogicalVolume*   LogicElBox[6];
+
   
   G4Material*        fTargetMaterial;  // pointer to the target  material
   G4Material*        fChamberMaterial; // pointer to the chamber material

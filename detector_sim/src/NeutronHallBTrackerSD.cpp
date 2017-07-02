@@ -18,7 +18,6 @@
 
 #include "TTree.h"
 
-#include "prop_tree.h"
 
 using namespace CLHEP;
 
@@ -37,121 +36,76 @@ NeutronHallBTrackerSD::~NeutronHallBTrackerSD()
 
 void NeutronHallBTrackerSD::Initialize(G4HCofThisEvent* hce)
 {
-  EventEdep = 0;
-  EventTime = 0;
-  EventPos *= 0;
   // Clear the last event
+
   hitList->hits.clear();
+  barHits.clear();
+  vecOfbarHits.clear();
+
+  vecOfbarHits.push_back(barHits);
+  vecOfbarHits.push_back(barHits);
+  vecOfbarHits.push_back(barHits);
+  vecOfbarHits.push_back(barHits);
+  vecOfbarHits.push_back(barHits);
+
+  eff_energy = 0.;
+  eff_time = 0.;
+  eff_pos *= 0;
 }
 
 G4bool NeutronHallBTrackerSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
 { 
-  G4double hitE = aStep->GetTotalEnergyDeposit()/MeV;
+  G4TouchableHistory* touchable = (G4TouchableHistory*)(aStep->GetPreStepPoint()->GetTouchable()); 
+  hitBarNo = touchable->GetReplicaNumber(0);
 
-  EventEdep += hitE;
+  hitE = aStep->GetTotalEnergyDeposit()/MeV;
+  if (hitE == 0.) return true;
 
-  EventTime += (aStep->GetPreStepPoint()->GetGlobalTime()/ns)*(hitE);
-  EventPos += (aStep->GetPreStepPoint()->GetPosition())*(hitE);
-  
+  hitTime = aStep->GetPreStepPoint()->GetGlobalTime()/ns;
+  hitPos = aStep->GetPreStepPoint()->GetPosition();
 
-  /*
+  if( abs( hitPos.z() / mm + 2620. + (1.) * 74/2. ) < 74/2. ) ind = 0;
+  else if( abs( hitPos.z() / mm + 2620. + (3.) * 74/2. ) < 74/2. ) ind = 1;
+  else if( abs( hitPos.z() / mm + 2620. + (5.) * 74/2. ) < 74/2. ) ind = 2;
+  else if( abs( hitPos.z() / mm + 2620. + (7.) * 74/2. ) < 74/2. ) ind = 3;
+  else if( abs( hitPos.z() / mm + 2620. + (9.) * 74/2. ) < 74/2. ) ind = 4;
+  else return true;
 
-  // create a new band hit and add to the vector!
-  if (aStep->GetTotalEnergyDeposit() < 1*eV){
-    return false;
+  if(vecOfbarHits[ind].count(hitBarNo) == 0){
+    BAND_Hit newHit;
+
+    newHit.E_dep = hitE;
+    newHit.time = hitTime * hitE;
+    newHit.pos = TVector3(hitPos.x() / mm,hitPos.y() / mm,hitPos.z() / mm) * hitE;
+    newHit.barNo = hitBarNo;
+
+    vecOfbarHits[ind][hitBarNo] = newHit;
   }
-  
-  // asks only if the particle in BAND is a neutron
-  if (aStep->GetTrack()->GetDefinition()->GetPDGEncoding() != 2112){ // particleID
-    return false;
+  else{
+    vecOfbarHits[ind][hitBarNo].E_dep += hitE;
+    vecOfbarHits[ind][hitBarNo].time += hitTime * hitE;
+    vecOfbarHits[ind][hitBarNo].pos += TVector3(hitPos.x() / mm,hitPos.y() / mm,hitPos.z() / mm) * hitE;
   }
-  BAND_Hit newHit;
 
-  // Hit position
-        // MUST USE PRESTEPPOINT FOR GEOMETRY
-  G4ThreeVector worldPos = aStep->GetPreStepPoint()->GetPosition();
-  newHit.pos = TVector3(worldPos.x() / mm,worldPos.y() / mm,worldPos.z() / mm);
-
-  // Time
-  newHit.time = aStep->GetPreStepPoint()->GetGlobalTime() / ns;
-
-  // Energy deposition
-  newHit.E_dep = aStep->GetTotalEnergyDeposit()/MeV;
   
-  // Track ID
-  newHit.track = aStep->GetTrack()->GetTrackID();
-  
-  G4cout << aStep->GetTrack()->GetCurrentStepNumber() << G4endl;
-  // push the hit into the vector
-  hitList->hits.push_back(newHit);*/
-  //G4double edepStep = aStep->GetTotalEnergyDeposit();
-  //fEventAction->AddEdep(edepStep);
-
-  //G4cout << aStep->GetTrack()->GetTrackID() << G4endl;
-  //G4cout << newHit.track << G4endl;
-  //G4cout << newHit << G4endl;
-
-
-  /*
-  // Stuff that Erez was doing that is not useful.
-    NeutronHallBTrackerHit* newHit = new NeutronHallBTrackerHit();
-    G4int Track_ID          = aStep ->  GetTrack() ->  GetTrackID();
-    G4String particle_Name  = aStep ->  GetTrack() ->  GetDefinition() ->  GetParticleName();
-   
-    
-    G4int particle_ID       = aStep ->  GetTrack() ->  GetDefinition() ->  GetPDGEncoding();
-    G4double E_kin          = aStep ->  GetPreStepPoint()  ->  GetKineticEnergy();//GetTrack() -> GetKineticEnergy()
-    G4double E_tot          = aStep ->  GetTrack() -> GetTotalEnergy();//GetPostStepPoint()  ->  GetTotalEnergy();
-    G4double p              = (aStep -> GetTrack() -> GetMomentum()).mag();
-    G4double Edep           = aStep ->  GetTotalEnergyDeposit() ;
-    G4ThreeVector Position  = aStep ->  GetPreStepPoint()  ->  GetPosition();
-    G4double Theta          = (360./CLHEP::twopi)*Position.getTheta();
-    G4double HitTime        = aStep -> GetPreStepPoint() -> GetGlobalTime();
-    
-    
-    newHit -> SetParticleCode       (particle_ID);
-    newHit -> SetParticleName       (particle_Name);
-    newHit -> SetKineticEnergy      (E_kin);
-    newHit -> SetMomentum           (p);
-    newHit -> SetTotalEnergy        (E_tot);
-    newHit -> SetTrackID            (Track_ID);
-    newHit -> SetEdep               (Edep);
-    newHit -> SetPos                (Position);
-    newHit -> SetTheta              (Theta);
-    newHit -> SetHitTime            (HitTime);
-    fHitsCollection -> insert( newHit );
-        
-    
-//    G4double dose = aStep -> GetTotalEnergyDeposit()/MassTarget;
-//    Run->AddDose(dose);
-    
-    
-    if (Track_ID != 1)
-        return false;
-    else
-        return true;
-  */
-
   return true;
 }
 
 void NeutronHallBTrackerSD::EndOfEvent(G4HCofThisEvent*)
 {
 
-  if ( EventEdep!=0 ){
-    BAND_Hit newHit;
-    newHit.E_dep = EventEdep;
-    newHit.time = EventTime/EventEdep;
+  for(int i=0; i<5;i++)
+  {
+    for(std::map<int,BAND_Hit>::iterator it=vecOfbarHits[i].begin() ; it != vecOfbarHits[i].end() ; it++){
 
-    EventPos *= (1./EventEdep);
-    newHit.pos = TVector3(EventPos.x() / mm,EventPos.y() / mm,EventPos.z() / mm);
+      eventE = it->second.E_dep;
 
-    hitList->hits.push_back(newHit);
+      it->second.time *= (1./eventE);
+      it->second.pos *= (1./eventE);
+      hitList->hits.push_back(it->second);
 
-    if ( verboseLevel>1 )
-      { 
-        G4int nofHits = hitList->hits.size();
-        G4cout << "\n-------->Hits Collection: in this event they were " << nofHits << G4endl;
-      }
+    }
   }
+
+
 }

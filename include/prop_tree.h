@@ -11,11 +11,12 @@ class BAND_Hit : public TObject
   BAND_Hit();
   ~BAND_Hit();
   TVector3 pos; // in mm
+  TVector3 mom; // in MeV/c -- use initial momentum or reconstructed momentum
   double time; // in ns
   double E_dep; // in MeV
   int barNo; // indicating what bar
   
-  ClassDef(BAND_Hit,5);
+  ClassDef(BAND_Hit,7);
 };
 
 class BAND_Event : public TObject
