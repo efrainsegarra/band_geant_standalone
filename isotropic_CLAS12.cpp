@@ -55,8 +55,8 @@ int main(int argc, char *argv[])
   for (int i=0 ; i<nEvents ; i++)
     {
       if (nEvents >= 10000)
-	if (i%10000==0)
-	  cerr << "Working on event " << i << "\n";
+  if (i%10000==0)
+    cerr << "Working on event " << i << "\n";
 
 
       // Extract useful quantities
