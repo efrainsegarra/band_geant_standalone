@@ -1,3 +1,6 @@
+// TOOK OUT THE SMEARING IN THE FILE FOR RIGHT NOW TO DO SOME BENCHMARK
+// CHECKS
+
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -13,10 +16,17 @@
 
 using namespace std;
 
+// Parameters
 const double cScint = 15.; // in cm/ns
 const double barCrossSection = 7.4;// in cm
-const double BAND_offset = -262; // in cm
+const double BAND_Zoffset = -262; // in cm
 const int BAND_numLayers = 5;
+const int numBANDbars = 24; // bars in a single layer of the BAND array
+const double BAND_Yoffset = barCrossSection * 5;
+
+// Reconstruction options
+const bool DoFirstHit = false;
+const bool smearingOn = true;
 
 int main(int argc, char** argv){
 
@@ -54,12 +64,8 @@ int main(int argc, char** argv){
 		inTree->GetEntry(i);
 
 		cout << "Event " << i << endl;
-		cout << trueEvent->hits.size() << endl;
 
 		for(int j=0; j<trueEvent->hits.size(); j++){
-			cout << "   bar: " << trueEvent->hits[j].barNo << endl;
-			//if(abs(trueEvent->hits[j].pos.z()/10. - BAND_offset + barCrossSection/2. ) > barCrossSection/2.) continue;
-
 			// get energy deposit, covert to MeVee energy equivalent
 			// deposit and then ask if that MeVee > some threshold set
 			// in MeVee
@@ -68,33 +74,52 @@ int main(int argc, char** argv){
 			double trueE = trueEvent->hits[j].E_dep; // in MeV
 			double trueE_MeVee = 0.83 * trueE - 2.82 * ( 1 - exp( -0.25 * ( pow(trueE,0.93)) ) );
 			if(abs(trueE_MeVee)<threshold) continue;
-
 			// A single neutron can hit many bars, but for each bar, there is
 			// one 'hit'. If it did 'hit' more than once in a bar, we already
 			// energy-averaged those hits in geant. So we now have multiple 
 			// TOF & position measurements for one neutron if it his many bars.
 
-			// get all the true values from the hit; energy is above
+
+			// get true time, location, and bar number from the event
 			double trueT = trueEvent->hits[j].time; // in ns
-			int trueBarNo = trueEvent->hits[j].barNo;
 			TVector3 truePos( trueEvent->hits[j].pos.x()/10.,trueEvent->hits[j].pos.y()/10.,trueEvent->hits[j].pos.z()/10. ); // in cm
+			int trueBarNo = trueEvent->hits[j].barNo;
 
-			// reconstruct the true values based on resolutions
 
-			// time smearing based on PMT resolution
-			double reconT = myRand->Gaus(trueT,tResPMT/sqrt(2.));
+			// Looking at only first bars hit or front of detector hit
+			if (DoFirstHit == true){
+				if (abs(truePos[2]+262)>1) continue;
+				//if (trueBarNo > 23) continue;
+			}
+			// DO RECONSTRUCTIONS:
+			double reconT, reconX, reconY, reconZ;
+			if (smearingOn == true){
+				// time reconstruction based on PMT resolution gaussian
+				reconT = myRand->Gaus(trueT,tResPMT/sqrt(2.));
 
-			// x smearing based on PMT resolution for time differences
-			double reconX = myRand->Gaus(truePos[0],cScint * tResPMT/sqrt(2.));
+				// x reconstruction based on PMT resolution for PMT time differences
+				reconX = myRand->Gaus(truePos[0],cScint * tResPMT/sqrt(2.));
 
-			// y smearing just assumed to be in middle of bar that registered hit
-			int recBarNo = floor(truePos[1] / barCrossSection);
-			double reconY = ( float(recBarNo) + 0.5)* barCrossSection;
+				// y reconstruction based on the bar that registered a hit, taken to be in
+				// middle of the bar
+					// first get the z-layer that the bar fired in and do y-reconstruction
+				int recZLayer = floor(trueBarNo/numBANDbars);
+					// take out the z-layer effect in the bar numbering
+				int recYBarNo = trueBarNo - numBANDbars * recZLayer; 
+					// do the Y reconstruction based on middle of the bar, but note that
+					// bars 8-13 have the same y position as 2-7, so move the rest to level
+				if (recYBarNo > 7) recYBarNo -= 6;
+				reconY = (float(recYBarNo) + 0.5)* barCrossSection - BAND_Yoffset;
 
-			// z smearing just assumed to be in middle of bar that registered hit
-			int recZLayer = floor( (BAND_offset - truePos[2]) / barCrossSection );
-			double reconZ = BAND_offset - ( float(recZLayer) + 0.5)* barCrossSection;
-
+				// z smearing just assumed to be in middle of bar that registered hit
+				reconZ = BAND_Zoffset - ( float(recZLayer) + 0.5)* barCrossSection;
+			}
+			else{
+				reconT = trueT;
+				reconX = truePos[0];
+				reconY = truePos[1];
+				reconZ = truePos[2];
+			}
 			TVector3 reconPos( reconX ,reconY ,reconZ ); // in cm
 
 			// now reconstruct momentum & energy from TOF and path length
@@ -106,10 +131,11 @@ int main(int argc, char** argv){
 			// reconstruct momentum vector
 	      	double reconCosTheta = reconZ/reconPath;
 	      	double reconTheta = acos(reconCosTheta);
+
 	      	double reconPhi = atan2(reconY,reconX);
 	      	double reconMomX = reconMomMag * sin(reconTheta) * cos(reconPhi);
 	      	double reconMomY = reconMomMag * sin(reconTheta) * sin(reconPhi);
-	      	double reconMomZ = reconMomMag * reconCosTheta;  
+	      	double reconMomZ = reconMomMag * reconCosTheta;
 
 	      	TVector3 reconMom( reconMomX ,reconMomY ,reconMomZ ); // in MeV/c
 
@@ -121,11 +147,13 @@ int main(int argc, char** argv){
 	      	reconHit.time = reconT;  // in ns
 	      	reconHit.pos = reconPos; // in cm
 	      	reconHit.mom = reconMom; // in MeV/c
+	      	reconHit.barNo = trueBarNo;
 
 	      	reconEvent->hits.push_back(reconHit);
 
 	      	outTree->Fill();
 
+	      	if (DoFirstHit == true) break;
 		}
 	}
 		

@@ -47,6 +47,9 @@ void NeutronHallBTrackerSD::Initialize(G4HCofThisEvent* hce)
 
 G4bool NeutronHallBTrackerSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
 { 
+
+  G4String hitParticleName = aStep->GetTrack()->GetDynamicParticle()->GetDefinition()->GetParticleName();
+
   G4TouchableHistory* touchable = (G4TouchableHistory*)(aStep->GetPreStepPoint()->GetTouchable()); 
   hitBarNo = touchable->GetReplicaNumber(0);
 
