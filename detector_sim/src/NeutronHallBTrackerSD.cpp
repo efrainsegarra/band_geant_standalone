@@ -37,16 +37,8 @@ NeutronHallBTrackerSD::~NeutronHallBTrackerSD()
 void NeutronHallBTrackerSD::Initialize(G4HCofThisEvent* hce)
 {
   // Clear the last event
-
   hitList->hits.clear();
   barHits.clear();
-  vecOfbarHits.clear();
-
-  vecOfbarHits.push_back(barHits);
-  vecOfbarHits.push_back(barHits);
-  vecOfbarHits.push_back(barHits);
-  vecOfbarHits.push_back(barHits);
-  vecOfbarHits.push_back(barHits);
 
   eff_energy = 0.;
   eff_time = 0.;
@@ -64,47 +56,36 @@ G4bool NeutronHallBTrackerSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
   hitTime = aStep->GetPreStepPoint()->GetGlobalTime()/ns;
   hitPos = aStep->GetPreStepPoint()->GetPosition();
 
-  if( abs( hitPos.z() / mm + 2620. + (1.) * 74/2. ) < 74/2. ) ind = 0;
-  else if( abs( hitPos.z() / mm + 2620. + (3.) * 74/2. ) < 74/2. ) ind = 1;
-  else if( abs( hitPos.z() / mm + 2620. + (5.) * 74/2. ) < 74/2. ) ind = 2;
-  else if( abs( hitPos.z() / mm + 2620. + (7.) * 74/2. ) < 74/2. ) ind = 3;
-  else if( abs( hitPos.z() / mm + 2620. + (9.) * 74/2. ) < 74/2. ) ind = 4;
-  else return true;
-
-  if(vecOfbarHits[ind].count(hitBarNo) == 0){
+  if(barHits.count(hitBarNo) == 0){
     BAND_Hit newHit;
 
     newHit.E_dep = hitE;
-    newHit.time = hitTime * hitE;
-    newHit.pos = TVector3(hitPos.x() / mm,hitPos.y() / mm,hitPos.z() / mm) * hitE;
+    newHit.time = hitTime; //* hitE;
+    newHit.pos = TVector3(hitPos.x() / mm,hitPos.y() / mm,hitPos.z() / mm); //* hitE;
     newHit.barNo = hitBarNo;
 
-    vecOfbarHits[ind][hitBarNo] = newHit;
+    barHits[hitBarNo] = newHit;
   }
   else{
-    vecOfbarHits[ind][hitBarNo].E_dep += hitE;
-    vecOfbarHits[ind][hitBarNo].time += hitTime * hitE;
-    vecOfbarHits[ind][hitBarNo].pos += TVector3(hitPos.x() / mm,hitPos.y() / mm,hitPos.z() / mm) * hitE;
+    barHits[hitBarNo].E_dep += hitE;
+    if (hitTime < barHits[hitBarNo].time){
+      barHits[hitBarNo].time = hitTime;
+      barHits[hitBarNo].pos = TVector3(hitPos.x() / mm,hitPos.y() / mm,hitPos.z() / mm); //* hitE;
+    }
   }
 
-  
   return true;
 }
 
 void NeutronHallBTrackerSD::EndOfEvent(G4HCofThisEvent*)
 {
 
-  for(int i=0; i<5;i++)
-  {
-    for(std::map<int,BAND_Hit>::iterator it=vecOfbarHits[i].begin() ; it != vecOfbarHits[i].end() ; it++){
+  for(std::map<int,BAND_Hit>::iterator it=barHits.begin() ; it != barHits.end() ; it++){
+    //eventE = it->second.E_dep;
+    //it->second.time *= (1./eventE);
+    //it->second.pos *= (1./eventE);
+    hitList->hits.push_back(it->second);
 
-      eventE = it->second.E_dep;
-
-      it->second.time *= (1./eventE);
-      it->second.pos *= (1./eventE);
-      hitList->hits.push_back(it->second);
-
-    }
   }
 
 

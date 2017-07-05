@@ -311,7 +311,7 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
           numBars = 2;
           for(int barNo = 0; barNo < numBars; barNo++){
                 new G4PVPlacement(0, G4ThreeVector(0,-( 0.5 * BAND_numRows * BAND_barCrossSection) + (1/2. + barNo)*BAND_barCrossSection,0), logicDetectorBarsE[wall],                 
-                            "BarsA", logicDetectorWall[wall], false, barNo, fCheckOverlaps);
+                            "BarsA", logicDetectorWall[wall], false, barNo+24*wall, fCheckOverlaps);
           }
           offset +=  numBars *BAND_barCrossSection;
         }
@@ -321,9 +321,9 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
           numBars = 6;
           for(int barNo = 0; barNo < numBars; barNo++){
                 new G4PVPlacement(0, G4ThreeVector(-BAND_groupD_offset,-( 0.5 * BAND_numRows * BAND_barCrossSection) + offset + (1/2. + barNo)*BAND_barCrossSection,0), logicDetectorBarsD[wall],                 
-                            "BarsB", logicDetectorWall[wall], false, prevNumBars + barNo , fCheckOverlaps);
+                            "BarsB", logicDetectorWall[wall], false, (prevNumBars + barNo)+24*wall , fCheckOverlaps);
                 new G4PVPlacement(0, G4ThreeVector(+BAND_groupD_offset,-( 0.5 * BAND_numRows * BAND_barCrossSection) + offset + (1/2. + barNo)*BAND_barCrossSection,0), logicDetectorBarsD[wall],                 
-                            "BarsB", logicDetectorWall[wall], false, prevNumBars+(barNo+numBars), fCheckOverlaps);
+                            "BarsB", logicDetectorWall[wall], false, (prevNumBars+(barNo+numBars))+24*wall, fCheckOverlaps);
           }
           offset +=  numBars *BAND_barCrossSection;
         }
@@ -333,7 +333,7 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
           numBars = 4;
           for(int barNo = 0; barNo < numBars; barNo++){
                 new G4PVPlacement(0, G4ThreeVector(0,-( 0.5 * BAND_numRows * BAND_barCrossSection) + offset+ (1/2. + barNo)*BAND_barCrossSection,0), logicDetectorBarsC[wall],                 
-                            "BarsC", logicDetectorWall[wall], false, prevNumBars+barNo, fCheckOverlaps);
+                            "BarsC", logicDetectorWall[wall], false, (prevNumBars+barNo)+24*wall, fCheckOverlaps);
           }
           offset +=  numBars *BAND_barCrossSection;
         }
@@ -343,7 +343,7 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
           numBars = 3;
           for(int barNo = 0; barNo < numBars; barNo++){
                 new G4PVPlacement(0, G4ThreeVector(0,-( 0.5 * BAND_numRows * BAND_barCrossSection) + offset+ (1/2. + barNo)*BAND_barCrossSection,0), logicDetectorBarsB[wall],                 
-                            "BarsB", logicDetectorWall[wall], false, prevNumBars+barNo, fCheckOverlaps);
+                            "BarsB", logicDetectorWall[wall], false, (prevNumBars+barNo)+24*wall, fCheckOverlaps);
           }
           offset +=  numBars *BAND_barCrossSection;
         }
@@ -352,7 +352,7 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
           numBars = 3;
           for(int barNo = 0; barNo < numBars; barNo++){
                 new G4PVPlacement(0, G4ThreeVector(0,-( 0.5 * BAND_numRows * BAND_barCrossSection) + offset+ (1/2. + barNo)*BAND_barCrossSection,0), logicDetectorBarsA[wall],                 
-                            "BarsA", logicDetectorWall[wall], false, prevNumBars+barNo, fCheckOverlaps);
+                            "BarsA", logicDetectorWall[wall], false, (prevNumBars+barNo)+24*wall, fCheckOverlaps);
           }
         }
       }
