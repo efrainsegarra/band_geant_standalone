@@ -45,10 +45,6 @@ class NeutronHallBTrackerSD : public G4VSensitiveDetector
 
   std::map < G4int , BAND_Hit > barHits;
 
-  G4double eff_energy;
-  G4double eff_time;
-  G4ThreeVector eff_pos;
-
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

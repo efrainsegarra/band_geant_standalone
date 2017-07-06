@@ -26,7 +26,7 @@ const double BAND_Yoffset = barCrossSection * 5;
 
 // Reconstruction options
 const bool DoFirstHit = false;
-const bool smearingOn = true;
+const bool smearingOn = false;
 
 int main(int argc, char** argv){
 
@@ -88,7 +88,7 @@ int main(int argc, char** argv){
 
 			// Looking at only first bars hit or front of detector hit
 			if (DoFirstHit == true){
-				if (abs(truePos[2]+262)>1) continue;
+				if (abs(truePos[2]+262)>0.5) continue;
 				//if (trueBarNo > 23) continue;
 			}
 			// DO RECONSTRUCTIONS:
@@ -153,7 +153,6 @@ int main(int argc, char** argv){
 
 	      	outTree->Fill();
 
-	      	if (DoFirstHit == true) break;
 		}
 	}
 		
