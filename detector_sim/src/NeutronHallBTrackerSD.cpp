@@ -55,7 +55,7 @@ G4bool NeutronHallBTrackerSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
     G4String hitParticleName = aStep->GetTrack()->GetDynamicParticle()->GetDefinition()->GetParticleName();
     G4String wantedParticle = "neutron";
     if (hitParticleName != wantedParticle) return true;
-    if( std::abs(aStep->GetPreStepPoint()->GetPosition().z()/mm +2620.) > 0.1) return true;
+    if( std::abs(aStep->GetPreStepPoint()->GetPosition().z()/mm +2620.) > 0.001) return true;
     if (hitE != 0.) return true;
 
     // I'm not sure how to get the information he wants with this chain -- need to talk 

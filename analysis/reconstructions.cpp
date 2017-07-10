@@ -115,7 +115,8 @@ int main(int argc, char** argv){
 				reconZ = BAND_Zoffset - ( float(recZLayer) + 0.5)* barCrossSection;
 			}
 			else{
-				reconT = trueT;
+				//reconT = trueT;
+				reconT = myRand->Gaus(trueT,tResPMT/sqrt(2.));
 				reconX = truePos[0];
 				reconY = truePos[1];
 				reconZ = truePos[2];

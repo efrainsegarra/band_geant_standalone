@@ -67,12 +67,12 @@ int main(int argc, char ** argv)
   // Defines the peak as +/- 1.5% of the delta peak value
   maxBin = pr_fullGeo->GetXaxis()->FindBin(pr_peak*1.015);
   minBin = pr_fullGeo->GetXaxis()->FindBin(pr_peak*0.985);
-  peak = pr_fullGeo->Integral(minBin,maxBin);
+  peak = pr_fullGeo->Integral(minBin,maxBin,"width");
 
-  // Defines the tail as all events up to 100 MeV/c
-  maxBin = pr_fullGeo->GetXaxis()->FindBin(pr_peak*0.985);
+  // Defines the tail as all events from 100 MeV/c to the peak
+  maxBin = pr_fullGeo->GetXaxis()->FindBin(pr_peak*0.985)-1;
   minBin = pr_fullGeo->GetXaxis()->FindBin(100);
-  tail = pr_fullGeo->Integral(minBin,maxBin);
+  tail = pr_fullGeo->Integral(minBin,maxBin,"width");
   
   cout << "Neutron Momentum [MeV/c]: " << pr_peak << "\nPeak-to-tail ratio: " << peak/tail << endl;
 

@@ -462,7 +462,7 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
     //G4double BAND_Z_coord_center = -2805.*mm;
     //G4double BAND_Z_thickness = BAND_barCrossSection * BAND_wallReplicas;
     //G4double BAND_Z_start = BAND_Z_coord_center + BAND_Z_thickness/2.;
-    
+    /*
     G4double lead_thickness = 25.*mm/2;
     G4double lead_Z_coord = (BAND_Z_coord_center + BAND_Z_thickness/2.)*mm + 25*mm + lead_thickness;
 
@@ -884,7 +884,7 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
                             fCheckOverlaps);                   // checking overlap
     }
   // ------------------ END Defining Electronic Boxes  ---------------- //
-    
+    */
     
     // Always return the physical world
     return physWorld;
