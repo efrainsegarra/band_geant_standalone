@@ -49,6 +49,7 @@ int main(int argc, char ** argv)
   // Prep histograms
   int nXpBins=20;
   int nWpBins=26;
+  TH2D * trueXpAsFine =new TH2D("trueXpAsFine","Recon Q^2 > 2., W_prime > 1.8;x';a_s;Counts",100,0.,1.,100,1.,2.);
   TH2D * prRes = new TH2D("prRes","Recon Q^2 > 2., W_prime > 1.8;p_r;delta p_r;Counts",20,.28,.68,80,-0.1,0.1);
   TH2D * asRes = new TH2D("asRes","Recon Q^2 > 2., W_prime > 1.8;a_s;delta a_s;Counts",20,1.3,1.55,80,-0.2,0.2);
   TH2D * reconXpAsSame = new TH2D("reconXpAsSame","Stayed in same bin;Recon x_p;Recon a_s;Counts",5,0.15,0.65,5,1.3,1.55);
@@ -110,6 +111,7 @@ int main(int argc, char ** argv)
 	  double true_E_r = sqrt(sq(mN) + rVec_true.Mag2());
 	  double true_alpha_s = (true_E_r - rVec_true.Dot(true_qVec)/true_qVec.Mag())/mN;
 
+	  trueXpAsFine->Fill(trueXp,alpha_s);
 	  asRes->Fill(true_alpha_s,alpha_s-true_alpha_s);
 
 	  // Determine if there is bin migration
@@ -141,6 +143,7 @@ int main(int argc, char ** argv)
 
   prRes->Write();
   asRes->Write();
+  trueXpAsFine->Write();
   reconXpAsSame->Write();
   reconXpAsDiff->Write();
   trueXpAsDiff->Write();
