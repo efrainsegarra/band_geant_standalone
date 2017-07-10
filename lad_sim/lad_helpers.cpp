@@ -3,7 +3,7 @@
 
 #include <cmath>
 
-inline double sq(double x)
+double sq(double x)
 {
   return x*x;
 }
