@@ -38,20 +38,12 @@ class NeutronHallBTrackerSD : public G4VSensitiveDetector
   G4double hitE;
   G4double hitTime;
   G4ThreeVector hitPos;
-
-  G4double eventE;
+  //G4double eventE;
 
   BAND_Event * hitList;
   TTree * outTree;
 
-  std::vector < std::map < G4int , BAND_Hit > > vecOfbarHits;
   std::map < G4int , BAND_Hit > barHits;
-
-  G4int ind;
-
-  G4double eff_energy;
-  G4double eff_time;
-  G4ThreeVector eff_pos;
 
 };
 
