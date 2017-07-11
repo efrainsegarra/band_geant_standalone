@@ -194,63 +194,29 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
 
   // ------------------ Defining BAND Detector - in World ---------------- //
 
-    //bool doSegement = true;
-    //bool doSemiCircle = false;
-
-
     const int BAND_wallReplicas = 5;
     const int BAND_wallGroups = 5;
     const int BAND_numRows = 18;
-
-    G4double BAND_PMTandLG_length = 260.8*mm;
-    //G4double BAND_PMTandLG_radius = (50.8*mm)/2.; // 2 inch diameter
     
     G4double BAND_barCrossSection = 7.4*cm;
-    G4double BAND_groupA_length = 1.5*m; // temp
-    G4double BAND_groupB_length = 2*m; // temp
-    G4double BAND_groupC_length = 2066.34*mm; // temp
+    G4double BAND_groupA_length = 1634.58*mm; // temp
+    G4double BAND_groupB_length = 1946.53*mm; // temp
+    G4double BAND_groupC_length = 2018.35*mm; // temp
     G4double BAND_groupD_length = 500.*mm;
-    G4double BAND_groupE_length = 2066.34*mm; // temp
-    G4double BAND_groupD_offset = (200 + 72.37 + BAND_PMTandLG_length + BAND_groupD_length/2.)*mm; // temp  
+    G4double BAND_groupE_length = 2018.35*mm; // temp
+    G4double BAND_groupD_offset = (509.17 + BAND_groupD_length/2.)*mm; // temp  
     
     G4double BAND_Z_coord_center = -2805.*mm;
     G4double BAND_Z_thickness = BAND_barCrossSection * BAND_wallReplicas;
     G4double BAND_Z_start = BAND_Z_coord_center + (BAND_Z_thickness/2.)*mm;
 
+    G4double BAND_Y_offset =  -(BAND_barCrossSection * 5)*mm;
+
     G4int numBars;
-
-    G4Box                 *solidDetectorWall[BAND_wallReplicas];
-    G4VPhysicalVolume     *physDetectorWall[BAND_wallReplicas];
-    G4ThreeVector         posDetectorWall[BAND_wallReplicas];                       // the vector for the position of the boxes
-
+    G4double wall_Z_offset;
     // create 5 box walls that will hold the BAND array
     for (int wall = 0; wall < BAND_wallReplicas; wall++){
-      
-      posDetectorWall[wall]     = G4ThreeVector(0,(0.5 * BAND_numRows * BAND_barCrossSection)-(BAND_barCrossSection * 5),(BAND_Z_start - BAND_barCrossSection*(1./2+wall)) );
-      
-      solidDetectorWall[wall] =                                     
-          new G4Box("DetectorWall",
-                    0.5 * BAND_groupE_length, 
-                    0.5 * BAND_numRows * BAND_barCrossSection, 
-                    0.5 * BAND_barCrossSection);  
-
-      logicDetectorWall[wall] = 
-            new G4LogicalVolume(solidDetectorWall[wall],
-                                default_mat,
-                                "DetectorWallLV");
-      
-      logicDetectorWall[wall]->SetVisAttributes (G4Colour::G4Colour( 0.75+(wall/10.) , 0.6-(wall/10.) , 0.75 ));
-
-      physDetectorWall[wall]=                                        
-            new G4PVPlacement(0,                             
-                              G4ThreeVector(0,(0.5 * BAND_numRows * BAND_barCrossSection)-(BAND_barCrossSection * 5),(BAND_Z_start - BAND_barCrossSection*(1./2+wall)) ),
-                              logicDetectorWall[wall],                 
-                              "DetectorWallPhys",                     
-                              logicWorld,                      
-                              false,                          
-                              0,                               
-                              fCheckOverlaps);       
-      
+      wall_Z_offset = (BAND_Z_start - BAND_barCrossSection*(1./2+wall));
 
       G4Box* solidDetectorBarsE =
                 new G4Box("DetectorBars_E",
@@ -310,8 +276,8 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
         if    (group == 0){
           numBars = 2;
           for(int barNo = 0; barNo < numBars; barNo++){
-                new G4PVPlacement(0, G4ThreeVector(0,-( 0.5 * BAND_numRows * BAND_barCrossSection) + (1/2. + barNo)*BAND_barCrossSection,0), logicDetectorBarsE[wall],                 
-                            "BarsA", logicDetectorWall[wall], false, barNo+24*wall, fCheckOverlaps);
+                new G4PVPlacement(0, G4ThreeVector(0,BAND_Y_offset + (1/2. + barNo)*BAND_barCrossSection, wall_Z_offset), logicDetectorBarsE[wall],                 
+                            "BarsA", logicWorld, false, barNo+24*wall, fCheckOverlaps);
           }
           offset +=  numBars *BAND_barCrossSection;
         }
@@ -320,10 +286,10 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
           prevNumBars += numBars;
           numBars = 6;
           for(int barNo = 0; barNo < numBars; barNo++){
-                new G4PVPlacement(0, G4ThreeVector(-BAND_groupD_offset,-( 0.5 * BAND_numRows * BAND_barCrossSection) + offset + (1/2. + barNo)*BAND_barCrossSection,0), logicDetectorBarsD[wall],                 
-                            "BarsB", logicDetectorWall[wall], false, (prevNumBars + barNo)+24*wall , fCheckOverlaps);
-                new G4PVPlacement(0, G4ThreeVector(+BAND_groupD_offset,-( 0.5 * BAND_numRows * BAND_barCrossSection) + offset + (1/2. + barNo)*BAND_barCrossSection,0), logicDetectorBarsD[wall],                 
-                            "BarsB", logicDetectorWall[wall], false, (prevNumBars+(barNo+numBars))+24*wall, fCheckOverlaps);
+                new G4PVPlacement(0, G4ThreeVector(-BAND_groupD_offset,BAND_Y_offset + offset + (1/2. + barNo)*BAND_barCrossSection,wall_Z_offset ), logicDetectorBarsD[wall],                 
+                            "BarsB", logicWorld, false, (prevNumBars + barNo)+24*wall , fCheckOverlaps);
+                new G4PVPlacement(0, G4ThreeVector(+BAND_groupD_offset,BAND_Y_offset + offset + (1/2. + barNo)*BAND_barCrossSection,wall_Z_offset ), logicDetectorBarsD[wall],                 
+                            "BarsB", logicWorld, false, (prevNumBars+(barNo+numBars))+24*wall, fCheckOverlaps);
           }
           offset +=  numBars *BAND_barCrossSection;
         }
@@ -332,8 +298,8 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
           prevNumBars += numBars*2 ;
           numBars = 4;
           for(int barNo = 0; barNo < numBars; barNo++){
-                new G4PVPlacement(0, G4ThreeVector(0,-( 0.5 * BAND_numRows * BAND_barCrossSection) + offset+ (1/2. + barNo)*BAND_barCrossSection,0), logicDetectorBarsC[wall],                 
-                            "BarsC", logicDetectorWall[wall], false, (prevNumBars+barNo)+24*wall, fCheckOverlaps);
+                new G4PVPlacement(0, G4ThreeVector(0,BAND_Y_offset + offset+ (1/2. + barNo)*BAND_barCrossSection,wall_Z_offset ), logicDetectorBarsC[wall],                 
+                            "BarsC", logicWorld, false, (prevNumBars+barNo)+24*wall, fCheckOverlaps);
           }
           offset +=  numBars *BAND_barCrossSection;
         }
@@ -342,8 +308,8 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
           prevNumBars += numBars ;
           numBars = 3;
           for(int barNo = 0; barNo < numBars; barNo++){
-                new G4PVPlacement(0, G4ThreeVector(0,-( 0.5 * BAND_numRows * BAND_barCrossSection) + offset+ (1/2. + barNo)*BAND_barCrossSection,0), logicDetectorBarsB[wall],                 
-                            "BarsB", logicDetectorWall[wall], false, (prevNumBars+barNo)+24*wall, fCheckOverlaps);
+                new G4PVPlacement(0, G4ThreeVector(0,BAND_Y_offset + offset+ (1/2. + barNo)*BAND_barCrossSection,wall_Z_offset ), logicDetectorBarsB[wall],                 
+                            "BarsB", logicWorld, false, (prevNumBars+barNo)+24*wall, fCheckOverlaps);
           }
           offset +=  numBars *BAND_barCrossSection;
         }
@@ -351,130 +317,28 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
           prevNumBars += numBars ;
           numBars = 3;
           for(int barNo = 0; barNo < numBars; barNo++){
-                new G4PVPlacement(0, G4ThreeVector(0,-( 0.5 * BAND_numRows * BAND_barCrossSection) + offset+ (1/2. + barNo)*BAND_barCrossSection,0), logicDetectorBarsA[wall],                 
-                            "BarsA", logicDetectorWall[wall], false, (prevNumBars+barNo)+24*wall, fCheckOverlaps);
+                new G4PVPlacement(0, G4ThreeVector(0,BAND_Y_offset + offset+ (1/2. + barNo)*BAND_barCrossSection,wall_Z_offset ), logicDetectorBarsA[wall],                 
+                            "BarsA", logicWorld, false, (prevNumBars+barNo)+24*wall, fCheckOverlaps);
           }
         }
       }
     }
-
-      /*
-      const int BAND_wallReplicas = 4;
-      G4double BAND_barCrossSection = 6.*cm;
-
-      G4double BAND_Z_coord = -(3304*mm + BAND_barCrossSection/2.);
-      G4double RinDetector = 612.*mm;
-      G4double RoutDetector = 1292.*mm;
-
-      G4Colour Detec_Color2( 1. , 1. , 1. );
-      G4VisAttributes* DetecVisAttributes2 = new G4VisAttributes( true , Detec_Color2 );
-      fVisAttributes.push_back(DetecVisAttributes2);
-
-      G4Tubs                *solidDetector[BAND_wallReplicas];                    // solid 
-      G4VPhysicalVolume     *physDetector[BAND_wallReplicas];                     // the physical volume
-      G4ThreeVector         posDetector[BAND_wallReplicas];
-
-      for (int wall = 0; wall < BAND_wallReplicas; wall++) {
-
-        posDetector[wall]     = G4ThreeVector(0,0,(BAND_Z_coord - BAND_barCrossSection*wall));
-
-        solidDetector[wall] =                                      // solid volume for each box
-            new G4Tubs("DetectorWall",                                 // name
-                      RinDetector,                               // inner radius
-                      RoutDetector,                              // outer radius
-                      BAND_barCrossSection/2.,                          // z extent
-                      0.,                                        // starting phi angle
-                      CLHEP::twopi/2.);                          // ending phi angle
-
-        logicDetectorWall[wall] = 
-            new G4LogicalVolume(solidDetector[wall],
-                            BAND_mat,
-                            "DetectorWallLV");
-      
-        physDetector[wall]=                                        // physical volume for TOF
-            new G4PVPlacement(0,                               // rotation
-                              G4ThreeVector(0,0,(BAND_Z_coord - BAND_barCrossSection*wall) ),                 // at 0,0,0
-                              logicDetectorWall[wall],                 // logical volume of each TOF
-                              "DetectorWallPhys",                           // name of each TOF
-                              logicWorld,                      // mother volume for TOF
-                              false,                           // no boolean operation
-                              0,                               // copy number
-                              fCheckOverlaps);                 // checking overlap
-
-
-        G4double wedge_dPhi = (CLHEP::twopi/2.)/75;
-        G4VSolid* wedge = 
-            new G4Tubs("wedge",
-                        RinDetector,
-                        RoutDetector,
-                        BAND_barCrossSection/2.,
-                        -wedge_dPhi/2.,
-                        wedge_dPhi/2.);
-
-        wedge_logical[wall] =
-            new G4LogicalVolume(wedge,
-                                BAND_mat,
-                                "wedge_logical");
-        
-          new G4PVReplica("wedge_replica",wedge_logical[wall],logicDetectorWall[wall],kPhi,75,wedge_dPhi); 
-        
-        wedge_logical[wall] -> SetVisAttributes(DetecVisAttributes2);
-
-      }
-    } 
-    
-    else if(doSemiCircle==true){
-      G4double BANDThickness = 24.*cm;
-      G4double BAND_Z_coord = -(3304*mm+BANDThickness/2.);
-      G4double RinDetector = 612.*mm;
-      G4double RoutDetector = 1292.*mm;
-      G4Tubs* solidDetector = 
-          new G4Tubs("Detector",                                 // name
-                      RinDetector,                               // inner radius
-                      RoutDetector,                              // outer radius
-                      BANDThickness/2.,                          // z extent
-                      0.,                                        // starting phi angle
-                      CLHEP::twopi/2.);                          // ending phi angle
-
-      logicDetector =            
-          new G4LogicalVolume(solidDetector,                     // its solid
-                              BAND_mat,                          // material
-                              "DetectorLV");                     // name
-
-          new G4PVPlacement(0,                                   // no rotation
-                            G4ThreeVector(0,0,BAND_Z_coord),     // (0,0,z)
-                            logicDetector,                       // logical volume
-                            "Detector",                          // name
-                            logicWorld,                          // mother volume
-                            false,                               // no boolean operation
-                            0,                                   // copy number
-                            fCheckOverlaps);                     // overlap checking
-
-      G4Colour Detec_Color( 0.75 , 0.6 , 0.75 );
-      G4VisAttributes* DetecVisAttributes = new G4VisAttributes( true , Detec_Color );
-      fVisAttributes.push_back(DetecVisAttributes);
-      logicDetector -> SetVisAttributes(DetecVisAttributes);
-    }
-  */
   // ------------------ END Defining BAND Detector  ---------------- //
 
-// ------------------ Defining Lead Wall  - in World ---------------- //
-    //G4double BAND_Z_coord_center = -2805.*mm;
-    //G4double BAND_Z_thickness = BAND_barCrossSection * BAND_wallReplicas;
-    //G4double BAND_Z_start = BAND_Z_coord_center + BAND_Z_thickness/2.;
-    /*
+  // ------------------ Defining Lead Wall  - in World ---------------- //
+    
     G4double lead_thickness = 25.*mm/2;
-    G4double lead_Z_coord = (BAND_Z_coord_center + BAND_Z_thickness/2.)*mm + 25*mm + lead_thickness;
+    G4double lead_Z_coord = (BAND_Z_coord_center + BAND_Z_thickness/2.)*mm + 15*mm + lead_thickness;
 
-    G4double RinDetector = 612.*mm;
-    G4double RoutDetector = 1292.*mm;
+    G4double RinDetector = 225.*mm;
+    G4double RoutDetector = 1300.*mm;
     G4Tubs* solidLeadWall = 
       new G4Tubs("LeadWall",                                   // name
                   RinDetector,                                 // inner radius
                   RoutDetector,                                // outer raidus
                   lead_thickness,                                    // z extent
                   0.,                                          // starting phi angle
-                  CLHEP::twopi/2.);                            // ending phi angle
+                  CLHEP::twopi);                            // ending phi angle
 
     logicLeadWall = 
       new G4LogicalVolume(solidLeadWall,                       // its solid
@@ -495,7 +359,7 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
     fVisAttributes.push_back(LeadWallVisAttributes);
     logicLeadWall -> SetVisAttributes(LeadWallVisAttributes);
     // ------------------ END Defining Lead Wall  - in World ---------------- //
-
+    
     // ------------------ Defining Solenoid ---------------- //
     
     length = 480.*mm;                                          // length of the first tube pipe
@@ -510,7 +374,7 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
 
     logic_solenoid =      
         new G4LogicalVolume(solid_solenoid,                    // solid logic volume
-                            BAND_mat,                          // material
+                            SS_mat,                          // material
                             "Solenoid");                       // name
         
         new G4PVPlacement(0,                                   // rotation
@@ -562,7 +426,8 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
     length = 1200/2.*mm;
     shift = 480*mm;
 
-    // 30 degrees for 3 TOF and 25 degrees for 1 CND
+    // the 3 CND lightguides are 144.97 degrees (35.03 degrees)
+    // the 1 CND TOF is 158.19 degrees (21.81 degrees)
     const int slanted_TOFs = 4; // CAUTION -->                    // if you edit this, must edit .h file
 
     G4Cons                *Solid_slantedTOF_front[slanted_TOFs];  // solid TOF
@@ -572,22 +437,22 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
     for (int i_tof = 0; i_tof < slanted_TOFs; i_tof++) {
         pos_slantedTOF_front[i_tof]     = G4ThreeVector();        // defining position vector for TOF
 
-        if(i_tof==0){  // This is the CND
+        if(i_tof==0){  // This is the CND TOF
             Solid_slantedTOF_front[i_tof] =                       // solid volume for CND
                 new G4Cons("slanted_TOF_front",                   // name
-                           (771.35+252.)*mm,                         // inner radius 1
-                           (771.35+252.+50.8)*mm,                    // outer raidus 1
+                           (445.84+252.)*mm,                         // inner radius 1
+                           (445.84+252.+50.8)*mm,                    // outer raidus 1
                            (252.)*mm,                             // inner radius 2
                            (252.+50.8)*mm,                        // outer radius 2
                            length ,                               // z-extent
                            0.,                                    // starting phi
                            CLHEP::twopi);                         // ending phi             
         }
-        else{           // These are the TOFs
+        else{           // These are the CND lightguides
             Solid_slantedTOF_front[i_tof] =                       // solid volume for each TOF
                 new G4Cons("slanted_TOF_front",                   // name
-                           (919.25+252.+50.8*(i_tof))*mm,            // inner radius 1
-                           (919.25+252.+50.8*(i_tof+1))*mm,          // outer radius 1
+                           (688.8+252.+50.8*(i_tof))*mm,            // inner radius 1
+                           (688.8+252.+50.8*(i_tof+1))*mm,          // outer radius 1
                            (252.+50.8*(i_tof))*mm,                // inner radius 2
                            (252.+50.8*(i_tof+1))*mm,              // outer radius 2
                            length ,                               // z-extent
@@ -612,16 +477,16 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
                               0,                                   // copy number
                               fCheckOverlaps);                     // checking overlap
     }
+    
     // ------------------ END Defining Solenoid  - in World ---------------- //
-
+    
     // ------------------ Defining SS Tubing around beam pipe ---------------- //
     
     length = 658.*mm; // length of the first tube pipe
-
     G4Tubs* solid_SSTube_P1 =     
         new G4Tubs("SSTube_P1",                                // name
-                    210.*mm ,                                  // inner radius
-                    213.*mm,                                   // outer radius
+                    191*mm,                                  // inner radius
+                    194*mm,                                   // outer radius
                     length ,                                   // z-extent
                     0.,                                        // starting phi
                     CLHEP::twopi);                             // ending phi
@@ -645,8 +510,8 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
         //  ----------1 cm plastic coating around tub to represent cables ---------- //
     G4Tubs* solid_SSTube_P1_coating = 
         new G4Tubs("SSTube_P1_coating",                        // name
-                    214.*mm ,                                  // inner radius -- starting at outer radius of 1st pipe
-                    224.*mm,                                   // outer radius
+                    195*mm,                                  // inner radius -- starting at outer radius of 1st pipe
+                    205*mm,                                   // outer radius
                     length ,                                   // z extent
                     0.,                                        // starting phi
                     CLHEP::twopi);                             // ending phi
@@ -666,16 +531,16 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
                           fCheckOverlaps);                     // checking overlaps
 
     logic_SSTube_P1_coating -> SetVisAttributes (G4Colour::G4Colour( 0.75 , 0.6 , 0.75 ));
-  
+    
         //  ---------- SS connector from target tube to beam tube ---------- //
     length = 24.*mm;
     shift = 658.*mm;
-
+    
     G4Tubs* solid_SSTube_Connector1 =         
         new G4Tubs("SSTube_Connector1",                        // name
-                    213.*mm ,                                  // inner radius
-                    240.*mm,                                   // outer radius
-                    length ,                                   // z extent
+                    194*mm,                                  // inner radius
+                    221*mm,                                   // outer radius
+                    length,                                   // z extent
                     0.,                                        // starting phi
                     CLHEP::twopi);                             // ending phi
 
@@ -695,40 +560,40 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
     
     logic_SSTube_Connector1 -> SetVisAttributes (G4Colour::G4Colour( 0.99 , 0.88 , 0.66 ));
   
-      //  ---------- SS connector coating to represent cables ---------- //
-    G4Tubs* solid_SSTube_Connector1_coating = 
-        new G4Tubs("SSTube_Connector1_coating", 
-                   241.*mm, 
-                   251.*mm, 
-                   length, 
-                   0.,
-                   CLHEP::twopi);
+    //  //  ---------- SS connector coating to represent cables ---------- //
+    //G4Tubs* solid_SSTube_Connector1_coating = 
+    //    new G4Tubs("SSTube_Connector1_coating", 
+    //               241.*mm, 
+    //               251.*mm, 
+    //               length, 
+    //               0.,
+    //               CLHEP::twopi);
 
-    logic_SSTube_Connector1_coating = 
-        new G4LogicalVolume(solid_SSTube_Connector1_coating, 
-                            BAND_mat , 
-                            "SSTube_Connector1_coating");
+    //logic_SSTube_Connector1_coating = 
+    //    new G4LogicalVolume(solid_SSTube_Connector1_coating, 
+    //                        BAND_mat , 
+    //                        "SSTube_Connector1_coating");
 
-        new G4PVPlacement(0, 
-                          G4ThreeVector(0,0,-(length+shift)),
-                          logic_SSTube_Connector1_coating,
-                          "SSTube_Connector1_coating",
-                          logicWorld,
-                          false,
-                          0,
-                          fCheckOverlaps);
+    //    new G4PVPlacement(0, 
+    //                      G4ThreeVector(0,0,-(length+shift)),
+    //                      logic_SSTube_Connector1_coating,
+    //                      "SSTube_Connector1_coating",
+    //                      logicWorld,
+    //                      false,
+    //                      0,
+    //                      fCheckOverlaps);
 
-    logic_SSTube_Connector1_coating -> SetVisAttributes (G4Colour::G4Colour( 0.75 , 0.6 , 0.75 ));
-     
-  
+    //logic_SSTube_Connector1_coating -> SetVisAttributes (G4Colour::G4Colour( 0.75 , 0.6 , 0.75 ));
+    
+    
       //  ---------- SS connector #2 from target tube to beam tube ---------- //
     length = 34.*mm;
     shift = 658.*mm;
 
     G4Tubs* solid_SSTube_Connector2 = 
         new G4Tubs("SSTube_Connector2",
-                   240.*mm,
-                   258*mm,
+                   221*mm,
+                   239*mm,
                    length,
                    0.,
                    CLHEP::twopi);
@@ -746,14 +611,14 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
                           false,  
                           0,  
                           fCheckOverlaps);
-
-    logic_SSTube_Connector2 -> SetVisAttributes (G4Colour::G4Colour( 0.99 , 0.88 , 0.66 ));
+    
+    logic_SSTube_Connector2 -> SetVisAttributes (G4Colour::G4Colour( 0.99 , 0.38 , 0.2 ));
      
       //  ---------- SS connector #2 coating to represent cables ---------- //
     G4Tubs* solid_SSTube_Connector2_coating = 
         new G4Tubs("SSTube_Connector2_coating", 
-                   259.*mm, 
-                   269*mm, 
+                   240*mm, 
+                   250*mm, 
                    length, 
                    0., 
                    CLHEP::twopi);
@@ -773,15 +638,14 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
                           fCheckOverlaps);
 
     logic_SSTube_Connector2_coating -> SetVisAttributes (G4Colour::G4Colour( 0.75 , 0.6 , 0.75 ));
-              
+             
       //  ---------- SS tube from connector #2 to BAND detector ---------- //
     length = 3304*mm+BAND_Z_thickness/2.*mm-1750*mm;
-    shift = 682.*mm;
-
+    shift = 706.*mm;
     G4Tubs* solid_SSTube_P2 = 
         new G4Tubs("SSTube_P2", 
-                   237.*mm, 
-                   240*mm, 
+                   208*mm, 
+                   211*mm, 
                    length, 
                    0., 
                    CLHEP::twopi);
@@ -803,11 +667,10 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
     logic_SSTube_P2 -> SetVisAttributes (G4Colour::G4Colour( 0.99 , 0.88 , 0.66 ));
   
       //  ---------- SS tube coatings from connector #2 to BAND detector ---------- //
-      
     G4Tubs* solid_SSTube_P2_coating = 
         new G4Tubs("SSTube_P2_coating", 
-                   241.*mm, 
-                   251*mm, 
+                   211.*mm, 
+                   221*mm, 
                    length, 
                    0., 
                    CLHEP::twopi);
@@ -828,8 +691,8 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
 
     logic_SSTube_P2_coating -> SetVisAttributes (G4Colour::G4Colour( 0.75 , 0.6 , 0.75 ));
   // ------------------ END SS Tubing around beam pipe ---------------- //
-
-
+  
+    
 // ------------------ Defining Electronic Boxes  - in World ---------------- //
     
     G4double BoxLength = 20*cm;
@@ -884,7 +747,7 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
                             fCheckOverlaps);                   // checking overlap
     }
   // ------------------ END Defining Electronic Boxes  ---------------- //
-    */
+    
     
     // Always return the physical world
     return physWorld;
