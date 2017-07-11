@@ -52,7 +52,6 @@ class NeutronHallBDetectorConstruction : public G4VUserDetectorConstruction
   // pointers to logical volumes
   G4LogicalVolume*   fLogicTarget;     
   G4LogicalVolume**  fLogicChamber;    
-  G4LogicalVolume*   logicDetector;
   G4LogicalVolume*   logicDetectorBarsE[5];
   G4LogicalVolume*   logicDetectorBarsD[5];
   G4LogicalVolume*   logicDetectorBarsC[5];
@@ -68,7 +67,7 @@ class NeutronHallBDetectorConstruction : public G4VUserDetectorConstruction
   G4LogicalVolume*   logic_SSTube_P1;
   G4LogicalVolume*   logic_SSTube_P1_coating;
   G4LogicalVolume*   logic_SSTube_Connector1;
-  G4LogicalVolume*   logic_SSTube_Connector1_coating;
+  //G4LogicalVolume*   logic_SSTube_Connector1_coating;
   G4LogicalVolume*   logic_SSTube_Connector2;
   G4LogicalVolume*   logic_SSTube_Connector2_coating;
   G4LogicalVolume*   logic_SSTube_P2;

@@ -196,7 +196,7 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
 
     const int BAND_wallReplicas = 5;
     const int BAND_wallGroups = 5;
-    const int BAND_numRows = 18;
+    //const int BAND_numRows = 18;
     
     G4double BAND_barCrossSection = 7.4*cm;
     G4double BAND_groupA_length = 1634.58*mm; // temp
@@ -762,33 +762,14 @@ void NeutronHallBDetectorConstruction::ConstructSDandField()
   NeutronHallBTrackerSD* bandSD = new NeutronHallBTrackerSD(treePtr,SDname="band");
   sdManager->AddNewDetector(bandSD);
 
-  bool doSegment = true;
-
-  if(doSegment == true){
-
-    for (int wall = 0; wall < 5; wall++) {
-
-
-        logicDetectorBarsE[wall]->SetSensitiveDetector(bandSD);
-        logicDetectorBarsD[wall]->SetSensitiveDetector(bandSD);
-        logicDetectorBarsC[wall]->SetSensitiveDetector(bandSD); 
-        logicDetectorBarsB[wall]->SetSensitiveDetector(bandSD); 
-        logicDetectorBarsA[wall]->SetSensitiveDetector(bandSD);        
-    }
-
-      
+  for (int wall = 0; wall < 5; wall++) {
+      logicDetectorBarsE[wall]->SetSensitiveDetector(bandSD);
+      logicDetectorBarsD[wall]->SetSensitiveDetector(bandSD);
+      logicDetectorBarsC[wall]->SetSensitiveDetector(bandSD); 
+      logicDetectorBarsB[wall]->SetSensitiveDetector(bandSD); 
+      logicDetectorBarsA[wall]->SetSensitiveDetector(bandSD);            
   }
 
-  else{
-    logicDetector->SetSensitiveDetector(bandSD);
-
-  }
-
-
-  //G4String nameSD = "BAND";
-  //NeutronHallBTrackerSD* bandSD = new NeutronHallBTrackerSD(treePtr,nameSD);
-  //SetSensitiveDetector("DetectorLV" , bandSD , true);
-  
   // Electro-magnetic fields (currently zero)  
   G4ThreeVector fieldValue = G4ThreeVector();
   G4AutoDelete::Register(fMagFieldMessenger);
