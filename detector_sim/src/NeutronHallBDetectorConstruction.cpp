@@ -324,7 +324,7 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
       }
     }
   // ------------------ END Defining BAND Detector  ---------------- //
-
+    
   // ------------------ Defining Lead Wall  - in World ---------------- //
     
     G4double lead_thickness = 25.*mm/2;

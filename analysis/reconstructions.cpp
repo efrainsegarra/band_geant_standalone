@@ -1,6 +1,3 @@
-// TOOK OUT THE SMEARING IN THE FILE FOR RIGHT NOW TO DO SOME BENCHMARK
-// CHECKS
-
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -24,9 +21,10 @@ const int BAND_numLayers = 5;
 const int numBANDbars = 24; // bars in a single layer of the BAND array
 const double BAND_Yoffset = barCrossSection * 5;
 
+// ********************************************************************************
 // Reconstruction options
-const bool DoFirstHit = false;
 const bool smearingOn = false;
+// ********************************************************************************
 
 int main(int argc, char** argv){
 
@@ -55,7 +53,9 @@ int main(int argc, char** argv){
 	inTree-> SetBranchAddress("band",&trueEvent);
   	outTree->Branch("band",&reconEvent);
 
-	// Loop over number of events and all the hits in the event
+  	std::vector<double> times;
+
+
 	int numEvents = inTree->GetEntries();
 	
 	for(int i =0; i<numEvents; i++){
@@ -64,21 +64,33 @@ int main(int argc, char** argv){
 		inTree->GetEntry(i);
 
 		cout << "Event " << i << endl;
-
+		
+		// first find the earliest hit in the event that is above threshold
 		for(int j=0; j<trueEvent->hits.size(); j++){
+
+			// First check if the hit is above threshold
 			// get energy deposit, covert to MeVee energy equivalent
 			// deposit and then ask if that MeVee > some threshold set
 			// in MeVee
 			// this conversion from http://shop-pdp.net/efhtml/NIM_151_1978_445-450_Madey.pdf
-			
 			double trueE = trueEvent->hits[j].E_dep; // in MeV
 			double trueE_MeVee = 0.83 * trueE - 2.82 * ( 1 - exp( -0.25 * ( pow(trueE,0.93)) ) );
 			if(abs(trueE_MeVee)<threshold) continue;
-			// A single neutron can hit many bars, but for each bar, there is
-			// one 'hit'. If it did 'hit' more than once in a bar, we already
-			// energy-averaged those hits in geant. So we now have multiple 
-			// TOF & position measurements for one neutron if it his many bars.
 
+			// If hit above threshold, save the hit time to
+			// find the earliest hit time
+			double trueT = trueEvent->hits[j].time; // in ns
+			times.push_back(trueT);
+		}
+		if (times.size()) {
+			int earliestHit_ind = distance(times.begin(), min_element(times.begin(), times.end()));
+			times.clear();
+
+			// With that earliest hit index, do the reconstructions
+			int j = earliestHit_ind;
+
+			// Already checked that all the hits are above threshold
+			double trueE = trueEvent->hits[j].E_dep;
 
 			// get true time, location, and bar number from the event
 			double trueT = trueEvent->hits[j].time; // in ns
@@ -86,11 +98,6 @@ int main(int argc, char** argv){
 			int trueBarNo = trueEvent->hits[j].barNo;
 
 
-			// Looking at only first bars hit or front of detector hit
-			if (DoFirstHit == true){
-				if (abs(truePos[2]+262)>0.5) continue;
-				//if (trueBarNo > 23) continue;
-			}
 			// DO RECONSTRUCTIONS:
 			double reconT, reconX, reconY, reconZ;
 			if (smearingOn == true){
@@ -115,8 +122,7 @@ int main(int argc, char** argv){
 				reconZ = BAND_Zoffset - ( float(recZLayer) + 0.5)* barCrossSection;
 			}
 			else{
-				//reconT = trueT;
-				reconT = myRand->Gaus(trueT,tResPMT/sqrt(2.));
+				reconT = trueT;
 				reconX = truePos[0];
 				reconY = truePos[1];
 				reconZ = truePos[2];
@@ -153,8 +159,8 @@ int main(int argc, char** argv){
 	      	reconEvent->hits.push_back(reconHit);
 
 	      	outTree->Fill();
-
-		}
+	    }
+		
 	}
 		
 	outTree->Write();
