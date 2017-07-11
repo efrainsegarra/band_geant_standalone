@@ -19,12 +19,12 @@ using namespace std;
 //const double min_p_e = 2.;
 //const double max_p_e = 8.;
 
-const double min_theta_r =155*M_PI/180.;
-const double max_theta_r =175.75*M_PI/180.;
-const double min_p_r =0.35;
-const double max_p_r =0.35;
+const double min_theta_r =154*M_PI/180.;
+const double max_theta_r =176*M_PI/180.;
+const double min_p_r =0.55;
+const double max_p_r =0.55;
 const double min_phi_r=0.;
-const double max_phi_r=M_PI;
+const double max_phi_r=2*M_PI;
 
 //const double min_phi_er=0.;
 //const double max_phi_er=2.*M_PI;
