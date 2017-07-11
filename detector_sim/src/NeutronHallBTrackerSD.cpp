@@ -49,7 +49,7 @@ G4bool NeutronHallBTrackerSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
 
   hitE = aStep->GetTotalEnergyDeposit()/MeV;
 
-  bool testGeometryEffect = true; // looks only at neutrons hitting the face
+  bool testGeometryEffect = false; // looks only at neutrons hitting the face
   // of the detector to see the effect geometry had on getting them there
   if (testGeometryEffect){
     G4String hitParticleName = aStep->GetTrack()->GetDynamicParticle()->GetDefinition()->GetParticleName();
@@ -57,15 +57,6 @@ G4bool NeutronHallBTrackerSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
     if (hitParticleName != wantedParticle) return true;
     if( std::abs(aStep->GetPreStepPoint()->GetPosition().z()/mm +2620.) > 0.001) return true;
     if (hitE != 0.) return true;
-
-    // I'm not sure how to get the information he wants with this chain -- need to talk 
-    // to Axel. We want to track for a given event, what is the information of that event
-    // right when the neutron gets to (if if does...) the FACE of the detector, and we want
-    // to skim those events based on if that event then caused A SINGLE hit in A SINGLE
-    // bar above threshold. I'm not sure what the right way to track this is because I can't
-    // use parentID number, because neutrons are destroyed/recreated at interactions, and we
-    // want to see the effect of the geometry that lies BEFORE the detector...
-
   }
   else{
     if (hitE == 0.) return true;

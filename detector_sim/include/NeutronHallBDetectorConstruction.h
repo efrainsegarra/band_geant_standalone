@@ -53,7 +53,6 @@ class NeutronHallBDetectorConstruction : public G4VUserDetectorConstruction
   G4LogicalVolume*   fLogicTarget;     
   G4LogicalVolume**  fLogicChamber;    
   G4LogicalVolume*   logicDetector;
-  G4LogicalVolume*   logicDetectorWall[5];
   G4LogicalVolume*   logicDetectorBarsE[5];
   G4LogicalVolume*   logicDetectorBarsD[5];
   G4LogicalVolume*   logicDetectorBarsC[5];
