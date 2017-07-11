@@ -11,13 +11,13 @@ option(Build_Geant "Build the Geant4 Monte Carlo Simulations."
 
 if(Build_Geant)
 	find_package(Geant4 REQUIRED ui_all vis_all)
+	add_subdirectory(band_geant)
 endif()
 
 project (deuteron_dis)
 
-add_subdirectory(detector_sim)
+add_subdirectory(band_toyMC)
 add_subdirectory(wim_lib)
-add_subdirectory(analysis)
 add_subdirectory(tree)
 add_subdirectory(lad_sim)
 
