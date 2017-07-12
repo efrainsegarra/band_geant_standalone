@@ -8,6 +8,7 @@
 #include "TVectorT.h"
 
 #include "constants.h"
+#include "gen_tree.h"
 
 using namespace std;
 
@@ -58,16 +59,12 @@ int main(int argc, char ** argv)
     }
 
   // Memory for the input branches
-  double mom_e[3];
-  double mom_r[3];
-  inTree->SetBranchAddress("x_e",&(mom_e[0]));
-  inTree->SetBranchAddress("y_e",&(mom_e[1]));
-  inTree->SetBranchAddress("z_e",&(mom_e[2]));
-  inTree->SetBranchAddress("x_r",&(mom_r[0]));
-  inTree->SetBranchAddress("y_r",&(mom_r[1]));
-  inTree->SetBranchAddress("z_r",&(mom_r[2]));
+  Gen_Event * this_event;
+  inTree->SetBranchAddress("event",&this_event);
 
   // Memory for the output tree
+  double mom_e[3];
+  double mom_r[3];
   double trueWp, trueXp, trueAs, truePr;
   double reconWp, reconXp, reconAs, reconPr;
   double reconMom_r[3];
@@ -88,6 +85,7 @@ int main(int argc, char ** argv)
   outTree->Branch("truePr_x",&(mom_r[0]),"truePr_x/D");
   outTree->Branch("truePr_y",&(mom_r[1]),"truePr_y/D");
   outTree->Branch("truePr_z",&(mom_r[2]),"truePr_z/D");
+  // Reconstructed momenta
   outTree->Branch("reconPe_x",&(reconMom_e[0]),"reconPe_x/D");
   outTree->Branch("reconPe_y",&(reconMom_e[1]),"reconPe_y/D");
   outTree->Branch("reconPe_z",&(reconMom_e[2]),"reconPe_z/D");
@@ -107,6 +105,15 @@ int main(int argc, char ** argv)
 
       // Load the event
       inTree->GetEvent(i);
+
+      // Copy over the true momentum vectors
+      mom_e[0] = this_event->particles[0].momentum.X();
+      mom_e[1] = this_event->particles[0].momentum.Y();
+      mom_e[2] = this_event->particles[0].momentum.Z();
+
+      mom_r[0] = this_event->particles[1].momentum.X();
+      mom_r[1] = this_event->particles[1].momentum.Y();
+      mom_r[2] = this_event->particles[1].momentum.Z();
 
       // Figure out where the recoiling neutron hits BAND
       trueZHit = bandZ - bandZWidth*myRand->Rndm();
