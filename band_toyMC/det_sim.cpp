@@ -59,7 +59,7 @@ int main(int argc, char ** argv)
     }
 
   // Memory for the input branches
-  Gen_Event * this_event;
+  Gen_Event * this_event = NULL;
   inTree->SetBranchAddress("event",&this_event);
 
   // Memory for the output tree
@@ -95,7 +95,6 @@ int main(int argc, char ** argv)
   // Hit position
   outTree->Branch("true_zHit",&trueZHit,"true_zHit/D");
   outTree->Branch("recon_zHit",&reconZHit,"recon_zHit/D");
-
 
   // Loop over the events
   for (int i=0 ; i<inTree->GetEntries() ; i++)
