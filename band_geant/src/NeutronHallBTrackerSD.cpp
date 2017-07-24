@@ -61,7 +61,7 @@ G4bool NeutronHallBTrackerSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
   //else{
   //  if (hitE == 0.) return true;
   //}
-  if (hitE == 0.) return true;
+  if (hitE <= 0.) return true;
 
   hitTime = aStep->GetPreStepPoint()->GetGlobalTime()/ns;
   hitPos = aStep->GetPreStepPoint()->GetPosition();
@@ -80,6 +80,7 @@ G4bool NeutronHallBTrackerSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
     barHits[hitBarNo] = newHit;
   }
   else{
+    //return true;
     barHits[hitBarNo].E_dep += hitE;
     if (hitTime < barHits[hitBarNo].time){
       barHits[hitBarNo].time = hitTime;

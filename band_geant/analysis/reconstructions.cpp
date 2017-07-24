@@ -23,7 +23,7 @@ const double BAND_Yoffset = barCrossSection * 5;
 
 // ********************************************************************************
 // Reconstruction options
-const bool smearingOn = false;
+const bool smearingOn = true;
 // ********************************************************************************
 
 int main(int argc, char** argv){
@@ -53,19 +53,19 @@ int main(int argc, char** argv){
 	inTree-> SetBranchAddress("band",&trueEvent);
   	outTree->Branch("band",&reconEvent);
 
-  	std::vector<double> times;
-
 
 	int numEvents = inTree->GetEntries();
 	
 	for(int i =0; i<numEvents; i++){
 		
-		if(i%100000==0)cerr << "Working on event " << i << "\n";
+		//if(i%100000==0)cerr << "Working on event " << i << "\n";
 		inTree->GetEntry(i);
 
 		cout << "Event " << i << endl;
 		
 		// first find the earliest hit in the event that is above threshold
+		double minTime = -1;
+		int indexOfMinTime =-1;
 		for(int j=0; j<trueEvent->hits.size(); j++){
 
 			// First check if the hit is above threshold
@@ -80,23 +80,22 @@ int main(int argc, char** argv){
 			// If hit above threshold, save the hit time to
 			// find the earliest hit time
 			double trueT = trueEvent->hits[j].time; // in ns
-			times.push_back(trueT);
+
+			if ((trueT < minTime) || (indexOfMinTime < 0)){
+				minTime = trueT;
+				indexOfMinTime = j;
+			}
 		}
-		if (times.size()) {
-			int earliestHit_ind = distance(times.begin(), min_element(times.begin(), times.end()));
-			times.clear();
-
-			// With that earliest hit index, do the reconstructions
-			int j = earliestHit_ind;
-
-			// Already checked that all the hits are above threshold
+		if (indexOfMinTime >= 0) {
+			int j = indexOfMinTime;
 			double trueE = trueEvent->hits[j].E_dep;
+			double trueE_MeVee = 0.83 * trueE - 2.82 * ( 1 - exp( -0.25 * ( pow(trueE,0.93)) ) );
 
 			// get true time, location, and bar number from the event
 			double trueT = trueEvent->hits[j].time; // in ns
 			TVector3 truePos( trueEvent->hits[j].pos.x()/10.,trueEvent->hits[j].pos.y()/10.,trueEvent->hits[j].pos.z()/10. ); // in cm
 			int trueBarNo = trueEvent->hits[j].barNo;
-
+			
 
 			// DO RECONSTRUCTIONS:
 			double reconT, reconX, reconY, reconZ;
@@ -160,7 +159,7 @@ int main(int argc, char** argv){
 
 	      	outTree->Fill();
 	    }
-		
+	  			
 	}
 		
 	outTree->Write();
