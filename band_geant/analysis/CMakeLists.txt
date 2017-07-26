@@ -11,3 +11,6 @@ target_link_libraries(study_geantThreshold deuteron_dis_tree ${ROOT_LIBRARIES})
 
 add_executable(digitize ${CMAKE_CURRENT_SOURCE_DIR}/digitize.cpp )
 target_link_libraries(digitize deuteron_dis_tree ${ROOT_LIBRARIES})
+
+add_executable(resolutions ${CMAKE_CURRENT_SOURCE_DIR}/resolutions.cpp )
+target_link_libraries(resolutions deuteron_dis_tree ${ROOT_LIBRARIES})

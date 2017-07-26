@@ -69,8 +69,7 @@ int main(int argc, char** argv){
 		
 		//if(i%100000==0)cerr << "Working on event " << i << "\n";
 		inTree_geant->GetEntry(i);
-
-		cout << "Event " << i << endl;
+		if (i % 10000 == 0) cout << "Event " << i << endl;
 		
 		// first find the earliest hit in the event that is above threshold
 		double minTime = -1;
