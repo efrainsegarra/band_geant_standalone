@@ -41,10 +41,12 @@ const double min_theta_e = 5.*M_PI/180.;
 const double max_theta_e = 35.*M_PI/180.;
 const double min_p_e = 2.;
 const double max_p_e = 8.;
-const double min_theta_r =154.*M_PI/180.; // widened ranges due to BAND array coverage
-const double max_theta_r =176.*M_PI/180.; // widened ranges due to BAND array coverage
+
+const double min_theta_r =154.3*M_PI/180.;
+const double max_theta_r =175.8*M_PI/180.;
 const double min_p_r =0.275;
 const double max_p_r =0.600;
+
 const double min_phi_er=0.;
 const double max_phi_er=2.*M_PI;
 
@@ -117,15 +119,16 @@ int main(int argc, char *argv[])
       // Extract useful quantities
       double theta_e = min_theta_e + eventData[0]*(max_theta_e - min_theta_e);
       double p_e = min_p_e + eventData[1]*(max_p_e - min_p_e);
+
       double theta_r = min_theta_r + eventData[2]*(max_theta_r - min_theta_r);
       double p_r = min_p_r + eventData[3]*(max_p_r - min_p_r);
+
       double phi_er = min_phi_er + eventData[4]*(max_phi_er - min_phi_er);
 
       // Handle phi (** DANGER ** )
       double phi_e = 2.*M_PI * rand->Rndm();
       double phi_r = phi_e + phi_er;
-      if (phi_r > 2.*M_PI)
-	phi_r -= 2.*M_PI;
+      if (phi_r > 2.*M_PI) phi_r -= 2.*M_PI;
 
       // Write to tree
       thisEvent->particles.clear();
