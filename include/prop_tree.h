@@ -15,8 +15,9 @@ class BAND_Hit : public TObject
   double time; // in ns
   double E_dep; // in MeV
   int barNo; // indicating what bar
-  
-  ClassDef(BAND_Hit,8);
+  std::string type;
+
+  ClassDef(BAND_Hit,9);
 };
 
 class BAND_Event : public TObject
