@@ -62,7 +62,6 @@ int main(int argc, char** argv){
 	inTree_electrons-> SetBranchAddress("event",&trueEvent_electrons);
   	outTree->Branch("band",&reconEvent);
 
-  	// ******************************************************************************************
   	// DIGITIZATION
 	int numEvents_neutrons = inTree_neutrons->GetEntries();
 	for(int i =0; i<numEvents_neutrons; i++){
@@ -199,7 +198,6 @@ int main(int argc, char** argv){
 	      		reconEvent->hits.push_back(reconHit);
 
 	      	}
-
 		
 	      	outTree->Fill();
 	    }
