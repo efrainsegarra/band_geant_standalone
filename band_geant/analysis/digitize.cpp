@@ -8,6 +8,7 @@
 #include "TVectorT.h"
 #include "TVector3.h"
 
+#include "recon_tree.h"
 #include "prop_tree.h"
 #include "gen_tree.h"
 #include "constants.h"
@@ -42,11 +43,11 @@ int main(int argc, char** argv){
     const double tResPMT = 1.E-3 * atof(argv[5]); // in ns
 
     // Set up input and output root files
-    TFile * inFile_neutrons = new TFile(argv[1]);
-    TTree * inTree_neutrons = (TTree*)inFile_neutrons->Get("PropTree");
+    TFile * inFile_geant = new TFile(argv[1]);
+    TTree * inTree_geant = (TTree*)inFile_geant->Get("PropTree");
 
-    TFile * inFile_electrons = new TFile(argv[2]);
-    TTree * inTree_electrons = (TTree*)inFile_electrons->Get("MCout");
+    TFile * inFile_generator = new TFile(argv[2]);
+    TTree * inTree_generator = (TTree*)inFile_generator->Get("MCout");
 
   	TFile * outFile = new TFile(argv[3],"RECREATE");
   	TTree * outTree = new TTree("ReconTree","Reconstructed Values");
@@ -54,40 +55,40 @@ int main(int argc, char** argv){
 	TRandom3 * myRand = new TRandom3(0);
 
 	// Initialize the branches
-	BAND_Event * trueEvent_neutrons = NULL;
-	Gen_Event * trueEvent_electrons = NULL;
-	BAND_Event * reconEvent = new BAND_Event;
+	BAND_Event * geantEvent = NULL;
+	Gen_Event * generatedEvent = NULL;
+	Recon_Event * reconEvent = new Recon_Event;
 
-	inTree_neutrons-> SetBranchAddress("band",&trueEvent_neutrons);
-	inTree_electrons-> SetBranchAddress("event",&trueEvent_electrons);
-  	outTree->Branch("band",&reconEvent);
+	inTree_geant-> SetBranchAddress("band",&geantEvent);
+	inTree_generator-> SetBranchAddress("event",&generatedEvent);
+  	outTree->Branch("event",&reconEvent);
 
   	// DIGITIZATION
-	int numEvents_neutrons = inTree_neutrons->GetEntries();
-	for(int i =0; i<numEvents_neutrons; i++){
+	int numEvents_geant = inTree_geant->GetEntries();
+	for(int i =0; i<numEvents_geant; i++){
 		
 		//if(i%100000==0)cerr << "Working on event " << i << "\n";
-		inTree_neutrons->GetEntry(i);
+		inTree_geant->GetEntry(i);
 
 		cout << "Event " << i << endl;
 		
 		// first find the earliest hit in the event that is above threshold
 		double minTime = -1;
 		int indexOfMinTime =-1;
-		for(int j=0; j<trueEvent_neutrons->hits.size(); j++){
+		for(int j=0; j<geantEvent->hits.size(); j++){
 
 			// First check if the hit is above threshold
 			// get energy deposit, covert to MeVee energy equivalent
 			// deposit and then ask if that MeVee > some threshold set
 			// in MeVee
 			// this conversion from http://shop-pdp.net/efhtml/NIM_151_1978_445-450_Madey.pdf
-			double trueE = trueEvent_neutrons->hits[j].E_dep; // in MeV
+			double trueE = geantEvent->hits[j].E_dep; // in MeV
 			double trueE_MeVee = 0.83 * trueE - 2.82 * ( 1 - exp( -0.25 * ( pow(trueE,0.93)) ) );
 			if(abs(trueE_MeVee)<threshold) continue;
 
 			// If hit above threshold, save the hit time to
 			// find the earliest hit time
-			double trueT = trueEvent_neutrons->hits[j].time; // in ns
+			double trueT = geantEvent->hits[j].time; // in ns
 
 			if ((trueT < minTime) || (indexOfMinTime < 0)){
 				minTime = trueT;
@@ -96,13 +97,13 @@ int main(int argc, char** argv){
 		}
 		if (indexOfMinTime >= 0) {
 			int j = indexOfMinTime;
-			double trueE = trueEvent_neutrons->hits[j].E_dep;
+			double trueE = geantEvent->hits[j].E_dep;
 			double trueE_MeVee = 0.83 * trueE - 2.82 * ( 1 - exp( -0.25 * ( pow(trueE,0.93)) ) );
 
 			// get true time, location, and bar number from the event
-			double trueT = trueEvent_neutrons->hits[j].time; // in ns
-			TVector3 truePos( trueEvent_neutrons->hits[j].pos.x()/10.,trueEvent_neutrons->hits[j].pos.y()/10.,trueEvent_neutrons->hits[j].pos.z()/10. ); // in cm
-			int trueBarNo = trueEvent_neutrons->hits[j].barNo;
+			double trueT = geantEvent->hits[j].time; // in ns
+			TVector3 truePos( geantEvent->hits[j].pos.x()/10.,geantEvent->hits[j].pos.y()/10.,geantEvent->hits[j].pos.z()/10. ); // in cm
+			int trueBarNo = geantEvent->hits[j].barNo;
 			
 
 			// DO RECONSTRUCTIONS:
@@ -155,51 +156,79 @@ int main(int argc, char** argv){
 
 	      	std::string type = "neutron";
 	      	// Now fill the outTree
-	      	reconEvent->hits.clear();
+	      	reconEvent->particles.clear();
 
-	      	BAND_Hit reconHit;
-	      	reconHit.E_dep = reconE; // in MeV
-	      	reconHit.time = reconT;  // in ns
-	      	reconHit.pos = reconPos; // in cm
-	      	reconHit.mom = reconMom; // in MeV/c
-	      	reconHit.barNo = trueBarNo;
-	      	reconHit.type = type;
-	      	reconEvent->hits.push_back(reconHit);
+	      	Recon_Particle reconHit_n;
+	      	reconHit_n.E_dep = reconE; // in MeV
+	      	reconHit_n.time = reconT;  // in ns
+	      	reconHit_n.pos = reconPos; // in cm
+	      	reconHit_n.momRecon = reconMom; // in MeV/c
+	      	reconHit_n.barNo = trueBarNo;
+	      	reconHit_n.type = type;
 
-
-	      	// Now read the matching electron information from the generator tree:
-	      	inTree_electrons->GetEntry(i);
+	      	// Now read the matching electron information and the true neutron momentum!
+	      	inTree_generator->GetEntry(i);
 	      		// for both the particle types in the generator tree:
-	      	for (unsigned int p=0 ; p<trueEvent_electrons->particles.size() ; p++){
-	      		std::string particleType = trueEvent_electrons->particles[p].type;
-	      		if (particleType != "e-") continue;
+	      	for (unsigned int p=0 ; p<generatedEvent->particles.size() ; p++){
+	      		double trueMomMag, trueMomTheta, trueMomPhi;
+	      		double trueMomX, trueMomY, trueMomZ;
 
-	      		// Get the true momentum and true angles:
-	      		// recall that the momentum in the generator is in GeV and in Geant it is MeV!!!
-	      		double trueMomMag = trueEvent_electrons->particles[p].momentum.Mag() * 1000;
-	      		double trueMomTheta = trueEvent_electrons->particles[p].momentum.Theta();
-	      		double trueMomPhi = trueEvent_electrons->particles[p].momentum.Phi();
+	      		std::string particleType = generatedEvent->particles[p].type;
+	      		if (particleType == "neutron"){ // Finish writing the true momentum & push back event
+	      			trueMomMag = generatedEvent->particles[p].momentum.Mag() * 1000;
+		      		trueMomTheta = generatedEvent->particles[p].momentum.Theta();
+		      		trueMomPhi = generatedEvent->particles[p].momentum.Phi();
 
-	      		double reconMomMag = myRand->Gaus(trueMomMag,clasFac*getCLAS12_PRes(trueMomTheta,trueMomMag));
-	      		double reconMomTheta = myRand->Gaus(trueMomTheta,clasFac*0.001);
-	      		double reconMomPhi = myRand->Gaus(trueMomPhi,clasFac*0.001/sin(trueMomTheta));
+		      		trueMomX = trueMomMag * sin(trueMomTheta) * cos(trueMomPhi);
+					trueMomY = trueMomMag * sin(trueMomTheta) * sin(trueMomPhi);
+					trueMomZ = trueMomMag * cos(trueMomTheta);
+					TVector3 trueMom( trueMomX ,trueMomY ,trueMomZ ); // in MeV/c
 
-	      		if (reconMomPhi > M_PI) reconMomPhi -=2.*M_PI;
-		    	if (reconMomPhi < -M_PI) reconMomPhi +=2.*M_PI;
+		      		reconHit_n.momTrue = trueMom;
+		      		reconEvent->particles.push_back(reconHit_n);
+		      	}
+	      		else{
+	      			double reconMomMag, reconMomTheta, reconMomPhi;
+	      			double reconMomX, reconMomY, reconMomZ;
+		      		// Get the true momentum and true angles:
+		      		// recall that the momentum in the generator is in GeV and in Geant it is MeV!!!
+		      		trueMomMag = generatedEvent->particles[p].momentum.Mag() * 1000;
+		      		trueMomTheta = generatedEvent->particles[p].momentum.Theta();
+		      		trueMomPhi = generatedEvent->particles[p].momentum.Phi();
 
-				reconMomX = reconMomMag * sin(reconMomTheta) * cos(reconMomPhi);
-				reconMomY = reconMomMag * sin(reconMomTheta) * sin(reconMomPhi);
-				reconMomZ = reconMomMag * cos(reconMomTheta);
-				TVector3 reconMom( reconMomX ,reconMomY ,reconMomZ ); // in MeV/c
+		      		trueMomX = trueMomMag * sin(trueMomTheta) * cos(trueMomPhi);
+					trueMomY = trueMomMag * sin(trueMomTheta) * sin(trueMomPhi);
+					trueMomZ = trueMomMag * cos(trueMomTheta);
+					TVector3 trueMom( trueMomX ,trueMomY ,trueMomZ ); // in MeV/c
 
-	      		BAND_Hit reconHit;
-	      		reconHit.type = particleType;
-	      		reconHit.mom = reconMom;
-	      		reconEvent->hits.push_back(reconHit);
+		      		reconMomMag = myRand->Gaus(trueMomMag,clasFac*getCLAS12_PRes(trueMomTheta,trueMomMag));
+		      		reconMomTheta = myRand->Gaus(trueMomTheta,clasFac*0.001);
+		      		reconMomPhi = myRand->Gaus(trueMomPhi,clasFac*0.001/sin(trueMomTheta));
+
+		      		if (reconMomPhi > M_PI) reconMomPhi -=2.*M_PI;
+			    	if (reconMomPhi < -M_PI) reconMomPhi +=2.*M_PI;
+
+					reconMomX = reconMomMag * sin(reconMomTheta) * cos(reconMomPhi);
+					reconMomY = reconMomMag * sin(reconMomTheta) * sin(reconMomPhi);
+					reconMomZ = reconMomMag * cos(reconMomTheta);
+					TVector3 reconMom( reconMomX ,reconMomY ,reconMomZ ); // in MeV/c
+
+		      		Recon_Particle reconHit_e;
+		      		reconHit_e.type = particleType;
+		      		reconHit_e.momRecon = reconMom;
+		      		reconHit_e.momTrue = trueMom;
+		      			// now i don't want floating 0's in the tree, so make them negative
+		      		TVector3 reconPos(-2147483648,-2147483648,-2147483648); // in mm
+		      		reconHit_e.pos = reconPos;
+					reconHit_e.time = -2147483648; // in ns
+					reconHit_e.E_dep = -2147483648; // in MeV
+					reconHit_e.barNo = -2147483648; // indicating what bar
+		      		reconEvent->particles.push_back(reconHit_e);
+		      	}
 
 	      	}
-		
 	      	outTree->Fill();
+
 	    }
 	  			
 	}
@@ -208,8 +237,8 @@ int main(int argc, char** argv){
 		
 	outTree->Write();
   	outFile->Close();
-  	inFile_neutrons->Close();
-  	inFile_electrons->Close();
+  	inFile_geant->Close();
+  	inFile_generator->Close();
   	delete myRand;
 
 	return 0;

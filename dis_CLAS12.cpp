@@ -131,15 +131,17 @@ int main(int argc, char *argv[])
       if (phi_r > 2.*M_PI) phi_r -= 2.*M_PI;
 
       // Write to tree
+      Gen_Particle neutron;
+      neutron.type="neutron";
+      neutron.momentum.SetMagThetaPhi(p_r,theta_r,phi_r);
+      thisEvent->particles.push_back(neutron);
+
       thisEvent->particles.clear();
       Gen_Particle electron;
       electron.type="e-";
       electron.momentum.SetMagThetaPhi(p_e,theta_e,phi_e);
       thisEvent->particles.push_back(electron);
-      Gen_Particle neutron;
-      neutron.type="neutron";
-      neutron.momentum.SetMagThetaPhi(p_r,theta_r,phi_r);
-      thisEvent->particles.push_back(neutron);
+
       outputTree->Fill();
     }
    
