@@ -40,6 +40,15 @@ int main(int argc, char** argv){
 	double trueMom_e[3],trueMom_n[3];
 	double reconMom_e[3],reconMom_n[3];
 
+	double trueQSq, trueNu, trueX, true_q, truePhi_q, trueTheta_q;
+	double reconQSq, reconNu, reconX, recon_q, reconPhi_q, reconTheta_q;
+	double truePhi_e, truePhi_n, truePhi_en;
+	double reconPhi_e, reconPhi_n, reconPhi_en;
+	double trueTheta_n, reconTheta_n;
+	double trueTheta_e, reconTheta_e;
+	double trueEn, reconEn;
+	double trueCosTheta_qn, reconCosTheta_qn;
+
 	outTree->Branch("trueWp",&trueWp,"trueWp/D");
 	outTree->Branch("trueXp",&trueXp,"trueXp/D");
 	outTree->Branch("trueAs",&trueAs,"trueAs/D");
@@ -69,18 +78,47 @@ int main(int argc, char** argv){
 	outTree->Branch("reconPn_y",&(reconMom_n[1]),"reconPn_y/D");
 	outTree->Branch("reconPn_z",&(reconMom_n[2]),"reconPn_z/D");
 
+	outTree->Branch("trueQSq",&(trueQSq),"trueQSq/D");
+	outTree->Branch("trueNu",&(trueNu),"trueNu/D");
+	outTree->Branch("trueX",&(trueX),"trueX/D");
+	outTree->Branch("true_q",&(true_q),"true_q/D");
+	outTree->Branch("truePhi_q",&(truePhi_q),"truePhi_q/D");
+	outTree->Branch("trueTheta_q",&(trueTheta_q),"trueTheta_q/D");
+
+	outTree->Branch("reconQSq",&(reconQSq),"reconQSq/D");
+	outTree->Branch("reconNu",&(reconNu),"reconNu/D");
+	outTree->Branch("reconX",&(reconX),"reconX/D");
+	outTree->Branch("recon_q",&(recon_q),"recon_q/D");
+	outTree->Branch("reconPhi_q",&(reconPhi_q),"reconPhi_q/D");
+	outTree->Branch("reconTheta_q",&(reconTheta_q),"reconTheta_q/D");
+
+	outTree->Branch("truePhi_e",&(truePhi_e),"truePhi_e/D");
+	outTree->Branch("truePhi_n",&(truePhi_n),"truePhi_n/D");
+	outTree->Branch("truePhi_en",&(truePhi_en),"truePhi_en/D");
+
+	outTree->Branch("reconPhi_e",&(reconPhi_e),"reconPhi_e/D");
+	outTree->Branch("reconPhi_n",&(reconPhi_n),"reconPhi_n/D");
+	outTree->Branch("reconPhi_en",&(reconPhi_en),"reconPhi_en/D");
+
+	outTree->Branch("trueTheta_n",&(trueTheta_n),"trueTheta_n/D");
+	outTree->Branch("reconTheta_n",&(reconTheta_n),"reconTheta_n/D");
+	outTree->Branch("trueTheta_e",&(trueTheta_e),"trueTheta_e/D");
+	outTree->Branch("reconTheta_e",&(reconTheta_e),"reconTheta_e/D");
+
+	outTree->Branch("trueEn",&(trueEn),"trueEn/D");
+	outTree->Branch("reconEn",&(reconEn),"reconEn/D");
+
+	outTree->Branch("trueCosTheta_qn",&(trueCosTheta_qn),"trueCosTheta_qn/D");
+	outTree->Branch("reconCosTheta_qn",&(reconCosTheta_qn),"reconCosTheta_qn/D");
+
+
 	int numEvents = inTree_digitized->GetEntries();
 	for(int i =0; i<numEvents; i++){
 		inTree_digitized->GetEntry(i);
 		if (i % 10000 == 0) cout << "Event " << i << endl;
 
 
-		double trueQSq, trueNu, trueX, true_q, truePhi_q, trueTheta_q;
-		double reconQSq, reconNu, reconX, recon_q, reconPhi_q, reconTheta_q;
-		double truePhi_e, truePhi_n, truePhi_en;
-		double reconPhi_e, reconPhi_n, reconPhi_en;
-		double trueTheta_n, reconTheta_n;
-		double trueEn, reconEn;
+		
 		for (unsigned int p=0 ; p<reconEvent->particles.size() ; p++){
 
 			double momTrueMag = reconEvent->particles[p].momTrue.Mag()/1000.;
@@ -124,6 +162,9 @@ int main(int argc, char** argv){
 				truePhi_e = momTruePhi;
 				reconPhi_e = momReconPhi;
 
+				trueTheta_e = momTrueTheta;
+				reconTheta_e = momReconTheta;
+
 			}
 			else{
 				truePn = momTrueMag;
@@ -155,8 +196,8 @@ int main(int argc, char** argv){
 		if (reconPhi_en < -M_PI) reconPhi_en += 2.*M_PI;
 		if (reconPhi_en > M_PI) reconPhi_en -= 2.*M_PI;
 
-		double trueCosTheta_qn = cos(trueTheta_n)*cos(trueTheta_q) - sin(trueTheta_n)*sin(trueTheta_q)*cos(truePhi_en);
-		double reconCosTheta_qn = cos(reconTheta_n)*cos(reconTheta_q) - sin(reconTheta_n)*sin(reconTheta_q)*cos(reconPhi_en);
+		trueCosTheta_qn = cos(trueTheta_n)*cos(trueTheta_q) - sin(trueTheta_n)*sin(trueTheta_q)*cos(truePhi_en);
+		reconCosTheta_qn = cos(reconTheta_n)*cos(reconTheta_q) - sin(reconTheta_n)*sin(reconTheta_q)*cos(reconPhi_en);
 
 		trueXp = trueQSq/(2.*( trueNu*(mD-trueEn) + truePn*true_q*trueCosTheta_qn));
 		reconXp = reconQSq/(2.*( reconNu*(mD-reconEn) + reconPn*recon_q*reconCosTheta_qn));
@@ -169,10 +210,9 @@ int main(int argc, char** argv){
 		trueAs = (trueEn - truePn*trueCosTheta_qn)/mN;
 		reconAs = (reconEn - reconPn*reconCosTheta_qn)/mN;
 
-
-		if (acos(reconCosTheta_qn)*180./M_PI < 110.) continue;
-		if (reconQSq < 2) continue;
-		if (reconWp < 1.8) continue;
+		//if (acos(reconCosTheta_qn)*180./M_PI < 110.) continue;
+		//if (reconQSq < 2) continue;
+		//if (reconWp < 1.8) continue;
 
 		outTree->Fill();
 	}

@@ -200,9 +200,16 @@ int main(int argc, char** argv){
 					trueMomZ = trueMomMag * cos(trueMomTheta);
 					TVector3 trueMom( trueMomX ,trueMomY ,trueMomZ ); // in MeV/c
 
-		      		reconMomMag = myRand->Gaus(trueMomMag,clasFac*getCLAS12_PRes(trueMomTheta,trueMomMag));
-		      		reconMomTheta = myRand->Gaus(trueMomTheta,clasFac*0.001);
-		      		reconMomPhi = myRand->Gaus(trueMomPhi,clasFac*0.001/sin(trueMomTheta));
+					if (smearingOn == true){
+			      		reconMomMag = myRand->Gaus(trueMomMag,clasFac*getCLAS12_PRes(trueMomTheta,trueMomMag));
+			      		reconMomTheta = myRand->Gaus(trueMomTheta,clasFac*0.001);
+			      		reconMomPhi = myRand->Gaus(trueMomPhi,clasFac*0.001/sin(trueMomTheta));
+			      	}
+			      	else{
+			      		reconMomMag = trueMomMag;
+			      		reconMomTheta = trueMomTheta;
+			      		reconMomPhi = trueMomPhi;
+			      	}
 
 		      		if (reconMomPhi > M_PI) reconMomPhi -=2.*M_PI;
 			    	if (reconMomPhi < -M_PI) reconMomPhi +=2.*M_PI;
