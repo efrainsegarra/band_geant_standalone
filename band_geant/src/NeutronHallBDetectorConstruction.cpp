@@ -185,7 +185,7 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
                 new G4Box("DetectorBars_E",
                           0.5*BAND_groupE_length,
                           0.5*BAND_barCrossSection,
-                          0.5*BAND_barCrossSection);
+                          0.5*BAND_barCrossSection*5.);
       logicDetectorBarsE[wall] = 
           new G4LogicalVolume(solidDetectorBarsE,
                               BAND_mat,
