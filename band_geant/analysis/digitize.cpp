@@ -21,13 +21,13 @@ const double clasFac=1.;
 const double cScint = 15.; // in cm/ns
 const double barCrossSection = 7.4;// in cm
 const double BAND_Zoffset = -262; // in cm
-const int BAND_numLayers = 5;
-const int numBANDbars = 24; // bars in a single layer of the BAND array
+const int BAND_numLayers = 1;
+const int numBANDbars = 1; // bars in a single layer of the BAND array
 const double BAND_Yoffset = barCrossSection * 5;
 
 // ********************************************************************************
 // Reconstruction options
-const bool smearingOn = true;
+const bool smearingOn = false;
 // ********************************************************************************
 
 int main(int argc, char** argv){
@@ -82,7 +82,8 @@ int main(int argc, char** argv){
 			// in MeVee
 			// this conversion from http://shop-pdp.net/efhtml/NIM_151_1978_445-450_Madey.pdf
 			double trueE = geantEvent->hits[j].E_dep; // in MeV
-			double trueE_MeVee = 0.83 * trueE - 2.82 * ( 1 - exp( -0.25 * ( pow(trueE,0.93)) ) );
+			double trueE_MeVee = 0.95 * trueE - 8.0 * ( 1 - exp( 0.10 * ( pow(trueE,0.90)) ) );
+
 			if(abs(trueE_MeVee)<threshold) continue;
 
 			// If hit above threshold, save the hit time to
@@ -97,7 +98,7 @@ int main(int argc, char** argv){
 		if (indexOfMinTime >= 0) {
 			int j = indexOfMinTime;
 			double trueE = geantEvent->hits[j].E_dep;
-			double trueE_MeVee = 0.83 * trueE - 2.82 * ( 1 - exp( -0.25 * ( pow(trueE,0.93)) ) );
+			double trueE_MeVee = 0.95 * trueE - 8.0 * ( 1 - exp( 0.10 * ( pow(trueE,0.90)) ) );
 
 			// get true time, location, and bar number from the event
 			double trueT = geantEvent->hits[j].time; // in ns

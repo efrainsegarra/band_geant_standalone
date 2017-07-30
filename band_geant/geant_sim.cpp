@@ -7,9 +7,6 @@
 
 #include "Randomize.hh"
 #include "G4RunManager.hh"
-#include "QGSP_BERT.hh"
-#include "FTFP_BERT.hh"
-#include "FTFP_BERT_HP.hh"
 #include "G4StepLimiterPhysics.hh"
 #include "G4VisExecutive.hh"
 #include "G4UIExecutive.hh"
@@ -17,6 +14,11 @@
 
 #include "NeutronHallBDetectorConstruction.h"
 #include "NeutronHallBActionInitialization.h"
+
+#include "QGSP_BIC.hh"
+#include "QGSP_BERT.hh"
+#include "FTFP_BERT.hh"
+
 
 using namespace std;
 
