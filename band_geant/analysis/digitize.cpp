@@ -23,7 +23,7 @@ const double barCrossSection = 7.4;// in cm
 const double BAND_Zoffset = -262; // in cm
 const int BAND_numLayers = 5;
 const int numBANDbars = 24; // bars in a single layer of the BAND array
-const double BAND_Yoffset = barCrossSection * 5;
+const double BAND_Yoffset = barCrossSection * BAND_numLayers;
 
 // ********************************************************************************
 // Reconstruction options
