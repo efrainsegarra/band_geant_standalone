@@ -27,7 +27,7 @@ const double BAND_Yoffset = barCrossSection * BAND_numLayers;
 
 // ********************************************************************************
 // Reconstruction options
-const bool smearingOn = true;
+const bool smearingOn = false;
 // ********************************************************************************
 
 int main(int argc, char** argv){
