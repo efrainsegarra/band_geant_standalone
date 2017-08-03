@@ -76,7 +76,6 @@ int checkBAND(double theta_r,double phi_r){
     min_x = -max_x;
     if ((x_traj > max_x) || (x_traj < min_x)) return -1;
   }
-  cout << x_traj << " " << y_traj << "\n";
   return 0;
 }
 
@@ -117,7 +116,7 @@ int main(int argc, char *argv[])
 
       int pass = checkBAND(theta_r,phi_r);
       if (pass < 0) continue;
-      
+
       // Write to tree
       thisEvent->particles.clear();
       //Gen_Particle electron;

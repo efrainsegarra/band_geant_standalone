@@ -112,7 +112,6 @@ int checkBAND(double theta_r,double phi_r){
     min_x = -max_x;
     if ((x_traj > max_x) || (x_traj < min_x)) return -1;
   }
-  cout << x_traj << " " << y_traj << "\n";
   return 0;
 }
 
