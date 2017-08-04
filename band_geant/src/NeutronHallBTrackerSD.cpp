@@ -49,22 +49,21 @@ G4bool NeutronHallBTrackerSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
 
   hitE = aStep->GetTotalEnergyDeposit()/MeV;
 
-  bool testGeometryEffect = false; // looks only at neutrons hitting the face
-  // of the detector to see the effect geometry had on getting them there
-  if (testGeometryEffect){
-    G4String hitParticleName = aStep->GetTrack()->GetDynamicParticle()->GetDefinition()->GetParticleName();
-    G4String wantedParticle = "neutron";
-    if (hitParticleName != wantedParticle) return true;
-    if( std::abs(aStep->GetPreStepPoint()->GetPosition().z()/mm +2620.) > 0.001) return true;
-    if (hitE != 0.) return true;
-  }
-  else{
-    if (hitE == 0.) return true;
-  }
-  
+  /*
+  G4String hitParticleName = aStep->GetTrack()->GetDynamicParticle()->GetDefinition()->GetParticleName();
+  G4String wantedParticle = "neutron";
+  if (hitParticleName != wantedParticle) return true;
+  if( std::abs(aStep->GetPreStepPoint()->GetPosition().z()/mm +2620.) > 0.001) return true;
+  if (hitE != 0.) return true;
+  */
+  if (hitE <= 0.) return true;
+
   hitTime = aStep->GetPreStepPoint()->GetGlobalTime()/ns;
   hitPos = aStep->GetPreStepPoint()->GetPosition();
 
+  // For each event with multiple hits, if there are multiple hits
+  // IN THE SAME BAR, take only the earliest time / position in the bar.
+  // But, for each event, with multiple bars fired, save all bars fired.
   if(barHits.count(hitBarNo) == 0){
     BAND_Hit newHit;
 
@@ -76,6 +75,7 @@ G4bool NeutronHallBTrackerSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
     barHits[hitBarNo] = newHit;
   }
   else{
+    //return true;
     barHits[hitBarNo].E_dep += hitE;
     if (hitTime < barHits[hitBarNo].time){
       barHits[hitBarNo].time = hitTime;

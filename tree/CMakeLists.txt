@@ -4,7 +4,7 @@ PROJECT(deuteron_dis_tree)
 # find source and header files, set paths, includes...
 SET(LIBNAME "deuteron_dis_tree")
 FILE(GLOB SRCS *.cpp)
-FILE(GLOB HEADERS ${CMAKE_SOURCE_DIR}/include/gen_tree.h ${CMAKE_SOURCE_DIR}/include/prop_tree.h )
+FILE(GLOB HEADERS ${CMAKE_SOURCE_DIR}/include/gen_tree.h ${CMAKE_SOURCE_DIR}/include/prop_tree.h ${CMAKE_SOURCE_DIR}/include/recon_tree.h)
 SET(INCLUDES ${ROOT_INCLUDE_DIR} "${CMAKE_SOURCE_DIR}/include" )
 INCLUDE_DIRECTORIES(${INCLUDES})
 

@@ -15,8 +15,8 @@ class BAND_Hit : public TObject
   double time; // in ns
   double E_dep; // in MeV
   int barNo; // indicating what bar
-  
-  ClassDef(BAND_Hit,8);
+
+  ClassDef(BAND_Hit,11);
 };
 
 class BAND_Event : public TObject

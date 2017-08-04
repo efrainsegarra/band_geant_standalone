@@ -18,11 +18,9 @@ using namespace std;
 
 // assumes that the detector is located in negative z-direction, upstream
 // the target with the following parameters:
-const int BAND_start_z = -2620;
-const int BAND_layers = 5;
-const int BAND_layerThick = 74;
+const int BAND_layers = 1;
 
-
+//
 int main(int argc, char** argv){
 	if (argc != 3)
     {
@@ -44,7 +42,7 @@ int main(int argc, char** argv){
 	
 	for(int i =0; i<numEvents; i++){
 		
-		double event_barFires[BAND_layers] = {0};
+		double event_barFires = 0;
 		inTree->GetEntry(i);
 
 		for(int j=0; j<event->hits.size(); j++){
@@ -53,29 +51,17 @@ int main(int argc, char** argv){
 			// in MeVee
 			// this conversion from http://shop-pdp.net/efhtml/NIM_151_1978_445-450_Madey.pdf
 			double hitE = event->hits[j].E_dep;
-			double hitE_MeVee = 0.83 * hitE - 2.82 * ( 1 - exp( -0.25 * ( pow(hitE,0.93)) ) );
-			if(abs(hitE_MeVee)<threshold) continue;
+			double trueE_MeVee = 0.95 * hitE - 8.0 * ( 1 - exp( 0.10 * ( pow(hitE,0.90)) ) );
+			if(abs(trueE_MeVee)<threshold) continue;
 
-			// for each hit in an event, just categorize that firing bar
-			// in the correct wall in case in future we want to look at
-			// per wall.
-			if(abs((event->hits[j].pos.z()-BAND_start_z+(1.)*BAND_layerThick/2.))<BAND_layerThick/2.) event_barFires[0]++;
-			if(abs((event->hits[j].pos.z()-BAND_start_z+(3.)*BAND_layerThick/2.))<BAND_layerThick/2.) event_barFires[1]++;
-			if(abs((event->hits[j].pos.z()-BAND_start_z+(5.)*BAND_layerThick/2.))<BAND_layerThick/2.) event_barFires[2]++;
-			if(abs((event->hits[j].pos.z()-BAND_start_z+(7.)*BAND_layerThick/2.))<BAND_layerThick/2.) event_barFires[3]++;
-			if(abs((event->hits[j].pos.z()-BAND_start_z+(9.)*BAND_layerThick/2.))<BAND_layerThick/2.) event_barFires[4]++;
+			event_barFires += 1;
 
 
 		}
 		// For that event, get the total number of bars fired in the event
 		// and save that to a running total, and also check if that is > 0
 		// to count that event
-		double num_barFires_inEvent = 0;
-		for(int k = 0; k < BAND_layers; k++){
-			total_barFires[k] += event_barFires[k];
-			num_barFires_inEvent += event_barFires[k];
-		}
-		if(num_barFires_inEvent>0) num_events_barFired++;
+		num_events_barFired+=event_barFires;
 		
 		}
 		

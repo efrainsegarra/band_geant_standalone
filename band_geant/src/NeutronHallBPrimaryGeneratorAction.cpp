@@ -48,9 +48,13 @@ void NeutronHallBPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   // Loop over the particles
   for (unsigned int p=0 ; p<thisEvent->particles.size() ; p++)
     {
+      // Only shoot neutrons in Geant
+      G4String particleName = thisEvent->particles[p].type;
+      G4String wantedParticle = "neutron";
+      if (particleName != wantedParticle) continue;
+
       // Set vertex position
       G4PrimaryVertex* thisVertex=new G4PrimaryVertex(G4ThreeVector(0.,0.,0.),0);
-  
       // Create a new primary for the event
       G4PrimaryParticle *thisParticle=new G4PrimaryParticle(G4ParticleTable::GetParticleTable()->FindParticle(G4String(thisEvent->particles[p].type)));
       thisParticle->SetMomentum(thisEvent->particles[p].momentum.X() * GeV,

@@ -38,6 +38,10 @@ class NeutronHallBTrackerSD : public G4VSensitiveDetector
   G4double hitE;
   G4double hitTime;
   G4ThreeVector hitPos;
+
+  G4ThreeVector eventPos;
+  G4double eventE;
+  G4double eventTime;
   //G4double eventE;
 
   BAND_Event * hitList;
