@@ -60,7 +60,9 @@ int main(int argc, char ** argv)
 
   // Memory for the input branches
   Gen_Event * this_event = NULL;
+  cout << "This event has value " << this_event << " and is at address " << &this_event << endl;
   inTree->SetBranchAddress("event",&this_event);
+  cout << "This event has value " << this_event << " and is at address " << &this_event << endl;
 
   // Memory for the output tree
   double mom_e[3];
@@ -97,7 +99,7 @@ int main(int argc, char ** argv)
   outTree->Branch("recon_zHit",&reconZHit,"recon_zHit/D");
 
   // Loop over the events
-  for (int i=0 ; i<inTree->GetEntries() ; i++)
+    for (int i=0 ; i<inTree->GetEntries() ; i++)
     {
       if (i%100000==0)
 	cerr << "Working on event " << i << "\n";
