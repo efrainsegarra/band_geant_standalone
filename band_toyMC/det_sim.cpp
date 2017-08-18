@@ -16,10 +16,12 @@ using namespace std;
 const double bandZ = -250.; // The z position of the face of BAND that is closest to the target (in cm)
 const double bandZWidth=40.;
 const double cScint = 15.;
+TRandom3 *myRand;
 
 inline double sq(double x){ return x*x;};
 bool didItHit(double x, double y);
 double getCLAS12_PRes(double theta, double p);
+double eeEDep(double En, double bar_thick);
 
 int main(int argc, char ** argv)
 {
@@ -35,7 +37,7 @@ int main(int argc, char ** argv)
   const double clasFac=atof(argv[5]); // Multiplies all CLAS-12 resolutions
 
   // Random number generator
-  TRandom3 * myRand = new TRandom3(0);
+  myRand = new TRandom3(0);
 
   // Get the files and trees
   TFile * inFile = new TFile(argv[1]);
@@ -60,43 +62,54 @@ int main(int argc, char ** argv)
 
   // Memory for the input branches
   Gen_Event * this_event = NULL;
-  cout << "This event has value " << this_event << " and is at address " << &this_event << endl;
   inTree->SetBranchAddress("event",&this_event);
-  cout << "This event has value " << this_event << " and is at address " << &this_event << endl;
 
   // Memory for the output tree
+  double trueWp, trueXp, trueAs, trueQSq;
+  double truePr, trueEr, trueZHit;
   double mom_e[3];
   double mom_r[3];
-  double trueWp, trueXp, trueAs, truePr;
-  double reconWp, reconXp, reconAs, reconPr;
-  double reconMom_r[3];
+
+  double reconWp, reconXp, reconAs, reconQSq;
+  double reconPr, reconEr, reconZHit;
   double reconMom_e[3];
-  double trueZHit, reconZHit;
+  double reconMom_r[3];
+
+  // Significant data
   outTree->Branch("trueWp",&trueWp,"trueWp/D");
   outTree->Branch("trueXp",&trueXp,"trueXp/D");
   outTree->Branch("trueAs",&trueAs,"trueAs/D");
-  outTree->Branch("truePr",&truePr,"truePr/D");
+  outTree->Branch("trueQSq",&trueQSq,"trueQSq/D");
+
   outTree->Branch("reconWp",&reconWp,"reconWp/D");
   outTree->Branch("reconXp",&reconXp,"reconXp/D");
   outTree->Branch("reconAs",&reconAs,"reconAs/D");
+  outTree->Branch("reconQSq",&reconQSq,"reconQSq/D");
+
+  // Modulus of momentum vectors and energy
+  outTree->Branch("truePr",&truePr,"truePr/D");
+  outTree->Branch("trueEr",&trueEr,"trueEr/D");
   outTree->Branch("reconPr",&reconPr,"reconPr/D");
-  // True momenta
+  outTree->Branch("reconEr",&reconEr,"reconEr/D");
+
+  // Momentum vector components
   outTree->Branch("truePe_x",&(mom_e[0]),"truePe_x/D");
   outTree->Branch("truePe_y",&(mom_e[1]),"truePe_y/D");
   outTree->Branch("truePe_z",&(mom_e[2]),"truePe_z/D");
   outTree->Branch("truePr_x",&(mom_r[0]),"truePr_x/D");
   outTree->Branch("truePr_y",&(mom_r[1]),"truePr_y/D");
   outTree->Branch("truePr_z",&(mom_r[2]),"truePr_z/D");
-  // Reconstructed momenta
+
   outTree->Branch("reconPe_x",&(reconMom_e[0]),"reconPe_x/D");
   outTree->Branch("reconPe_y",&(reconMom_e[1]),"reconPe_y/D");
   outTree->Branch("reconPe_z",&(reconMom_e[2]),"reconPe_z/D");
   outTree->Branch("reconPr_x",&(reconMom_r[0]),"reconPr_x/D");
   outTree->Branch("reconPr_y",&(reconMom_r[1]),"reconPr_y/D");
   outTree->Branch("reconPr_z",&(reconMom_r[2]),"reconPr_z/D");
+
   // Hit position
-  outTree->Branch("true_zHit",&trueZHit,"true_zHit/D");
-  outTree->Branch("recon_zHit",&reconZHit,"recon_zHit/D");
+  outTree->Branch("trueZHit",&trueZHit,"trueZHit/D");
+  outTree->Branch("reconZHit",&reconZHit,"reconZHit/D");
 
   // Loop over the events
     for (int i=0 ; i<inTree->GetEntries() ; i++)
@@ -127,8 +140,9 @@ int main(int argc, char ** argv)
 
       // Energy and timing
       truePr = sqrt(sq(mom_r[0]) + sq(mom_r[1]) + sq(mom_r[2]));
-      double trueEr = sqrt(sq(truePr) + sq(mN));
+      trueEr = sqrt(sq(truePr) + sq(mN));
       double trueT = sqrt(sq(trueXHit)+sq(trueYHit)+sq(trueZHit)) / (cAir * truePr / trueEr); // d / (c * beta)
+      double trueEDepee = eeEDep(trueEr, barWidth);
 
       // Test if we were efficient for the neutron hit
       // This could in the future depend on neutron momentum
@@ -153,14 +167,14 @@ int main(int argc, char ** argv)
       double reconPath = sqrt(sq(reconXHit)+sq(reconYHit)+sq(reconZHit));
       double reconBeta = reconPath/(cAir*reconT);
       reconPr = mN / sqrt( sq(1./reconBeta) - 1.);
-      double reconEr = sqrt(sq(reconPr)+sq(mN));
+      reconEr = sqrt(sq(reconPr)+sq(mN));
 
       // True lepton quantities
       double truePe =sqrt(sq(mom_e[0]) + sq(mom_e[1]) + sq(mom_e[2]));
       double trueCosTheta_e = mom_e[2]/truePe;
       double trueTheta_e = acos(trueCosTheta_e);
       double truePhi_e = atan2(mom_e[1],mom_e[0]);
-      double trueQSq = 2.*E1*truePe*(1.-trueCosTheta_e);
+      trueQSq = 2.*E1*truePe*(1.-trueCosTheta_e);
       double trueNu = E1 - truePe;
       double trueX = trueQSq / (2.*mP*trueNu);
       double true_q = sqrt(trueQSq + sq(trueNu));
@@ -174,7 +188,7 @@ int main(int argc, char ** argv)
       double reconPhi_e = myRand->Gaus(truePhi_e,clasFac*0.001/sin(trueTheta_e)); // 1mrad/sin(theta)
       if (reconPhi_e > M_PI) reconPhi_e -=2.*M_PI;
       if (reconPhi_e < -M_PI) reconPhi_e +=2.*M_PI;
-      double reconQSq = 2.*E1*reconPe*(1.-cos(reconTheta_e));
+      reconQSq = 2.*E1*reconPe*(1.-cos(reconTheta_e));
       double reconNu = E1 - reconPe;
       double reconX = reconQSq / (2.*mP*reconNu);
       double recon_q = sqrt(reconQSq + sq(reconNu));
@@ -263,4 +277,24 @@ double getCLAS12_PRes(double theta, double p)
   const double c=-0.052163;
 
   return p*(a+b*sin(theta)+c*cos(theta));  
+}
+
+double eeEDep(double En, double bar_thick)
+{
+    // test if neutron deposits energy
+    const double a = 0.576428;
+    const double b = 0.177634;
+    const double c = 0.164202;
+    const double f = a*exp(-b*(En - mN)) + c;
+    
+    if (myRand->Rndm() > f*(bar_thick/5))
+        return 0;
+
+    // pick trueEDep
+    double trueEDep = myRand->Rndm() * (En - mN);
+
+    // translate to e-equivalent E
+    double trueE_MeVee = 0.95*trueEDep-8.0*(1-exp(0.10*(pow(trueEDep,0.90))));
+
+    return trueE_MeVee;
 }
