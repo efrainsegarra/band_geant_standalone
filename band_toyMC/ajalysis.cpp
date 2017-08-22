@@ -1,4 +1,6 @@
 #include <iostream>
+#include <fstream>
+#include <string>
 #include <cmath>
 #include "TFile.h"
 #include "TTree.h"
@@ -22,15 +24,14 @@ int main(int argc, char **argv)
     {
         cerr << "Wrong number of arguments, try:\n\t"
              << "ajalysis  path/to/inputfile  /path/to/outputfile  "
-             << "BandDetectionEfficiency" << endl;
+             << "Threshold_eeEDep" << endl;
         return -1;
     }
         
     // Unpack user input for input file, output file and band detection efficiency
     TFile *infile = new TFile(argv[1]);
     TFile *outfile = new TFile(argv[2], "RECREATE");
-    double band_det_eff = atof(argv[3]);
-    cout << band_det_eff << endl;
+    double thresh_eeEDep = atof(argv[3]);
     
     // Get cross section, compute number of events
     TVectorT<double> *CSVec = (TVectorT<double>*)infile->Get("totalCS");
@@ -41,7 +42,7 @@ int main(int argc, char **argv)
 
     int num_events_sim = inTree->GetEntries();  // number of events generated in simulation
     double truePe[3], truePn[3], reconPe[3], reconPn[3];
-    double reconWp, reconAs, reconQSq, reconXp;
+    double reconWp, reconAs, reconQSq, reconXp, recon_eeEDep;
     inTree->SetBranchAddress("truePe_x", &(truePe[0]));
     inTree->SetBranchAddress("truePe_y", &(truePe[1]));
     inTree->SetBranchAddress("truePe_z", &(truePe[2]));
@@ -58,6 +59,7 @@ int main(int argc, char **argv)
     inTree->SetBranchAddress("reconXp", &(reconXp)); 
     inTree->SetBranchAddress("reconWp", &(reconWp));
     inTree->SetBranchAddress("reconAs", &(reconAs));
+    inTree->SetBranchAddress("recon_eeEDep", &(recon_eeEDep));
     
     // Hist output 
     TH1D *XpHist = new TH1D("XpHist",
@@ -72,28 +74,43 @@ int main(int argc, char **argv)
     "Distribution of Reconstructed #it{x'} and #it{Q^{2}};#bf{#it{x'}};#bf{#it{Q^{2}}} #left[#left(#frac{GeV}{c}#right)^{2} #right]", 
     100, 0.1, 0.8, 100, 2, 8);
 
-    // Calculate weighting ratio (num events detected/num events simulated)
+    // Data (text file) output
+    ofstream datfile;
+    string root_filename(argv[2]);
+    size_t raw_index = root_filename.find_last_of(string("."));
+    string filename = root_filename.substr(0, raw_index);
+    string dat_filename = filename + "_dat.txt";
+
+    datfile.open(dat_filename.c_str());
+    int num_src = 0;
+    int num_src_hits = 0;
+
+    // Calculate weighting ratio (num events detected/num ev ents simulated)
     double tot_num_events = CS * luminosity * runtime;
-    double tot_eff = azim_CLAS12 * azim_BAND * band_det_eff;
-    double num_events_detected = tot_num_events * tot_eff;
+    double acceptance = azim_CLAS12 * azim_BAND;
+    double num_events_detected = tot_num_events * acceptance; // * band_det_eff;
     double weighting = num_events_detected / num_events_sim;
 
     // Get values from tree
     for(int iii = 0; iii < num_events_sim; ++iii)
     {
         inTree -> GetEvent(iii);
+        
+        // DIS Selection Cuts
+        if (reconQSq < 2) continue;
+        if (reconWp < 1.8) continue;
 
-        TVector3 trPn(truePn[0], truePn[1], truePn[2]);
-        TVector3 trPe(truePe[0], truePe[1], truePe[2]);
         TVector3 rePn(reconPn[0], reconPn[1], reconPn[2]);
         TVector3 rePe(reconPe[0], reconPe[1], reconPe[2]);
         TVector3 q = TVector3(0, 0, E1) - rePe;
-
-        // DIS Selection Cuts
         double theta_nq = rePn.Angle(q) * 180/TMath::Pi();
-        if (reconQSq < 2) continue;
-        if (reconWp < 1.8) continue;
         if (theta_nq < 110) continue;
+
+        num_src++;
+
+        // Band Selection Cut
+        if (recon_eeEDep <= thresh_eeEDep) continue;
+        num_src_hits++;
 
         // Fill histograms
         XpHist->Fill(reconXp, weighting);
@@ -115,6 +132,9 @@ int main(int argc, char **argv)
     outhist2 -> Write();
     outhist3 -> Write();
     outfile -> Close();
+
+    double band_eff = static_cast<double>(num_src_hits) / num_src;
+    datfile << thresh_eeEDep << "\t" << band_eff << endl;
 
     return 0;
 }
