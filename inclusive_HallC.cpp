@@ -152,6 +152,7 @@ int main(int argc, char *argv[])
       Gen_Particle electron;
       electron.type="e-";
       electron.momentum.SetMagThetaPhi(p_e,theta_e,phi_e);
+      electron.t0=0.;
       thisEvent->particles.push_back(electron);
       outputTree->Fill();
     }

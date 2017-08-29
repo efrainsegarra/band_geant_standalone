@@ -66,8 +66,6 @@ int main(int argc, char ** argv)
   outTree->Branch("event",&outEvent);
   outTree->Branch("ze",&ze,"ze/D");
   outTree->Branch("zr",&zr,"zr/D");
-  double t0;
-  outTree->Branch("t0",&t0,"t0/D");
 
   // Loop over the events
   const int nEvents = inTree->GetEntries();
@@ -83,7 +81,7 @@ int main(int argc, char ** argv)
 	}
 
       // Generate random neutron
-      t0 = (myRand->Rndm()-0.5)*timeWindow;
+      double t0 = (myRand->Rndm()-0.5)*timeWindow;
       double momR = protonMomDist->GetRandom();
       double cosThetaR = minCosThetaR + myRand->Rndm()*(maxCosThetaR-minCosThetaR);
       double thetaR = acos(cosThetaR);
@@ -98,6 +96,7 @@ int main(int argc, char ** argv)
       Gen_Particle proton;
       proton.type="proton";
       proton.momentum.SetMagThetaPhi(momR,thetaR,phiR);
+      proton.t0=t0;
       outEvent->particles.push_back(proton);
       outTree->Fill();
     }

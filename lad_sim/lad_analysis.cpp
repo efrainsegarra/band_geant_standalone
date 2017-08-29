@@ -102,14 +102,13 @@ int main(int argc, char ** argv)
 
   // Load the branches
   Gen_Event * genData = NULL;
-  double true_ze,true_zr,proton_t0;
+  double true_ze,true_zr;
   double lad_x,lad_y,lad_z;
   double recon_theta, recon_mom, recon_phi, recon_zr, recon_mom_from_edep, recon_ze;
   int lad_plane, lad_bar;
   genTree->SetBranchAddress("event",&genData);
   genTree->SetBranchAddress("ze",&true_ze);
   genTree->SetBranchAddress("zr",&true_zr);
-  genTree->SetBranchAddress("t0",&proton_t0);
   proTree->SetBranchAddress("lad_plane",&lad_plane);
   proTree->SetBranchAddress("lad_x",&lad_x);
   proTree->SetBranchAddress("lad_y",&lad_y);
@@ -162,6 +161,7 @@ int main(int argc, char ** argv)
       histEdepRes->Fill(recon_mom,recon_mom_from_edep - recon_mom,weight);
 
       // Reconstruct some important quantities
+      double proton_t0 = genData->particles[1].t0;
       TVector3 electron_mom_recon = genData->particles[0].momentum;
       TVector3 proton_mom_recon(recon_mom*sin(recon_theta)*cos(recon_phi),
 				recon_mom*sin(recon_theta)*sin(recon_phi),

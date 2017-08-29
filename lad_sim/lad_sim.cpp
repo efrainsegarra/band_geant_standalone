@@ -48,7 +48,6 @@ int main(int argc, char ** argv)
   inTree->SetBranchAddress("ze",&ze);
   inTree->SetBranchAddress("zr",&zr);
   inTree->SetBranchAddress("event",&thisEvent);
-  inTree->SetBranchAddress("t0",&t0);
   outTree->Branch("gem1_x",&gem1_x,"gem1_x/D");
   outTree->Branch("gem1_y",&gem1_y,"gem1_y/D");
   outTree->Branch("gem1_z",&gem1_z,"gem1_z/D");
@@ -97,6 +96,7 @@ int main(int argc, char ** argv)
       double protonMom = protonMomVect.Mag();
       double protonBeta = protonMom/sqrt(sq(mP) + sq(protonMom));
       recon_ze = ze + myRand->Gaus()*0.3/sin(thisEvent->particles[0].momentum.Theta());
+      t0 = thisEvent->particles[1].t0;
       
       // Adjust for multiple scattering in the target
       //cout << " Target\n";
