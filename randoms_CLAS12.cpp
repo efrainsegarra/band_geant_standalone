@@ -12,15 +12,17 @@
 
 using namespace std;
 
+const double minTrueKE = 0.01;
 const double minMomR = 0.275;
 const double maxMomR = 0.700;
 const double maxThetaR = 170.*M_PI/180.;
 const double minThetaR = 160.*M_PI/180.;
 const double bandZ = -250.; // cm
-const double csN = 4.E5 / (0.1 * (6.E36 * 1.E-33)); // nb/sr
 
 inline double sq(double x){ return x*x; };
 inline double beta(double p){ return 1./sqrt(1. + sq(mN/p)); };
+double getNeutronCS(double threshold); // in nb/sr
+double getNeutronKE(double r);
 
 int main(int argc, char ** argv)
 {
@@ -34,10 +36,12 @@ int main(int argc, char ** argv)
   TRandom3 * myRand = new TRandom3(0);
   const double maxBetaR = beta(maxMomR);
   const double minBetaR = beta(minMomR);
-  const double timeWindow = (fabs(bandZ)/(cAir))*((1./minBetaR) - (1./maxBetaR));
   const double minCosThetaR = cos(maxThetaR);
   const double maxCosThetaR = cos(minThetaR);
-  
+  const double minTime = -bandZ/(maxBetaR*cAir) - 5.;  // Put in 5 ns for cushion
+  const double maxTime = (40.-bandZ)/(minBetaR*cAir) + 5.; // Put in another 5 ns for more cushion
+  const double timeWindow = maxTime - minTime;
+
   // Open the files
   TFile *infile = new TFile(argv[1]);
   TFile *outfile = new TFile(argv[2],"RECREATE");
@@ -54,6 +58,8 @@ int main(int argc, char ** argv)
   TTree * outTree = new TTree("MCout","Random Coincidence Output");
   Gen_Event * outEvent = new Gen_Event;
   outTree->Branch("event",&outEvent);
+  double t0;
+  outTree->Branch("t0",&t0,"t0/D");
 
   // Loop over the events
   const int nEvents = inTree->GetEntries();
@@ -69,12 +75,20 @@ int main(int argc, char ** argv)
 	}
 
       // Generate random neutron
-      double tR = myRand->Rndm()*timeWindow + fabs(bandZ)/(cAir*maxBetaR);
-      double betaR = fabs(bandZ)/(cAir*tR);
-      double momR = mN /sqrt(1./sq(betaR) - 1.);
       double cosThetaR = minCosThetaR + myRand->Rndm()*(maxCosThetaR-minCosThetaR);
-      double thetaR = acos(cosThetaR);
       double phiR = 2.*M_PI * myRand->Rndm();
+      double keR = getNeutronKE(myRand->Rndm());
+
+      // Calculate the derived neutron info
+      double thetaR = acos(cosThetaR);
+      double momR = sqrt(sq(keR + mN) - mN);
+      double betaR = momR / (keR + mN);
+
+      // Calculate a random time for the hit to occur
+      double hitTime = minTime + timeWindow*myRand->Rndm();
+
+      // Work back the time it would take to reach the center of BAND, store to tree
+      t0 = hitTime - (20.-bandZ)/(betaR*cAir);
 
       // Write tree
       outEvent->particles.clear();
@@ -87,9 +101,9 @@ int main(int argc, char ** argv)
     }
  
   // Update cross section info
-  double neutronCS = csN * (2.*M_PI)*(maxCosThetaR - minCosThetaR);
+  double neutronCS = getNeutronCS(minTrueKE) * (2.*M_PI)*(maxCosThetaR - minCosThetaR);
   TVectorT<double> csSqVec(3);
-  csSqVec[0]=neutronCS*timeWindow*(*csVec)[0]; // Units of nb^2 * s
+  csSqVec[0]=neutronCS*timeWindow*(*csVec)[0]; // Units of nb^2 * ns
   csSqVec[1]=neutronCS*timeWindow*(*csVec)[1];
   csSqVec[2]=timeWindow;
   csSqVec.Write("totalCSSq");
@@ -97,4 +111,37 @@ int main(int argc, char ** argv)
   // Clean-up
   gFile = outfile;
   outTree->Write();
+}
+
+double getNeutronCS(double threshold)
+{
+  double pavel_rate = 967451. * exp(-29.2539 * threshold) + 5.43632e+06 * exp(-548.598 * threshold);
+
+  return pavel_rate / (3.E36) * (1.E33) / (0.1); // divide by Pavel's lumi, convert to nb, divide by 0.1 sr
+}
+
+double CDF(double Tr)
+{
+  return 1. - getNeutronCS(Tr)/getNeutronCS(minTrueKE);
+}
+
+double getNeutronKE(double r)
+{
+  double minKE = 0.;
+  double maxKE = E1;
+  double testKE = 0.5*(minKE + maxKE);
+
+  while (fabs(maxKE - minKE) > 1.E-6)
+    {
+      double testCDF = CDF(testKE);
+      
+      if (r < testCDF)
+	maxKE = testKE;
+      else
+	minKE = testKE;
+      
+      testKE = 0.5*(minKE + maxKE);
+    }
+
+  return testKE;
 }
