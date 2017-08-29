@@ -58,8 +58,6 @@ int main(int argc, char ** argv)
   TTree * outTree = new TTree("MCout","Random Coincidence Output");
   Gen_Event * outEvent = new Gen_Event;
   outTree->Branch("event",&outEvent);
-  double t0;
-  outTree->Branch("t0",&t0,"t0/D");
 
   // Loop over the events
   const int nEvents = inTree->GetEntries();
@@ -88,7 +86,7 @@ int main(int argc, char ** argv)
       double hitTime = minTime + timeWindow*myRand->Rndm();
 
       // Work back the time it would take to reach the center of BAND, store to tree
-      t0 = hitTime - (20.-bandZ)/(betaR*cAir);
+      double t0 = hitTime - (20.-bandZ)/(betaR*cAir);
 
       // Write tree
       outEvent->particles.clear();
@@ -96,6 +94,7 @@ int main(int argc, char ** argv)
       Gen_Particle neutron;
       neutron.type="neutron";
       neutron.momentum.SetMagThetaPhi(momR,thetaR,phiR);
+      neutron.t0=t0;
       outEvent->particles.push_back(neutron);
       outTree->Fill();
     }

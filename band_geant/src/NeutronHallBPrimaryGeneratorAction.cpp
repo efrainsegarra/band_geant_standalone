@@ -54,7 +54,7 @@ void NeutronHallBPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       if (particleName != wantedParticle) continue;
 
       // Set vertex position
-      G4PrimaryVertex* thisVertex=new G4PrimaryVertex(G4ThreeVector(0.,0.,0.),0);
+      G4PrimaryVertex* thisVertex=new G4PrimaryVertex(G4ThreeVector(0.,0.,0.),thisEvent->particles[p].t0*ns);
       // Create a new primary for the event
       G4PrimaryParticle *thisParticle=new G4PrimaryParticle(G4ParticleTable::GetParticleTable()->FindParticle(G4String(thisEvent->particles[p].type)));
       thisParticle->SetMomentum(thisEvent->particles[p].momentum.X() * GeV,

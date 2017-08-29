@@ -142,7 +142,7 @@ int main(int argc, char ** argv)
       // Energy and timing
       truePr = sqrt(sq(mom_r[0]) + sq(mom_r[1]) + sq(mom_r[2]));
       trueEr = sqrt(sq(truePr) + sq(mN));
-      double trueT = sqrt(sq(trueXHit)+sq(trueYHit)+sq(trueZHit)) / (cAir * truePr / trueEr); // d / (c * beta)
+      double trueT = sqrt(sq(trueXHit)+sq(trueYHit)+sq(trueZHit)) / (cAir * truePr / trueEr) + this_event->particles[1].t0; // d / (c * beta) + t0
 
       // Flight time smearing is based on PMT resolution for mean time
       double reconT = myRand->Gaus(trueT,tResPMT/sqrt(2.));

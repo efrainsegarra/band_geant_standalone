@@ -133,16 +133,18 @@ int main(int argc, char *argv[])
       // Write to tree
       thisEvent->particles.clear();
 
-      Gen_Particle neutron;
-      neutron.type="neutron";
-      neutron.momentum.SetMagThetaPhi(p_r,theta_r,phi_r);
-      thisEvent->particles.push_back(neutron);
-      
       Gen_Particle electron;
       electron.type="e-";
       electron.momentum.SetMagThetaPhi(p_e,theta_e,phi_e);
+      electron.t0=0.;
       thisEvent->particles.push_back(electron);
 
+      Gen_Particle neutron;
+      neutron.type="neutron";
+      neutron.momentum.SetMagThetaPhi(p_r,theta_r,phi_r);
+      neutron.t0=0.;
+      thisEvent->particles.push_back(neutron);
+      
       outputTree->Fill();
     }
    
