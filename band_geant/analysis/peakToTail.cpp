@@ -9,7 +9,7 @@
 #include "TVector3.h"
 #include "TVectorT.h"
 
-#include "prop_tree.h"
+#include "recon_tree.h"
 #include "constants.h"
 
 using namespace std;
@@ -31,15 +31,15 @@ int main(int argc, char ** argv)
   TFile * outFile = new TFile(argv[2],"RECREATE");
   TTree * inTree = (TTree*)inFile->Get("ReconTree");
 
-  BAND_Event * reconEvent = NULL;
-  inTree-> SetBranchAddress("band",&reconEvent);
+  Recon_Event * reconEvent = NULL;
+  inTree-> SetBranchAddress("event",&reconEvent);
 
   int firstBinVal = 100;
   int lastBinVal  = 600;
   int numBins     = 500;
 
   // Prep histograms
-  TH1D * pr_fullGeo = new TH1D("pr_fullGeo","Pr Magnitude at face of BAND, full geometry",numBins,firstBinVal,lastBinVal);
+  TH1D * pr_fullGeo = new TH1D("pr_fullGeo","Pr Magnitude reconstruction\n from first hit above threshold",numBins,firstBinVal,lastBinVal);
   double pr,pr_peak;
   int numEvents;
 
@@ -51,9 +51,9 @@ int main(int argc, char ** argv)
 
     //cout << "Event " << i << endl;
 
-    for(int j=0; j<reconEvent->hits.size(); j++){
+    for(int j=0; j<reconEvent->particles.size(); j++){
       
-      pr = reconEvent->hits[j].mom.Mag();
+      pr = reconEvent->particles[j].momRecon.Mag();
       pr_fullGeo->Fill(pr);
     
     }

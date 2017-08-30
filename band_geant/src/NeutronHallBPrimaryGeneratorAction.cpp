@@ -22,6 +22,7 @@
 
 #include "gen_tree.h"
 
+
 NeutronHallBPrimaryGeneratorAction::NeutronHallBPrimaryGeneratorAction(void * tp)
 : G4VUserPrimaryGeneratorAction()
 {
@@ -67,8 +68,9 @@ void NeutronHallBPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
   // Update the event number
   eventNum += 1;
-  if (eventNum >= genTree->GetEntries() )
+  if (eventNum >= genTree->GetEntries() ){
     eventNum = 0; // If we run off the end of the tree, reset to the beginning.
+  }
 }
 
 G4int NeutronHallBPrimaryGeneratorAction::getCurrentEventNum()
