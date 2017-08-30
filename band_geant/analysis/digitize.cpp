@@ -21,13 +21,8 @@ const double clasFac=1.;
 const double cScint = 15.; // in cm/ns
 const double barCrossSection = 7.4;// in cm
 const double BAND_Zoffset = -262; // in cm
-<<<<<<< HEAD
 const int BAND_numLayers = 5;
 const int numBANDbars = 24; // bars in a single layer of the BAND array
-=======
-const int BAND_numLayers = 1;
-const int numBANDbars = 1; // bars in a single layer of the BAND array
->>>>>>> c28c0660d0ce5eddd5f0476c3a457ed5d9fb4647
 const double BAND_Yoffset = barCrossSection * BAND_numLayers;
 
 // ********************************************************************************
