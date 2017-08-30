@@ -161,19 +161,56 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
                           fCheckOverlaps);                     // overlaps checking
   // ------------------ End Defining World ---------------- //
 
-  
+  // ------------------ Defining Target - in World ---------------- //
+    
+    G4double targetRadius = 1.*mm;
+
+    G4Sphere* solid_target = 
+        new G4Sphere("target",                                 // name
+                      0.,                                      // inner radius 
+                      targetRadius,                            // outer radius
+                      0.,                                      // starting phi angle
+                      CLHEP::twopi,                            // ending phi angle
+                      0.,                                      // starting theta angle
+                      CLHEP::twopi/2.);                        // ending theta angle
+
+    G4LogicalVolume* logic_target = 
+        new G4LogicalVolume(solid_target,                      // its solid
+                            default_mat,                       // its material
+                            "target");                         // its name
+
+        new G4PVPlacement(0,                                   // no rotation
+                          G4ThreeVector(),                     // at 0,0,0
+                          logic_target,                        // its logical volume
+                          "target",                            // its name
+                          logicWorld,                          // its mother volume
+                          false,                               // no boolean operation
+                          0,                                   // copy number
+                          fCheckOverlaps);                     // overlap checkign
+
+    logic_target -> SetVisAttributes (G4Colour::G4Colour( 0.65 , 0.82 , 0.77 ));
+    
+  // ------------------ End Defining Target ---------------- //
+
   // ------------------ Defining BAND Detector - in World ---------------- //
 
-    const int BAND_wallReplicas =1;
-    const int BAND_wallGroups = 1;
+    const int BAND_wallReplicas = 5;
+    const int BAND_wallGroups = 5;
+    //const int BAND_numRows = 18;
     
     G4double BAND_barCrossSection = 7.4*cm;
+    G4double BAND_groupA_length = 1634.58*mm; // temp
+    G4double BAND_groupB_length = 1946.53*mm; // temp
+    G4double BAND_groupC_length = 2018.35*mm; // temp
+    G4double BAND_groupD_length = 500.*mm;
     G4double BAND_groupE_length = 2018.35*mm; // temp
+    G4double BAND_groupD_offset = (509.17 + BAND_groupD_length/2.)*mm; // temp  
     
     G4double BAND_Z_coord_center = -2805.*mm;
     G4double BAND_Z_thickness = BAND_barCrossSection * BAND_wallReplicas;
     G4double BAND_Z_start = BAND_Z_coord_center + (BAND_Z_thickness/2.)*mm;
 
+    G4double BAND_Y_offset =  -(BAND_barCrossSection * 5)*mm;
 
     G4int numBars;
     G4double wall_Z_offset;
@@ -185,27 +222,109 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
                 new G4Box("DetectorBars_E",
                           0.5*BAND_groupE_length,
                           0.5*BAND_barCrossSection,
-                          0.5*BAND_barCrossSection*5.);
+                          0.5*BAND_barCrossSection);
       logicDetectorBarsE[wall] = 
           new G4LogicalVolume(solidDetectorBarsE,
                               BAND_mat,
                               "DetectorBarsLV_E"); 
-             
+      
+      G4Box* solidDetectorBarsD =
+                new G4Box("DetectorBars_D",
+                          0.5*BAND_groupD_length,
+                          0.5*BAND_barCrossSection,
+                          0.5*BAND_barCrossSection);
+      logicDetectorBarsD[wall] = 
+          new G4LogicalVolume(solidDetectorBarsD,
+                              BAND_mat,
+                              "DetectorBarsLV_D");   
+
+      G4Box* solidDetectorBarsC =
+                new G4Box("DetectorBars_C",
+                          0.5*BAND_groupC_length,
+                          0.5*BAND_barCrossSection,
+                          0.5*BAND_barCrossSection);
+      logicDetectorBarsC[wall] = 
+          new G4LogicalVolume(solidDetectorBarsC,
+                              BAND_mat,
+                              "DetectorBarsLV_C");
+
+      G4Box* solidDetectorBarsB =
+                new G4Box("DetectorBars_B",
+                          0.5*BAND_groupB_length,
+                          0.5*BAND_barCrossSection,
+                          0.5*BAND_barCrossSection);
+      logicDetectorBarsB[wall] = 
+          new G4LogicalVolume(solidDetectorBarsB,
+                              BAND_mat,
+                              "DetectorBarsLV_B");    
+
+      G4Box* solidDetectorBarsA =
+                new G4Box("DetectorBars_A",
+                          0.5*BAND_groupA_length,
+                          0.5*BAND_barCrossSection,
+                          0.5*BAND_barCrossSection);
+      logicDetectorBarsA[wall] = 
+          new G4LogicalVolume(solidDetectorBarsA,
+                              BAND_mat,
+                              "DetectorBarsLV_A");        
 
       // now for each wall, need to parameterize it into the 5 groups.
+      G4double offset = 0.;
+      G4double prevNumBars = 0.;
       for (int group = 0; group < BAND_wallGroups; group++){
+        
         if    (group == 0){
-          numBars = 1;
+          numBars = 2;
           for(int barNo = 0; barNo < numBars; barNo++){
-                new G4PVPlacement(0, G4ThreeVector(0,0, wall_Z_offset), logicDetectorBarsE[wall],                 
+                new G4PVPlacement(0, G4ThreeVector(0,BAND_Y_offset + (1/2. + barNo)*BAND_barCrossSection, wall_Z_offset), logicDetectorBarsE[wall],                 
                             "BarsA", logicWorld, false, barNo+24*wall, fCheckOverlaps);
+          }
+          offset +=  numBars *BAND_barCrossSection;
+        }
+
+        else if(group == 1){
+          prevNumBars += numBars;
+          numBars = 6;
+          for(int barNo = 0; barNo < numBars; barNo++){
+                new G4PVPlacement(0, G4ThreeVector(-BAND_groupD_offset,BAND_Y_offset + offset + (1/2. + barNo)*BAND_barCrossSection,wall_Z_offset ), logicDetectorBarsD[wall],                 
+                            "BarsB", logicWorld, false, (prevNumBars + barNo)+24*wall , fCheckOverlaps);
+                new G4PVPlacement(0, G4ThreeVector(+BAND_groupD_offset,BAND_Y_offset + offset + (1/2. + barNo)*BAND_barCrossSection,wall_Z_offset ), logicDetectorBarsD[wall],                 
+                            "BarsB", logicWorld, false, (prevNumBars+(barNo+numBars))+24*wall, fCheckOverlaps);
+          }
+          offset +=  numBars *BAND_barCrossSection;
+        }
+
+        else if(group == 2){
+          prevNumBars += numBars*2 ;
+          numBars = 4;
+          for(int barNo = 0; barNo < numBars; barNo++){
+                new G4PVPlacement(0, G4ThreeVector(0,BAND_Y_offset + offset+ (1/2. + barNo)*BAND_barCrossSection,wall_Z_offset ), logicDetectorBarsC[wall],                 
+                            "BarsC", logicWorld, false, (prevNumBars+barNo)+24*wall, fCheckOverlaps);
+          }
+          offset +=  numBars *BAND_barCrossSection;
+        }
+
+        else if(group == 3){
+          prevNumBars += numBars ;
+          numBars = 3;
+          for(int barNo = 0; barNo < numBars; barNo++){
+                new G4PVPlacement(0, G4ThreeVector(0,BAND_Y_offset + offset+ (1/2. + barNo)*BAND_barCrossSection,wall_Z_offset ), logicDetectorBarsB[wall],                 
+                            "BarsB", logicWorld, false, (prevNumBars+barNo)+24*wall, fCheckOverlaps);
+          }
+          offset +=  numBars *BAND_barCrossSection;
+        }
+        else if(group == 4){
+          prevNumBars += numBars ;
+          numBars = 3;
+          for(int barNo = 0; barNo < numBars; barNo++){
+                new G4PVPlacement(0, G4ThreeVector(0,BAND_Y_offset + offset+ (1/2. + barNo)*BAND_barCrossSection,wall_Z_offset ), logicDetectorBarsA[wall],                 
+                            "BarsA", logicWorld, false, (prevNumBars+barNo)+24*wall, fCheckOverlaps);
           }
         }
       }
     }
   // ------------------ END Defining BAND Detector  ---------------- //
     
-<<<<<<< HEAD
   // ------------------ Defining Lead Wall  - in World ---------------- //
     
     G4double lead_thickness = 25.*mm/2;
@@ -440,7 +559,33 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
                           fCheckOverlaps);                     // checking overlaps
     
     logic_SSTube_Connector1 -> SetVisAttributes (G4Colour::G4Colour( 0.99 , 0.88 , 0.66 ));
+  
+    //  //  ---------- SS connector coating to represent cables ---------- //
+    //G4Tubs* solid_SSTube_Connector1_coating = 
+    //    new G4Tubs("SSTube_Connector1_coating", 
+    //               241.*mm, 
+    //               251.*mm, 
+    //               length, 
+    //               0.,
+    //               CLHEP::twopi);
 
+    //logic_SSTube_Connector1_coating = 
+    //    new G4LogicalVolume(solid_SSTube_Connector1_coating, 
+    //                        BAND_mat , 
+    //                        "SSTube_Connector1_coating");
+
+    //    new G4PVPlacement(0, 
+    //                      G4ThreeVector(0,0,-(length+shift)),
+    //                      logic_SSTube_Connector1_coating,
+    //                      "SSTube_Connector1_coating",
+    //                      logicWorld,
+    //                      false,
+    //                      0,
+    //                      fCheckOverlaps);
+
+    //logic_SSTube_Connector1_coating -> SetVisAttributes (G4Colour::G4Colour( 0.75 , 0.6 , 0.75 ));
+    
+    
       //  ---------- SS connector #2 from target tube to beam tube ---------- //
     length = 34.*mm;
     shift = 658.*mm;
@@ -546,9 +691,64 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
 
     logic_SSTube_P2_coating -> SetVisAttributes (G4Colour::G4Colour( 0.75 , 0.6 , 0.75 ));
   // ------------------ END SS Tubing around beam pipe ---------------- //
-=======
->>>>>>> c28c0660d0ce5eddd5f0476c3a457ed5d9fb4647
   
+    
+// ------------------ Defining Electronic Boxes  - in World ---------------- //
+    
+    G4double BoxLength = 20*cm;
+    G4double BoxWidth = 25*cm;
+    G4double BoxThickness = 10*cm;
+    G4double BoxZ = -150*cm;
+    G4double BoxDisFromAxis = 240.*mm + BoxWidth/2. + 5*mm;
+
+    G4double BoxX;
+    G4double BoxY;
+    G4double BoxAngle;
+
+    const int NBoxes = 6;      //if edit this, must edit .h file  // Creating 6 boxes that will go around the beam line
+    G4Box                 *SolidElBox[NBoxes];                 // solid box
+    //G4LogicalVolume       *LogicElBox[NBoxes];               // the logical volumes
+    G4VPhysicalVolume     *PhysElBox[NBoxes];                  // the physical volume
+    G4ThreeVector         posElBox[NBoxes];                    // the vector for the position of the boxes
+    G4VisAttributes       *ElBoxVisAtt = new G4VisAttributes( true , G4Colour::G4Colour( 0.75 , 0.6 , 0.75 ));   // setting color
+    fVisAttributes.push_back(ElBoxVisAtt);
+    G4RotationMatrix      rot_mat;                             // rotation matrix to rotate each box
+    G4Transform3D         transform;                           // the rotation that will be applied to the placement
+    
+    for (int i_box = 0; i_box < NBoxes; i_box++) {
+        BoxAngle            = i_box * 60 * deg;                               // this box's angle around beam line
+        BoxX                = BoxDisFromAxis * std::cos(BoxAngle);            // the x-placement based on angle
+        BoxY                = BoxDisFromAxis * std::sin(BoxAngle);            // the y-placement based on angle
+        rot_mat             = G4RotationMatrix();                             // initializing rotation matrix
+        rot_mat.rotateZ(BoxAngle);                                            // defining rotation matrix around z-beamLine for box
+        posElBox[i_box]     = G4ThreeVector( BoxX , BoxY , BoxZ);             // defining position vector for box
+        transform           = G4Transform3D( rot_mat , posElBox[i_box] );     // creating rotation of each box 
+
+        SolidElBox[i_box] =                                    // solid volume for each box
+            new G4Box("ElBox",                                 // name
+                     BoxLength/2.,                             // length of box
+                     BoxWidth/2.,                              // width of box
+                     BoxThickness/2.);                         // thickness of box
+
+        LogicElBox[i_box] =                                    // logical volume for each box
+            new G4LogicalVolume(SolidElBox[i_box],             // box is solid
+                              BAND_mat,                        // material for each box
+                              "ElBoxLV" );                     // name for each logical volume box
+
+        LogicElBox[i_box]->SetVisAttributes (ElBoxVisAtt);     // setting color
+        
+        PhysElBox[i_box]=                                      // physical volume for box
+            new G4PVPlacement(transform,                       // rotation for each box
+                            LogicElBox[i_box],                 // logical volume of each box
+                            "ElBox",                           // name of each box
+                            logicWorld,                        // mother volume for box
+                            false,                             // no boolean operation
+                            0,                                 // copy number
+                            fCheckOverlaps);                   // checking overlap
+    }
+  // ------------------ END Defining Electronic Boxes  ---------------- //
+    
+    
     // Always return the physical world
     return physWorld;
 }
@@ -562,8 +762,12 @@ void NeutronHallBDetectorConstruction::ConstructSDandField()
   NeutronHallBTrackerSD* bandSD = new NeutronHallBTrackerSD(treePtr,SDname="band");
   sdManager->AddNewDetector(bandSD);
 
-  for (int wall = 0; wall < 1; wall++) {
-      logicDetectorBarsE[wall]->SetSensitiveDetector(bandSD);        
+  for (int wall = 0; wall < 5; wall++) {
+      logicDetectorBarsE[wall]->SetSensitiveDetector(bandSD);
+      logicDetectorBarsD[wall]->SetSensitiveDetector(bandSD);
+      logicDetectorBarsC[wall]->SetSensitiveDetector(bandSD); 
+      logicDetectorBarsB[wall]->SetSensitiveDetector(bandSD); 
+      logicDetectorBarsA[wall]->SetSensitiveDetector(bandSD);            
   }
 
   // Electro-magnetic fields (currently zero)  

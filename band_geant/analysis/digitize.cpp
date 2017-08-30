@@ -21,13 +21,18 @@ const double clasFac=1.;
 const double cScint = 15.; // in cm/ns
 const double barCrossSection = 7.4;// in cm
 const double BAND_Zoffset = -262; // in cm
+<<<<<<< HEAD
 const int BAND_numLayers = 5;
 const int numBANDbars = 24; // bars in a single layer of the BAND array
+=======
+const int BAND_numLayers = 1;
+const int numBANDbars = 1; // bars in a single layer of the BAND array
+>>>>>>> c28c0660d0ce5eddd5f0476c3a457ed5d9fb4647
 const double BAND_Yoffset = barCrossSection * BAND_numLayers;
 
 // ********************************************************************************
 // Reconstruction options
-const bool smearingOn = true;
+const bool smearingOn = false;
 // ********************************************************************************
 
 int main(int argc, char** argv){
@@ -82,7 +87,12 @@ int main(int argc, char** argv){
 			// in MeVee
 			// this conversion from http://shop-pdp.net/efhtml/NIM_151_1978_445-450_Madey.pdf
 			double trueE = geantEvent->hits[j].E_dep; // in MeV
+<<<<<<< HEAD
 			double trueE_MeVee = 0.83 * trueE - 2.82 * ( 1 - exp( 0.25 * ( pow(trueE,0.93)) ) );
+=======
+			double trueE_MeVee = 0.95 * trueE - 8.0 * ( 1 - exp( 0.10 * ( pow(trueE,0.90)) ) );
+
+>>>>>>> c28c0660d0ce5eddd5f0476c3a457ed5d9fb4647
 			if(abs(trueE_MeVee)<threshold) continue;
 
 			// If hit above threshold, save the hit time to
@@ -97,7 +107,7 @@ int main(int argc, char** argv){
 		if (indexOfMinTime >= 0) {
 			int j = indexOfMinTime;
 			double trueE = geantEvent->hits[j].E_dep;
-			double trueE_MeVee = 0.83 * trueE - 2.82 * ( 1 - exp( -0.25 * ( pow(trueE,0.93)) ) );
+			double trueE_MeVee = 0.95 * trueE - 8.0 * ( 1 - exp( 0.10 * ( pow(trueE,0.90)) ) );
 
 			// get true time, location, and bar number from the event
 			double trueT = geantEvent->hits[j].time; // in ns

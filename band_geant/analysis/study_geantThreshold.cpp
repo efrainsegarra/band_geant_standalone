@@ -18,8 +18,13 @@ using namespace std;
 
 // assumes that the detector is located in negative z-direction, upstream
 // the target with the following parameters:
+<<<<<<< HEAD
 
+=======
+const int BAND_layers = 1;
+>>>>>>> c28c0660d0ce5eddd5f0476c3a457ed5d9fb4647
 
+//
 int main(int argc, char** argv){
 	if (argc != 3)
     {
@@ -41,7 +46,11 @@ int main(int argc, char** argv){
 	
 	for(int i =0; i<numEvents; i++){
 		
+<<<<<<< HEAD
 		double barFires = 0;
+=======
+		double event_barFires = 0;
+>>>>>>> c28c0660d0ce5eddd5f0476c3a457ed5d9fb4647
 		inTree->GetEntry(i);
 
 		for(int j=0; j<event->hits.size(); j++){
@@ -50,11 +59,26 @@ int main(int argc, char** argv){
 			// in MeVee
 			// this conversion from http://shop-pdp.net/efhtml/NIM_151_1978_445-450_Madey.pdf
 			double hitE = event->hits[j].E_dep;
+<<<<<<< HEAD
 			double hitE_MeVee = 0.83 * hitE - 2.82 * ( 1 - exp( 0.25 * ( pow(hitE,0.93)) ) );
 			if(abs(hitE_MeVee)<threshold) continue;
 			
 			barFires++;
 
+=======
+			double trueE_MeVee = 0.95 * hitE - 8.0 * ( 1 - exp( 0.10 * ( pow(hitE,0.90)) ) );
+			if(abs(trueE_MeVee)<threshold) continue;
+
+			event_barFires += 1;
+
+
+		}
+		// For that event, get the total number of bars fired in the event
+		// and save that to a running total, and also check if that is > 0
+		// to count that event
+		num_events_barFired+=event_barFires;
+		
+>>>>>>> c28c0660d0ce5eddd5f0476c3a457ed5d9fb4647
 		}
 		num_barFired += barFires;
 		if (barFires > 0) num_events_barFired++;

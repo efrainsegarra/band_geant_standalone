@@ -13,6 +13,7 @@
 
 using namespace std;
 
+<<<<<<< HEAD
 const double max_y = 7.4*13;
 const double min_y = -7.4*5;
 const double max_z = -262.;
@@ -86,6 +87,23 @@ int checkBAND(double x_traj,double y_traj){
   return 1;
 }
 
+=======
+// Foam ranges
+//const double min_theta_e = 5.*M_PI/180.;
+//const double max_theta_e = 35.*M_PI/180.;
+//const double min_p_e = 2.;
+//const double max_p_e = 8.;
+
+const double min_theta_r =M_PI;
+const double max_theta_r =M_PI;
+const double min_p_r =0.25;
+const double max_p_r =0.25;
+const double min_phi_r=0.;
+const double max_phi_r=2*M_PI;
+
+//const double min_phi_er=0.;
+//const double max_phi_er=2.*M_PI;
+>>>>>>> c28c0660d0ce5eddd5f0476c3a457ed5d9fb4647
 
 int main(int argc, char *argv[])
 {
