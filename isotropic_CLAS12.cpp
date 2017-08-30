@@ -144,6 +144,7 @@ int main(int argc, char *argv[])
       Gen_Particle neutron;
       neutron.type="neutron";
       neutron.momentum.SetMagThetaPhi(p_r,theta_r,phi_r);
+      neutron.t0=0.;
       thisEvent->particles.push_back(neutron);
       outputTree->Fill();
     }
