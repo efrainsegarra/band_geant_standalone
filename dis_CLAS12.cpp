@@ -17,6 +17,73 @@
 
 using namespace std;
 
+int checkBAND(double theta_r,double phi_r){
+  // ONLY SAVE THE EVENTS THAT WILL MAKE IT INTO BAND
+  double numbars,prevbars;
+  double max_x, min_x,max_x_2,min_x_2;
+  double max_y = 7.4*13;
+  double min_y = -7.4*5;
+
+  double r = -262. / cos(theta_r) ;
+  double x_traj = r * cos(phi_r) * sin(theta_r) ;
+  double y_traj = r * sin(phi_r) * sin(theta_r) ;
+
+  double r_2 = (-262.-7.4*5) / cos(theta_r) ;
+  double x_traj_2 = r_2 * cos(phi_r) * sin(theta_r) ;
+  double y_traj_2 = r_2 * sin(phi_r) * sin(theta_r) ;
+
+  if ((y_traj > max_y) || (y_traj < min_y)) return -1;
+
+  // first group
+  prevbars = 0;
+  numbars = 2;
+  if ((y_traj > min_y + prevbars*7.4) && (y_traj < min_y + (numbars+prevbars)*7.4)){
+    max_x = 2018.35 / 10 / 2;
+    min_x = -max_x;
+    if ((x_traj > max_x) || (x_traj < min_x)) return -1;
+  }
+  // second group
+  prevbars += numbars;
+  numbars = 6;
+  if ((y_traj > min_y + prevbars*7.4) && (y_traj < min_y + (numbars+prevbars)*7.4)){
+    max_x = (509.17/10 + 500/10);
+    min_x_2 = -(509.17/10 + 500/10);
+    if ((x_traj > max_x) || (x_traj < min_x_2)) return -1;
+  }
+  if ((y_traj_2 > min_y + prevbars*7.4) && (y_traj_2 < min_y + (numbars+prevbars)*7.4)){
+    min_x = (509.17/10 );
+    max_x_2 = -(509.17/10 );
+    if (( x_traj_2 < min_x ) && (x_traj_2 > max_x_2) ) return -1;
+  }
+
+  // third group
+  prevbars += numbars;
+  numbars = 4;
+  if ((y_traj > min_y + prevbars*7.4) && (y_traj < min_y + (numbars+prevbars)*7.4)){
+    max_x = 2018.35 / 10 / 2;
+    min_x = -max_x;
+    if ((x_traj > max_x) || (x_traj < min_x)) return -1;
+  }
+  // fourth group
+  prevbars += numbars;
+  numbars = 3;
+  if ((y_traj > min_y + prevbars*7.4) && (y_traj < min_y + (numbars+prevbars)*7.4)){
+    max_x = 1946.53 / 10 / 2;
+    min_x = -max_x;
+    if ((x_traj > max_x) || (x_traj < min_x)) return -1;
+  }
+  // five group
+  prevbars += numbars;
+  numbars = 3;
+  if ((y_traj > min_y + prevbars*7.4) && (y_traj < min_y + (numbars+prevbars)*7.4)){
+    max_x = 1634.58 / 10 / 2;
+    min_x = -max_x;
+    if ((x_traj > max_x) || (x_traj < min_x)) return -1;
+  }
+  return 1;
+}
+
+
 // Settings for cross section: 
 double sigmainput=40.;          //sigma parameter in rescattering amplitude [mb], default value
 double betainput=8.;            //beta parameter in rescattering amplitude [GeV^-2], default value
@@ -44,7 +111,7 @@ const double max_p_e = 8.;
 
 const double min_theta_r =150*M_PI/180.;
 const double max_theta_r =178*M_PI/180.;
-const double min_p_r =0.275;
+const double min_p_r =0.200;
 const double max_p_r =0.600;
 
 const double min_phi_er=0.;
@@ -57,63 +124,6 @@ public:
   double Density(int nDim, double * args);
 };
 
-int checkBAND(double theta_r,double phi_r){
-  // ONLY SAVE THE EVENTS THAT WILL MAKE IT INTO BAND
-  double numbars,prevbars;
-  double max_x, min_x,max_x_2,min_x_2;
-  double max_y = 7.4*13;
-  double min_y = -7.4*5;
-
-  double r = -262. / cos(theta_r) ;
-  double x_traj = r * cos(phi_r) * sin(theta_r) ;
-  double y_traj = r * sin(phi_r) * sin(theta_r) ;
-  if ((y_traj > max_y) || (y_traj < min_y)) return -1;
-
-  // first group
-  prevbars = 0;
-  numbars = 2;
-  if ((y_traj > min_y + prevbars*7.4) && (y_traj < min_y + (numbars+prevbars)*7.4)){
-    max_x = 2018.35 / 10 / 2;
-    min_x = -max_x;
-    if ((x_traj > max_x) || (x_traj < min_x)) return -1;
-  }
-  // second group
-  prevbars += numbars;
-  numbars = 6;
-  if ((y_traj > min_y + prevbars*7.4) && (y_traj < min_y + (numbars+prevbars)*7.4)){
-    max_x = (509.17/10 + 500/10);
-    min_x = (509.17/10 );
-    max_x_2 = -(509.17/10 );
-    min_x_2 = -(509.17/10 + 500/10);
-    if ((x_traj > max_x) || (x_traj < min_x_2)) return -1;
-    if (( x_traj < min_x ) && (x_traj > max_x_2) ) return -1;
-  }
-  // third group
-  prevbars += numbars;
-  numbars = 4;
-  if ((y_traj > min_y + prevbars*7.4) && (y_traj < min_y + (numbars+prevbars)*7.4)){
-    max_x = 2018.35 / 10 / 2;
-    min_x = -max_x;
-    if ((x_traj > max_x) || (x_traj < min_x)) return -1;
-  }
-  // fourth group
-  prevbars += numbars;
-  numbars = 3;
-  if ((y_traj > min_y + prevbars*7.4) && (y_traj < min_y + (numbars+prevbars)*7.4)){
-    max_x = 1946.53 / 10 / 2;
-    min_x = -max_x;
-    if ((x_traj > max_x) || (x_traj < min_x)) return -1;
-  }
-  // five group
-  prevbars += numbars;
-  numbars = 3;
-  if ((y_traj > min_y + prevbars*7.4) && (y_traj < min_y + (numbars+prevbars)*7.4)){
-    max_x = 1634.58 / 10 / 2;
-    min_x = -max_x;
-    if ((x_traj > max_x) || (x_traj < min_x)) return -1;
-  }
-  return 0;
-}
 
 int main(int argc, char *argv[])
 {
@@ -164,6 +174,7 @@ int main(int argc, char *argv[])
 
   // Create memory for each event
   double * eventData = new double[5];
+  int willHitBAND = 0;
 
   for (int i=0 ; i<nEvents ; i++)
     {
@@ -190,6 +201,7 @@ int main(int argc, char *argv[])
 
       int pass = checkBAND(theta_r,phi_r);
       if (pass < 0) continue;
+      willHitBAND++;
 
       // Write to tree
       thisEvent->particles.clear();
@@ -206,7 +218,9 @@ int main(int argc, char *argv[])
 
       outputTree->Fill();
     }
-   
+  
+  cout << "Of generated, the percent that have initial path to hit BAND: "<< float(willHitBAND)/float(nEvents)*100. << endl;
+
   outputTree->Write();
 
   // Store the total cross section (and error) in the output file in a TVectorT

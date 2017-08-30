@@ -26,7 +26,7 @@ class BAND_Event : public TObject
   ~BAND_Event();
   std::vector<BAND_Hit> hits;
 
-  ClassDef(BAND_Event,2);
+  ClassDef(BAND_Event,4);
 };
 
 #endif

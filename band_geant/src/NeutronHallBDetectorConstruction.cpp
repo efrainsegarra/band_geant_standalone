@@ -559,33 +559,7 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
                           fCheckOverlaps);                     // checking overlaps
     
     logic_SSTube_Connector1 -> SetVisAttributes (G4Colour::G4Colour( 0.99 , 0.88 , 0.66 ));
-  
-    //  //  ---------- SS connector coating to represent cables ---------- //
-    //G4Tubs* solid_SSTube_Connector1_coating = 
-    //    new G4Tubs("SSTube_Connector1_coating", 
-    //               241.*mm, 
-    //               251.*mm, 
-    //               length, 
-    //               0.,
-    //               CLHEP::twopi);
 
-    //logic_SSTube_Connector1_coating = 
-    //    new G4LogicalVolume(solid_SSTube_Connector1_coating, 
-    //                        BAND_mat , 
-    //                        "SSTube_Connector1_coating");
-
-    //    new G4PVPlacement(0, 
-    //                      G4ThreeVector(0,0,-(length+shift)),
-    //                      logic_SSTube_Connector1_coating,
-    //                      "SSTube_Connector1_coating",
-    //                      logicWorld,
-    //                      false,
-    //                      0,
-    //                      fCheckOverlaps);
-
-    //logic_SSTube_Connector1_coating -> SetVisAttributes (G4Colour::G4Colour( 0.75 , 0.6 , 0.75 ));
-    
-    
       //  ---------- SS connector #2 from target tube to beam tube ---------- //
     length = 34.*mm;
     shift = 658.*mm;

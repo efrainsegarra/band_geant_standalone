@@ -52,7 +52,7 @@ void NeutronHallBEventAction::EndOfEventAction(const G4Event* event)
     G4int n_trajectories = 0;
     if (trajectoryContainer) n_trajectories = trajectoryContainer->entries();
     G4int eventID = event->GetEventID();
-    if ( eventID < 100 || eventID % 100 == 0) {
+    if ( eventID % 100000 == 0) {
         G4cout << ">>> Event: " << eventID  << G4endl;
         if ( trajectoryContainer ) {
           G4cout << "    " << n_trajectories

@@ -28,6 +28,7 @@ int main(int argc, char** argv){
       exit(-1);
     }
 	double threshold = atof(argv[2]);  
+	double num_barFired = 0;
 	double num_events_barFired = 0;
 
 	TFile *inFile 	= new TFile(argv[1]);
@@ -40,7 +41,7 @@ int main(int argc, char** argv){
 	
 	for(int i =0; i<numEvents; i++){
 		
-		double event_barFires = 0;
+		double barFires = 0;
 		inTree->GetEntry(i);
 
 		for(int j=0; j<event->hits.size(); j++){
@@ -49,29 +50,18 @@ int main(int argc, char** argv){
 			// in MeVee
 			// this conversion from http://shop-pdp.net/efhtml/NIM_151_1978_445-450_Madey.pdf
 			double hitE = event->hits[j].E_dep;
-			double hitE_MeVee = 0.83 * hitE - 2.82 * ( 1 - exp( -0.25 * ( pow(hitE,0.93)) ) );
+			double hitE_MeVee = 0.83 * hitE - 2.82 * ( 1 - exp( 0.25 * ( pow(hitE,0.93)) ) );
 			if(abs(hitE_MeVee)<threshold) continue;
-			event_barFires++;
-			break;
-			// for each hit in an event, just categorize that firing bar
-			// in the correct wall in case in future we want to look at
-			// per wall.
-
+			
+			barFires++;
 
 		}
-		num_events_barFired += event_barFires;
-		// For that event, get the total number of bars fired in the event
-		// and save that to a running total, and also check if that is > 0
-		// to count that event
-		
-		
+		num_barFired += barFires;
+		if (barFires > 0) num_events_barFired++;
+
 	}
-	// Take the running total of bars fired, and divide by the number
-	// of events that had a bar firing.
 	
-
-
-	cout << threshold  << " " << (num_events_barFired)/numEvents << endl;
+	cout << threshold  << " " << (num_events_barFired)/numEvents << " " << num_barFired/num_events_barFired << endl;
 	
 	
 	return 0;

@@ -13,7 +13,7 @@ class Gen_Particle : public TObject
   ~Gen_Particle();
   std::string type;
   TVector3 momentum;
-  ClassDef(Gen_Particle,1);
+  ClassDef(Gen_Particle,3);
 };
 
 class Gen_Event : public TObject
