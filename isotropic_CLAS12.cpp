@@ -13,16 +13,9 @@
 
 using namespace std;
 
-const double max_y = 7.4*13;
-const double min_y = -7.4*5;
-const double max_z = -262.;
-const double min_z = -262.-5*7.4;
-const double glob_max_x = 2018.35 / 10 / 2;
-const double glob_min_x = -2018.35 / 10 / 2;
-const double min_p_r =0.25;
-const double max_p_r =0.25;
-
 int checkBAND(double x_traj,double y_traj){
+  const double max_y = 7.4*13;
+  const double min_y = -7.4*5;
 
   // ONLY SAVE THE EVENTS THAT WILL MAKE IT INTO BAND
   double numbars,prevbars;
@@ -89,6 +82,15 @@ int checkBAND(double x_traj,double y_traj){
 
 int main(int argc, char *argv[])
 {
+  const double max_y = 8*13;
+  const double min_y = -8*5;
+  const double max_z = -250.;
+  const double min_z = -270.-5*7.4;
+  const double glob_max_x = 2100 / 10 / 2;
+  const double glob_min_x = -2100 / 10 / 2;
+  
+  const double min_p_r =0.25;
+  const double max_p_r =0.25;
   // Read in arguments
   if (argc != 3)
     {

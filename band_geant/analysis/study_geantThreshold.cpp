@@ -51,7 +51,7 @@ int main(int argc, char** argv){
 			// in MeVee
 			// this conversion from http://shop-pdp.net/efhtml/NIM_151_1978_445-450_Madey.pdf
 			double hitE = event->hits[j].E_dep;
-			double hitE_MeVee = 0.83 * hitE - 2.82 * ( 1 - exp( 0.25 * ( pow(hitE,0.93)) ) );
+			double hitE_MeVee = 0.83 * hitE - 2.82 * ( 1 - exp( - 0.25 * ( pow(hitE,0.93)) ) );
 			if(abs(hitE_MeVee)<threshold) continue;
 			
 			barFires++;
