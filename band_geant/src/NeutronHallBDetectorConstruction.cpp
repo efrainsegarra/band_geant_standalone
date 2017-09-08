@@ -162,7 +162,7 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
   // ------------------ End Defining World ---------------- //
 
   // ------------------ Defining Target - in World ---------------- //
-    /*
+    
     G4double targetRadius = 1.*mm;
 
     G4Sphere* solid_target = 
@@ -189,7 +189,7 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
                           fCheckOverlaps);                     // overlap checkign
 
     logic_target -> SetVisAttributes (G4Colour::G4Colour( 0.65 , 0.82 , 0.77 ));
-    */
+    
   // ------------------ End Defining Target ---------------- //
 
   // ------------------ Defining BAND Detector - in World ---------------- //
@@ -326,7 +326,7 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
   // ------------------ END Defining BAND Detector  ---------------- //
     
   // ------------------ Defining Lead Wall  - in World ---------------- //
-    /*
+    
     G4double lead_thickness = 25.*mm/2;
     G4double lead_Z_coord = (BAND_Z_coord_center + BAND_Z_thickness/2.)*mm + 15*mm + lead_thickness;
 
@@ -722,7 +722,7 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
     }
   // ------------------ END Defining Electronic Boxes  ---------------- //
     
-    */
+    
     // Always return the physical world
     return physWorld;
 }

@@ -157,7 +157,7 @@ int main(int argc, char ** argv)
   int AsEndBin = AsRes->GetXaxis()->FindBin(1.5);
   itBins = (AsEndBin-AsStartBin)/numBins;
   for (int bin=AsStartBin ; bin<= AsEndBin; bin += itBins){
-    bool write = false;
+    bool write = true;
     double AsSigGuess = 0.01;
     doProj( AsRes, bin,  itBins,AsSigGuess,write);
   }

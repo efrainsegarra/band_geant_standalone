@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
   const double min_z = -270.-5*7.4;
   const double glob_max_x = 2100 / 10 / 2;
   const double glob_min_x = -2100 / 10 / 2;
-  
+
   const double min_p_r =0.25;
   const double max_p_r =0.25;
   // Read in arguments
