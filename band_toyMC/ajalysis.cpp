@@ -63,15 +63,15 @@ int main(int argc, char **argv)
     
     // Hist output 
     TH1D *XpHist = new TH1D("XpHist",
-    "#it{x'} Distribution;#it{x'};Counts", 14, 0.1, 0.8);
+    "After DIS, Backward Recoil Neutron & eeEDep_{n,r|thresh} Selection Cuts;#bf{#it{x_{B}}};Counts", 14, 0.1, 0.8);
     TH2D *outhist1 = new TH2D("h1", 
-    "Distribution of Reconstructed Electron Momenta;#bf{#it{#theta_{e}}} #left[deg.#right];#left|#bf{#it{#vec{p_{e}}}}#right| #left[#frac{GeV}{c}#right]", 
+    "Before Cuts;#bf{#it{#theta_{e,r}}} #left[#it{deg.}#right];#left|#bf{#it{#vec{p}_{e,r}}}#right| #left[#frac{GeV}{c}#right]", 
     100, 4, 35, 100, 1.5, 8);
     TH2D *outhist2 = new TH2D("h2", 
-    "Distrubution of Reconstructed Neutron Momenta;#bf{#it{#theta_{nq}}} #left[#it{deg.}#right];#left|#bf{#it{#vec{p_{n}}}}#right| #left[#frac{GeV}{c}#right]",
+    "After DIS, Backward Recoil Neutron & eeEDep_{n,r|thresh};#bf{#it{#theta_{#vec{p}_{n,r}#vec{q}}}} #left[#it{deg.}#right];#left|#bf{#it{#vec{p}_{n,r}}}#right| #left[#frac{GeV}{c}#right]",
     100, 135, 180, 100, 0.26, 0.65);
     TH2D *outhist3 = new TH2D("h3", 
-    "Distribution of Reconstructed #it{x'} and #it{Q^{2}};#bf{#it{x'}};#bf{#it{Q^{2}}} #left[#left(#frac{GeV}{c}#right)^{2} #right]", 
+    "After DIS, Backward Recoil Neutron & eeEDep_{n,r|thresh};#bf{#it{x_{B}}};#bf{#it{Q^{2}}} #left[#left(#frac{GeV}{c}#right)^{2} #right]", 
     100, 0.1, 0.8, 100, 2, 8);
 
     // Data (text file) output
@@ -85,35 +85,34 @@ int main(int argc, char **argv)
     int num_src = 0;
     int num_src_hits = 0;
 
+
     // Calculate weighting ratio (num events detected/num ev ents simulated)
     double tot_num_events = CS * luminosity * runtime;
     double acceptance = azim_CLAS12 * azim_BAND;
-    double num_events_detected = tot_num_events * acceptance; // * band_det_eff;
+    double num_events_detected = tot_num_events * acceptance;
     double weighting = num_events_detected / num_events_sim;
 
-    // Get values from tree
     for(int iii = 0; iii < num_events_sim; ++iii)
     {
         inTree -> GetEvent(iii);
         
         // DIS Selection Cuts
-        if (reconQSq < 2) continue;
-        if (reconWp < 1.8) continue;
+//        if (reconQSq < 2) continue;
+//        if (reconWp < 1.8) continue;        
 
         TVector3 rePn(reconPn[0], reconPn[1], reconPn[2]);
         TVector3 rePe(reconPe[0], reconPe[1], reconPe[2]);
         TVector3 q = TVector3(0, 0, E1) - rePe;
         double theta_nq = rePn.Angle(q) * 180/TMath::Pi();
-        if (theta_nq < 110) continue;
 
-        num_src++;
+        // Backwards recoil neutron selection cut
+//        if (theta_nq < 110) continue;
 
         // Band Selection Cut
-        if (recon_eeEDep <= thresh_eeEDep) continue;
-        num_src_hits++;
-
+//        if (recon_eeEDep < thresh_eeEDep) continue;
+        
         // Fill histograms
-        XpHist->Fill(reconXp, weighting);
+        XpHist->Fill(reconXp);
         
         double theta_e = rePe.Theta() * 180/TMath::Pi();
         double rePe_mag = rePe.Mag();
@@ -124,7 +123,9 @@ int main(int argc, char **argv)
 
         outhist3 -> Fill(reconXp, reconQSq);
     }
-    
+
+    // File I/O
+//  double band_eff = static_cast<double>(num_src_hits) / num_src;
     infile -> Close();
     CSVec -> Write("CSSq");
     XpHist -> Write();
@@ -133,8 +134,7 @@ int main(int argc, char **argv)
     outhist3 -> Write();
     outfile -> Close();
 
-    double band_eff = static_cast<double>(num_src_hits) / num_src;
-    datfile << thresh_eeEDep << "\t" << band_eff << endl;
+//    datfile << thresh_eeEDep << "\t" << band_eff << endl;
 
     return 0;
 }
