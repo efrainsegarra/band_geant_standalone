@@ -89,7 +89,7 @@ void calc_inclusive2(double &QEpw, double &DISpw, double &fsi1, double &fsi2, do
   QEpw=calc_inclusive_QE_pw(Q2,nu,qvec,tan2, c, d, m, c_length, which_wave)*nu*(calc==0? (1./(2.*MASSD*nu)
 	      *(2.*PI*Eout*ALPHA*ALPHA*4.*Eout*Ein*pow(cos(thetae/2.),2.))/(Ein*Q2*Q2)
 	      *HBARC*HBARC*1.e07) :2.*PI/F2N);
-  if(isnan(QEpw)) QEpw=0.;	      
+  if(std::isnan(QEpw)) QEpw=0.;	      
   //loop over proton and neutron
   for(int proton=0;proton<2;proton++){
     //DIS plane-wave and FSI part, integration over spectator momentum
@@ -183,7 +183,7 @@ void int_costheta_incl(double costhetar, double* results, va_list ap){
   //get structure function factor
   if(calc==0) structfactor = structfunct(x,Q2,nu,qvec,massi,tan2,prnorm,thetar,0., MASSD-Er, Er, proton);
   else structfactor = F2Dincl(x,Q2,nu,qvec,massi,tan2,prnorm,thetar,0., MASSD-Er, Er, proton);
-  if(abs(structfactor<1E-09)||isnan(structfactor)){results[0]=results[1]=results[2]=0.; return;}  //sanity check
+  if(abs(structfactor<1E-09)||std::isnan(structfactor)){results[0]=results[1]=results[2]=0.; return;}  //sanity check
 
   //plane-wave result
   results[0]= structfactor*born_dens(prnorm,Er,which_wave,c,d,m,c_length);
