@@ -57,39 +57,64 @@ int main(int argc, char **argv)
     inTree->SetBranchAddress("reconAs", &(reconAs));
     inTree->SetBranchAddress("recon_eeEDep", &(recon_eeEDep));
 
+    // Calculate the efficiency of BAND
+    int num_src = 0;
+    int num_src_hits = 0;
+
+    for(int iii = 0; iii < num_events_sim; ++iii)
+    {
+        inTree -> GetEvent(iii);
+
+        TVector3 rePn(reconPn[0], reconPn[1], reconPn[2]);
+        TVector3 rePe(reconPe[0], reconPe[1], reconPe[2]);
+        TVector3 q = TVector3(0, 0, E1) - rePe;
+        double theta_nq = rePn.Angle(q) * 180/TMath::Pi();
+
+        // DIS Selection Cuts
+        if (reconQSq < 2) continue;
+        if (reconWp < 1.8) continue;        
+        if (theta_nq < 110) continue;
+        ++num_src;
+
+        // Band Selection Cut
+        if (recon_eeEDep < thresh_eeEDep) continue;
+        ++num_src_hits;
+    }
+
+    double band_eff = static_cast<double>(num_src_hits) / num_src;
+
     // Attempt to pull CS data from input root file
     TVectorT<double> *CSVec = NULL;
     CSVec = (TVectorT<double>*)infile->Get("totalCS");
-
-    // Calculate weighting ratio
-    double acceptance = azim_CLAS12 * azim_BAND;
-    double weighting;
-
+    
     // Test if input root file from signal-generated run
+    double tot_num_events;
     if (CSVec)
     {
         double CS = (*CSVec)[0];    // cross section in units of nb  
-        double tot_num_events = CS * luminosity * runtime;
-        double num_events_detected = tot_num_events * acceptance;
-        weighting = num_events_detected / num_events_sim;
+        tot_num_events = CS * luminosity * runtime;
     }
-
-    // Test if input root file from background run
+    // or from background run
     else
     {
          CSVec = (TVectorT<double>*)infile->Get("totalCSSq");
+         
+         // Error handling if no CS found in file
          if (!CSVec)
          {
             cerr << "No cross section was found in the file";
             return -2;
          }
+
          double CSSqDt = (*CSVec)[0] * 1e-9;   // CSSqDt is product of the cross-sections and coincidence time window
-         double tot_num_events = CSSqDt * pow(luminosity, 2) * runtime;
-         double num_events_detected = tot_num_events * acceptance;
-         weighting = num_events_detected / num_events_sim;
+         tot_num_events = CSSqDt * pow(luminosity, 2) * runtime;
     }
 
-    
+    // Calculate weighting ratio
+    double acceptance = azim_CLAS12 * azim_BAND * band_eff;
+    double num_events_detected = tot_num_events * acceptance;
+    double weighting = num_events_detected / num_events_sim;
+
     // Hist output 
     TH1D *XpHist = new TH1D("XpHist",
     "After DIS, Backward Recoil Neutron & eeEDep_{n,r|thresh} Selection Cuts;#bf{#it{x_{B}}};Counts", 14, 0.1, 0.8);
@@ -109,55 +134,49 @@ int main(int argc, char **argv)
     size_t raw_index = root_filename.find_last_of(string("."));
     string filename = root_filename.substr(0, raw_index);
     string dat_filename = filename + "_dat.txt";
-
     datfile.open(dat_filename.c_str());
-    int num_src = 0;
-    int num_src_hits = 0;
 
-
-        for(int iii = 0; iii < num_events_sim; ++iii)
+    for(int iii = 0; iii < num_events_sim; ++iii)
     {
         inTree -> GetEvent(iii);
-        
-        DIS Selection Cuts
-        if (reconQSq < 2) continue;
-        if (reconWp < 1.8) continue;        
 
         TVector3 rePn(reconPn[0], reconPn[1], reconPn[2]);
         TVector3 rePe(reconPe[0], reconPe[1], reconPe[2]);
         TVector3 q = TVector3(0, 0, E1) - rePe;
         double theta_nq = rePn.Angle(q) * 180/TMath::Pi();
 
-        // Backwards recoil neutron selection cut
+        // DIS Selection Cuts
+        if (reconQSq < 2) continue;
+        if (reconWp < 1.8) continue;        
         if (theta_nq < 110) continue;
 
         // Band Selection Cut
         if (recon_eeEDep < thresh_eeEDep) continue;
         
         // Fill histograms
-        XpHist->Fill(reconXp);
+        XpHist->Fill(reconXp, weighting);
         
         double theta_e = rePe.Theta() * 180/TMath::Pi();
         double rePe_mag = rePe.Mag();
-        outhist1 -> Fill(theta_e, rePe_mag);
+        outhist1 -> Fill(theta_e, rePe_mag, weighting);
 
         double pn_mag = rePn.Mag();
-        outhist2 -> Fill(theta_nq, pn_mag);
+        outhist2 -> Fill(theta_nq, pn_mag, weighting);
 
-        outhist3 -> Fill(reconXp, reconQSq);
+        outhist3 -> Fill(reconXp, reconQSq, weighting);
     }
 
     // File I/O
-    double band_eff = static_cast<double>(num_src_hits) / num_src;
     infile -> Close();
-    CSVec -> Write("CSSq");
+    CSVec -> Write("CSdata");
     XpHist -> Write();
     outhist1 -> Write();
     outhist2 -> Write();
     outhist3 -> Write();
     outfile -> Close();
 
-//    datfile << thresh_eeEDep << "\t" << band_eff << endl;
+    datfile << thresh_eeEDep << "\t" << band_eff << endl;
+    datfile.close();
 
     return 0;
 }
