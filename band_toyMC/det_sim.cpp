@@ -290,10 +290,16 @@ double eeEDep(double En)
     double trueEDep = (myRand->Rndm() * (En - mN)) * 1000;   // multiply by 1000 for GeV->MeV
     
     // translate to e-equivalent E
-    double a1 = 0.95;
-    double a2 = 8.0;
-    double a3 = 0.1;
-    double a4 = 0.9;
+    // *********** These are parameters from a paper
+    //double a1 = 0.95;
+    //double a2 = 8.0;
+    //double a3 = 0.1;
+    //double a4 = 0.9;
+    // *********** These are parameters from Or
+    double a1 = 0.83;
+    double a2 = 2.82;
+    double a3 = 0.25;
+    double a4 = 0.93;
 
     double trueE_MeVee = (a1*trueEDep) - a2*(1.0 - exp(-a3*pow(trueEDep, a4)));
     if (trueE_MeVee < 0) return 0;
