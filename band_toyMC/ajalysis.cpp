@@ -12,7 +12,7 @@
 #include "constants.h"  // contains constants E1
 using namespace std;
 
-const double luminosity = 1e35*1e-33;  // convert luminosity from cm^2/s -> nb/s
+const double luminosity = 1e35*1e-33;  // convert luminosity from cm^-2*s-1 -> nb-1*s-1
 const double runtime = 40*24*60*60; // convert 40 day runtime to s
 const double azim_CLAS12 = 0.5;  // 50% azimuthal electron coverage for CLAS12
 const double azim_BAND = 0.6;    // 60% neutron coverage for BAND
@@ -33,10 +33,6 @@ int main(int argc, char **argv)
     TFile *outfile = new TFile(argv[2], "RECREATE");
     double thresh_eeEDep = atof(argv[3]);
     
-    // Get cross section, compute number of events
-    TVectorT<double> *CSVec = (TVectorT<double>*)infile->Get("totalCS");
-    double CS = (*CSVec)[0];    // cross section in units of nb  
-
     // Get values from ReconTree
     TTree *inTree = (TTree*)infile -> Get("ReconTree");
 
@@ -60,6 +56,39 @@ int main(int argc, char **argv)
     inTree->SetBranchAddress("reconWp", &(reconWp));
     inTree->SetBranchAddress("reconAs", &(reconAs));
     inTree->SetBranchAddress("recon_eeEDep", &(recon_eeEDep));
+
+    // Attempt to pull CS data from input root file
+    TVectorT<double> *CSVec = NULL;
+    CSVec = (TVectorT<double>*)infile->Get("totalCS");
+
+    // Calculate weighting ratio
+    double acceptance = azim_CLAS12 * azim_BAND;
+    double weighting;
+
+    // Test if input root file from signal-generated run
+    if (CSVec)
+    {
+        double CS = (*CSVec)[0];    // cross section in units of nb  
+        double tot_num_events = CS * luminosity * runtime;
+        double num_events_detected = tot_num_events * acceptance;
+        weighting = num_events_detected / num_events_sim;
+    }
+
+    // Test if input root file from background run
+    else
+    {
+         CSVec = (TVectorT<double>*)infile->Get("totalCSSq");
+         if (!CSVec)
+         {
+            cerr << "No cross section was found in the file";
+            return -2;
+         }
+         double CSSqDt = (*CSVec)[0] * 1e-9;   // CSSqDt is product of the cross-sections and coincidence time window
+         double tot_num_events = CSSqDt * pow(luminosity, 2) * runtime;
+         double num_events_detected = tot_num_events * acceptance;
+         weighting = num_events_detected / num_events_sim;
+    }
+
     
     // Hist output 
     TH1D *XpHist = new TH1D("XpHist",
@@ -86,19 +115,13 @@ int main(int argc, char **argv)
     int num_src_hits = 0;
 
 
-    // Calculate weighting ratio (num events detected/num ev ents simulated)
-    double tot_num_events = CS * luminosity * runtime;
-    double acceptance = azim_CLAS12 * azim_BAND;
-    double num_events_detected = tot_num_events * acceptance;
-    double weighting = num_events_detected / num_events_sim;
-
-    for(int iii = 0; iii < num_events_sim; ++iii)
+        for(int iii = 0; iii < num_events_sim; ++iii)
     {
         inTree -> GetEvent(iii);
         
-        // DIS Selection Cuts
-//        if (reconQSq < 2) continue;
-//        if (reconWp < 1.8) continue;        
+        DIS Selection Cuts
+        if (reconQSq < 2) continue;
+        if (reconWp < 1.8) continue;        
 
         TVector3 rePn(reconPn[0], reconPn[1], reconPn[2]);
         TVector3 rePe(reconPe[0], reconPe[1], reconPe[2]);
@@ -106,10 +129,10 @@ int main(int argc, char **argv)
         double theta_nq = rePn.Angle(q) * 180/TMath::Pi();
 
         // Backwards recoil neutron selection cut
-//        if (theta_nq < 110) continue;
+        if (theta_nq < 110) continue;
 
         // Band Selection Cut
-//        if (recon_eeEDep < thresh_eeEDep) continue;
+        if (recon_eeEDep < thresh_eeEDep) continue;
         
         // Fill histograms
         XpHist->Fill(reconXp);
@@ -125,7 +148,7 @@ int main(int argc, char **argv)
     }
 
     // File I/O
-//  double band_eff = static_cast<double>(num_src_hits) / num_src;
+    double band_eff = static_cast<double>(num_src_hits) / num_src;
     infile -> Close();
     CSVec -> Write("CSSq");
     XpHist -> Write();
