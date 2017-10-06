@@ -214,6 +214,7 @@ int main(int argc, char** argv){
 		if (reconQSq < 2) continue;
 		if (reconWp < 1.8) continue;
 		if (reconPn < 0.25) continue;
+		if (reconPn > 0.6) continue;
 
 		outTree->Fill();
 	}
