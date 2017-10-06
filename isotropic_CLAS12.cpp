@@ -13,72 +13,6 @@
 
 using namespace std;
 
-int checkBAND(double x_traj,double y_traj){
-  const double max_y = 7.4*13;
-  const double min_y = -7.4*5;
-
-  // ONLY SAVE THE EVENTS THAT WILL MAKE IT INTO BAND
-  double numbars,prevbars;
-  double max_x, min_x,max_x_2,min_x_2;
- 
-  // first group
-  prevbars = 0;
-  numbars = 2;
-  if ((y_traj >= min_y + prevbars*7.4) && (y_traj < min_y + (numbars+prevbars)*7.4)){
-    max_x = 2018.35 / 10 / 2;
-    min_x = -max_x;
-
-    if ((x_traj > max_x) || (x_traj < min_x)) return 0;
-
-  }
-  // second group
-  prevbars += numbars;
-  numbars = 6;
-  if ((y_traj >= min_y + prevbars*7.4) && (y_traj < min_y + (numbars+prevbars)*7.4)){
-    max_x = (509.17/10 + 500/10);
-    min_x = (509.17/10 );
-    min_x_2 = -(509.17/10 + 500/10);
-    max_x_2 = -(509.17/10 );
-
-    if ((x_traj > max_x) || (x_traj < min_x_2)) return 0;
-    if ((x_traj < min_x) && (x_traj > max_x_2)) return 0;
-
-  }
-
-  // third group
-  prevbars += numbars;
-  numbars = 4;
-  if ((y_traj >= min_y + prevbars*7.4) && (y_traj < min_y + (numbars+prevbars)*7.4)){
-    max_x = 2018.35 / 10 / 2;
-    min_x = -max_x;
-
-    if ((x_traj > max_x) || (x_traj < min_x)) return 0;
-
-  }
-  // fourth group
-  prevbars += numbars;
-  numbars = 3;
-  if ((y_traj >= min_y + prevbars*7.4) && (y_traj < min_y + (numbars+prevbars)*7.4)){
-    max_x = 1946.53 / 10 / 2;
-    min_x = -max_x;
-
-    if ((x_traj > max_x) || (x_traj < min_x)) return 0;
-
-  }
-  // five group
-  prevbars += numbars;
-  numbars = 3;
-  if ((y_traj >= min_y + prevbars*7.4) && (y_traj < min_y + (numbars+prevbars)*7.4)){
-    max_x = 1634.58 / 10 / 2;
-    min_x = -max_x;
-
-    if ((x_traj > max_x) || (x_traj < min_x)) return 0;
-
-  }
-  
-  return 1;
-}
-
 
 int main(int argc, char *argv[])
 {
@@ -97,8 +31,6 @@ int main(int argc, char *argv[])
       cerr << "Wrong number of arguments. Instead use: [nEvents] [/path/to/output/file]\n";
       exit(-1);
     }
-
-  double willHitBand = 0.;
 
   const int nEvents=atoi(argv[1]);
   TFile * outputFile = new TFile(argv[2],"RECREATE");
@@ -120,9 +52,6 @@ int main(int argc, char *argv[])
       double z_r = min_z + (max_z - min_z) * rand->Rndm();
       double y_r = min_y + (max_y - min_y) * rand->Rndm();
       double x_r = glob_min_x + (glob_max_x - glob_min_x) * rand->Rndm();
-      int pass = checkBAND(x_r,y_r);
-      if (pass == 0) continue;
-      willHitBand++;
 
       double Costheta_r = z_r / sqrt( pow(x_r,2) + pow(y_r,2) + pow(z_r,2) );
       double theta_r = acos(Costheta_r);
@@ -130,9 +59,6 @@ int main(int argc, char *argv[])
 
       if (phi_r < 0) phi_r += 2.*M_PI;
       if (phi_r > 2.*M_PI) phi_r -= 2.*M_PI;
-
-
-      //cout << x_r << " " << y_r << " " << z_r << " " << theta_r << " " << phi_r << "\n";
 
       // Extract useful quantities
       double p_r = min_p_r + (max_p_r - min_p_r) * rand->Rndm();
@@ -154,9 +80,7 @@ int main(int argc, char *argv[])
   outputTree->Write();
 
 
-  outputFile->Close();
-  cout << "Percent of Generated Hitting BAND: " << willHitBand / float(nEvents) << endl;
-  
+  outputFile->Close();  
   delete rand;
 
   return 0;
