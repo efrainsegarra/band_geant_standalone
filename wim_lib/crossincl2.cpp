@@ -183,7 +183,7 @@ void int_costheta_incl(double costhetar, double* results, va_list ap){
   if(calc==0) structfactor = structfunct(x,Q2,nu,qvec,massi,tan2,prnorm,thetar,0., MASSD-Er, Er, proton);
   else structfactor = F2Dincl(x,Q2,nu,qvec,massi,tan2,prnorm,thetar,0., MASSD-Er, Er, proton);
   //sanity check
-  if(abs(structfactor<1E-09)||isnan(structfactor)){results[0]=results[1]=results[2]=0.; return;}
+  if(abs(structfactor<1E-09)||std::isnan(structfactor)){results[0]=results[1]=results[2]=0.; return;}
   //plane-wave contribution
   results[0]= structfactor*born_dens(prnorm,Er,which_wave,c,d,m,c_length);
   

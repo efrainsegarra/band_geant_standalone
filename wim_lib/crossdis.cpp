@@ -87,7 +87,7 @@ double calc_deeps(double Ein, double Q2, double Wprime, double pr, double costhe
   double thetar=acos(costhetar);
   //get structure function part
   double structfactor=structfunct(x,Q2,nu,qvec,massi,tan2,pr,thetar,0., Einoff, Er, proton);
-  if(abs(structfactor<1E-09)||isnan(structfactor)) return structfactor;  //sanity check
+  if(abs(structfactor<1E-09)||std::isnan(structfactor)) return structfactor;  //sanity check
   
   //read in arrays with wave-functions
   double *c, *d, *m;
@@ -205,7 +205,7 @@ double structfunct(double x, double Q2,double nu,double qvec,double massi,double
   double nuoffshell=(wstar2-massi*massi+2.*piq)/(2.*massi); //(m_i+qoffshell)^2=(p_i+q)^2
   double xoffshell=Q2/(2.*massi*nuoffshell);
   double fm=sqrt(wstar2+2.*piq-Q2);//sqrt((p_i+q)^2)
-  //if(isnan(fm)) cout << wstar2 << " " << wstar2+2.*piq-Q2 << endl;
+  //if(std::isnan(fm)) cout << wstar2 << " " << wstar2+2.*piq-Q2 << endl;
   double F2=proton? f2p_b(massi, xoffshell,Q2, fm):f2n_b(massi, xoffshell,Q2, fm);
   double R=0.18;
   double F1=F2*2.*xtilde/(1+R)*(pow(alphai/alphaq+1/(2.*xtilde),2.)-pt*pt/(2.*Q2)*R);  //for moving nucleon
