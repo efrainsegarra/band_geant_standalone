@@ -227,16 +227,16 @@ int main(int argc, char ** argv)
 	  
 	  // Test if we are in the nominal low x' spectrometer acceptance
 	  if ((fabs(electron_mom_true.Theta() - loXAng)<shms_acc_theta) &&
-	      (electron_mom_true.Mag() < loXMom*1.22) &&
-	      (electron_mom_true.Mag() > loXMom/1.1))
+	      (electron_mom_true.Mag() < loXMom*shms_acc_mom_hi) &&
+	      (electron_mom_true.Mag() > loXMom/shms_acc_mom_lo))
 	    {
 	      histLoXRate->Fill(xprime_true,alpha_s_true,weight);
 	    }
 	  
 	  // Test if we are in the nominal high x' spectrometer acceptance
 	  if ((fabs(electron_mom_true.Theta() - hiXAng)<shms_acc_theta) &&
-	      (electron_mom_true.Mag() < hiXMom*1.22) &&
-	      (electron_mom_true.Mag() > hiXMom/1.1))
+	      (electron_mom_true.Mag() < hiXMom*shms_acc_mom_hi) &&
+	      (electron_mom_true.Mag() > hiXMom/shms_acc_mom_lo))
 	    {
 	      histHiXRate->Fill(xprime_true,alpha_s_true,weight);
 	    }
@@ -249,16 +249,16 @@ int main(int argc, char ** argv)
 
 	  // Test if we are in the nominal low x' spectrometer acceptance
 	  if ((fabs(electron_mom_true.Theta() - loXAng)<hms_acc_theta) &&
-	      (electron_mom_true.Mag() < loXMom*1.1) &&
-	      (electron_mom_true.Mag() > loXMom/1.1))
+	      (electron_mom_true.Mag() < loXMom*hms_acc_mom) &&
+	      (electron_mom_true.Mag() > loXMom/hms_acc_mom))
 	    {
 	      histLoXRate->Fill(xprime_true,alpha_s_true,weight);
 	    }
 
 	  // Test if we are in the nominal high x' spectrometer acceptance
 	  if ((fabs(electron_mom_true.Theta() - hiXAng)<hms_acc_theta) &&
-	      (electron_mom_true.Mag() < hiXMom*1.1) &&
-	      (electron_mom_true.Mag() > hiXMom/1.1))
+	      (electron_mom_true.Mag() < hiXMom*hms_acc_mom) &&
+	      (electron_mom_true.Mag() > hiXMom/hms_acc_mom))
 	    {
 	      histHiXRate->Fill(xprime_true,alpha_s_true,weight);
 	    }
