@@ -62,8 +62,8 @@ int main(int argc, char **argv)
     int num_src_hits = 0;
 
     // Counts for background-to-signal ratio 
-    int lx1{0}, lx2{0}, lx3{0}, lx4{0}, lx5{0};     // low x'
-    int hx1{0}, hx2{0}, hx3{0}, hx4{0}, hx5{0};     // high x'
+    int lx1(0), lx2(0), lx3(0), lx4(0), lx5(0);     // low x'
+    int hx1(0), hx2(0), hx3(0), hx4(0), hx5(0);     // high x'
 
     // Get counts
     for(int iii = 0; iii < num_events_sim; ++iii)
