@@ -42,20 +42,17 @@ int main(int argc, char** argv){
 		const int nEvents = inTree->GetEntries();
 		//cout << "Filling 2D histograms..." << endl;
 		for (int j = 0 ; j < nEvents ; ++j){
-			if (j % 100 == 0) cout << "Event " << j << "\n";
+			if (j % 100 == 0) cout << "\t\tEvent " << j << "\n";
 			inTree->GetEvent(j);
 
 			total_reconXp = reconXp;
 
 			outTree->Fill();
-  }
-    }
+		}
 
-    /*int numFiles = len(argv[1]);
-    for(int i; i < numFiles; ++i){
-    	cout << argv[1][i] << "\n";
-
-    }
-	*/
-    
+		inFile->Close();
+	}
+  	outTree->Write();
+  	outFile->Close();
+  	   
 }
