@@ -53,7 +53,7 @@ int main(int argc, char** argv){
 		inFile->Close();
 	}
 
-	gFile=outFile;
+	outFile->cd();
   	outTree->Write();
   	outFile->Close();
   	   
