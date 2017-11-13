@@ -205,10 +205,10 @@ int main(int argc, char** argv){
 			total_truePn = truePn;
 			total_reconPe = reconPe;
 			total_reconPn = reconPn;
-			memcpy(truereconMom_e, total_trueMom_e, sizeof(truereconMom_e));
-			memcpy(trueMom_n, total_trueMom_n, sizeof(trueMom_n));
-			memcpy(reconreconMom_e, total_reconMom_e, sizeof(reconreconMom_e));
-			memcpy(reconMom_n, total_reconMom_n, sizeof(reconMom_n));
+			memcpy(total_trueMom_e, truereconMom_e, sizeof(truereconMom_e));
+			memcpy(total_trueMom_n, trueMom_n, sizeof(trueMom_n));
+			memcpy(total_reconMom_e, reconreconMom_e, sizeof(reconreconMom_e));
+			memcpy(total_reconMom_n, reconMom_n, sizeof(reconMom_n));
 
 			total_trueQSq = trueQSq;
 			total_trueNu = trueNu;
