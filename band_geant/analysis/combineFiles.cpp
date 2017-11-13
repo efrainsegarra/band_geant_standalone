@@ -52,6 +52,8 @@ int main(int argc, char** argv){
 
 		inFile->Close();
 	}
+
+	gFile=outFile;
   	outTree->Write();
   	outFile->Close();
   	   
