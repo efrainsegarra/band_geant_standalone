@@ -17,3 +17,6 @@ target_link_libraries(kinematicVars deuteron_dis_tree ${ROOT_LIBRARIES})
 
 add_executable(resHists ${CMAKE_CURRENT_SOURCE_DIR}/resHists.cpp)
 target_link_libraries(resHists deuteron_dis_tree ${ROOT_LIBRARIES} )
+
+add_executable(combineFiles ${CMAKE_CURRENT_SOURCE_DIR}/combineFiles.cpp)
+target_link_libraries(combineFiles deuteron_dis_tree ${ROOT_LIBRARIES} )
