@@ -66,9 +66,9 @@ int main(int argc, char** argv){
 	outTree->Branch("truePe_y",&(trueMom_e[1]),"truePe_y/D");
 	outTree->Branch("truePe_z",&(trueMom_e[2]),"truePe_z/D");
 
-	outTree->Branch("truePn_x",&(trueMom_e[0]),"truePn_x/D");
-	outTree->Branch("truePn_y",&(trueMom_e[1]),"truePn_y/D");
-	outTree->Branch("truePn_z",&(trueMom_e[2]),"truePn_z/D");
+	outTree->Branch("truePn_x",&(trueMom_n[0]),"truePn_x/D");
+	outTree->Branch("truePn_y",&(trueMom_n[1]),"truePn_y/D");
+	outTree->Branch("truePn_z",&(trueMom_n[2]),"truePn_z/D");
 
 	outTree->Branch("reconPe_x",&(reconMom_e[0]),"reconPe_x/D");
 	outTree->Branch("reconPe_y",&(reconMom_e[1]),"reconPe_y/D");
