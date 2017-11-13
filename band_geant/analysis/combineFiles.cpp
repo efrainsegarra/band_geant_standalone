@@ -12,15 +12,15 @@ using namespace std;
 
 int main(int argc, char** argv){
 
-	if (argc < 3)
+	if (argc < 4)
     {
       cerr << "\nWrong number of arguments! Instead use:\n"
-	   << "\tcombineFiles /path/to/combined/root/ /path/to/allInput/root/ \n";
+	   << "\tcombineFiles /path/to/generator/input/ /path/to/combined/root/output /path/to/allInput/root/ \n";
       exit(-1);
     }
 
     // Setting up the output file
-    TFile * outFile = new TFile(argv[1],"RECREATE");
+    TFile * outFile = new TFile(argv[2],"RECREATE");
   	TTree * outTree = new TTree("ResTree","CombinedHistograms");
 
   	double total_trueWp, total_trueXp, total_trueAs;
@@ -101,12 +101,12 @@ int main(int argc, char** argv){
 	outTree->Branch("reconCosTheta_qn",&(total_reconCosTheta_qn),"reconCosTheta_qn/D");
 
 
-    int numFiles = argc - 2;
+    int numFiles = argc - 3;
     cout << "Number of Files to Combine: " << numFiles << "\n";
     for( int i = 0 ; i < numFiles ; ++i){
-    	cout << "\tWorking on file: " << argv[i+2] << "\n";
+    	cout << "\tWorking on file: " << argv[i+3] << "\n";
     	
-    	TFile * inFile = new TFile(argv[i+2]);
+    	TFile * inFile = new TFile(argv[i+3]);
    		TTree * inTree = (TTree*)inFile->Get("ResTree");
 
    		// Setting address for which branches to read in the input files
@@ -242,6 +242,18 @@ int main(int argc, char** argv){
 
 		inFile->Close();
 	}
+
+	// Now that we finished compiling all the histograms, let's scale them appropriately with cross section and
+	// luminosity and number of events
+
+	// Do to so, we need the generator file to get the cross section, or cross section squared:
+	TFile * inFile = new TFile(argv[1]);
+	TTree * inTree = (TTree*)inFile->Get("MCout");
+
+	
+
+	double scaleFact = (1./numFiles)* ;
+
 
 	outFile->cd();
   	outTree->Write();
