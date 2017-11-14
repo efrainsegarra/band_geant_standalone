@@ -134,7 +134,11 @@ int main(int argc, char** argv){
     double num_events_detected = total_num_events * acceptance;
     double weighting = (num_events_detected / numEvents_sim) / (argc - 3);*/
 
-
+	cout << argc << "\n";
+	cout << argv[0] << "\n";
+	cout << argv[1] << "\n";
+	cout << argv[2] << "\n";
+	cout << argv[2+200] << "\n";
 
 
     int kinVar_startInd = argc - 2 - 200;
