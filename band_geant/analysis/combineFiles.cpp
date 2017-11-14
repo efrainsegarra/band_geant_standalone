@@ -141,8 +141,8 @@ int main(int argc, char** argv){
 	cout << argv[2+200] << "\n";
 
 
-    int kinVar_startInd = argc - 2 - 200;
-    int gen_startInd = argc - 2 - 200 - 200;
+    int kinVar_startInd = 2+numFiles;
+    int gen_startInd = 2;
     cout << "Number of Files to Combine: " << numFiles << "\n";
     for( int i = 0 ; i < numFiles ; ++i){
     	cout << "\tWorking on file: " << argv[i+kinVar_startInd] << "\n";
