@@ -20,3 +20,9 @@ target_link_libraries(resHists deuteron_dis_tree ${ROOT_LIBRARIES} )
 
 add_executable(combineFiles ${CMAKE_CURRENT_SOURCE_DIR}/combineFiles.cpp)
 target_link_libraries(combineFiles deuteron_dis_tree ${ROOT_LIBRARIES} )
+
+add_executable(finalHists ${CMAKE_CURRENT_SOURCE_DIR}/finalHists.cpp)
+target_link_libraries(finalHists deuteron_dis_tree ${ROOT_LIBRARIES} )
+
+add_executable(combineHists ${CMAKE_CURRENT_SOURCE_DIR}/combineHists.cpp)
+target_link_libraries(combineHists deuteron_dis_tree ${ROOT_LIBRARIES} )
