@@ -117,7 +117,7 @@ int main(int argc, char** argv){
 
 
 		// Create the weight unique to this generation
-		TFile * inGen = new TFile(argv[1]);
+		TFile * inGen = new TFile(argv[i+gen_startInd]);
 		TTree * inTreeGen = (TTree*)inGen->Get("MCout");
 		double numEvents_sim = inTreeGen->GetEntries(); 
 		if (numGenEvents != numEvents_sim ){
