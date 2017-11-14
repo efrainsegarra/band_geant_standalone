@@ -108,45 +108,43 @@ int main(int argc, char** argv){
 	outTree->Branch("reconCosTheta_qn",&(total_reconCosTheta_qn),"reconCosTheta_qn/D");
 
 
-	/*
-    // Do to so, we need the generator file to get the cross section, or cross section squared:
-	TFile * inFile = new TFile(argv[1]);
-	TTree * inTree = (TTree*)inFile->Get("MCout");
-	double numEvents_sim = inTree->GetEntries(); 
-
-	double total_num_events;
-	TVectorT<double> *CSVec_dis = NULL;
-	TVectorT<double> *CSVec_rand = NULL;
-    CSVec_dis  = (TVectorT<double>*)inFile->Get("totalCS");
-    CSVec_rand = (TVectorT<double>*)inFile->Get("totalCSSq");
-
-    if (CSVec_dis){
-    	double CS = (*CSVec_dis)[0];
-        total_num_events = CS * luminosity * runtime;
-    }
-    else{
-		double CSSqDt = (*CSVec_rand)[0] * 1e-9;   // CSSqDt is product of the cross-sections and coincidence time window
-		total_num_events = CSSqDt * pow(luminosity, 2) * runtime;
-    }
-
-    // Calculate weighting ratio
-    double acceptance = azim_CLAS12;
-    double num_events_detected = total_num_events * acceptance;
-    double weighting = (num_events_detected / numEvents_sim) / (argc - 3);*/
-
-	cout << argc << "\n";
-	cout << argv[0] << "\n";
-	cout << argv[1] << "\n";
-	cout << argv[2] << "\n";
-	cout << argv[2+200] << "\n";
-
-
     int kinVar_startInd = 2+numFiles;
     int gen_startInd = 2;
     cout << "Number of Files to Combine: " << numFiles << "\n";
     for( int i = 0 ; i < numFiles ; ++i){
-    	cout << "\tWorking on file: " << argv[i+kinVar_startInd] << "\n";
-    	cout << "\t\tCorresponding generator file: " << argv[i+gen_startInd] << "\n";
+    	cout << "\tWorking on kin file   : " << argv[i+kinVar_startInd] << "\n";
+    	cout << "\t Corresponding gen file: " << argv[i+gen_startInd] << "\n";
+
+
+		// Create the weight unique to this generation
+		TFile * inGen = new TFile(argv[1]);
+		TTree * inTreeGen = (TTree*)inGen->Get("MCout");
+		double numEvents_sim = inTreeGen->GetEntries(); 
+		if (numGenEvents != numEvents_sim ){
+			cerr << "*** GENERATED BATCH DOESN'T MATCH WITH NUM EVENTS ***\n"; exit(-1);
+		}
+
+		double total_num_events;
+		TVectorT<double> *CSVec_dis = NULL;
+		TVectorT<double> *CSVec_rand = NULL;
+		CSVec_dis  = (TVectorT<double>*)inGen->Get("totalCS");
+		CSVec_rand = (TVectorT<double>*)inGen->Get("totalCSSq");
+
+		if (CSVec_dis){
+			double CS = (*CSVec_dis)[0];
+		    total_num_events = CS * luminosity * runtime;
+		}
+		else{
+			double CSSqDt = (*CSVec_rand)[0] * 1e-9;   // CSSqDt is product of the cross-sections and coincidence time window
+			total_num_events = CSSqDt * pow(luminosity, 2) * runtime;
+		}
+
+		// Calculate weighting ratio
+		double acceptance = azim_CLAS12;
+		double num_events_detected = total_num_events * acceptance;
+		double weighting = (num_events_detected / numEvents_sim) / (numFiles);
+
+		// Now import the kinematic root tree and combine into one
     	
     	TFile * inFile = new TFile(argv[i+kinVar_startInd]);
    		TTree * inTree = (TTree*)inFile->Get("ResTree");
@@ -279,7 +277,9 @@ int main(int argc, char** argv){
 			total_trueCosTheta_qn = trueCosTheta_qn;
 			total_reconCosTheta_qn = reconCosTheta_qn;
 
+			outTree->SetWeight(weighting);
 			outTree->Fill();
+
 
 		}
 
