@@ -145,9 +145,9 @@ int main(int argc, char** argv){
 
 		// Now import the kinematic root tree and combine into one
     	TFile * inFile = new TFile(argv[i+kinVar_startInd]);
+    	if (!(inFile->GetListOfKeys()->Contains("ResTree"))) continue;
    		TTree * inTree = (TTree*)inFile->Get("ResTree");
    		const int nEvents = inTree->GetEntries();
-   		if (nEvents == 0) continue;
 
    		// Setting address for which branches to read in the input files
 		double trueWp, trueXp, trueAs;
