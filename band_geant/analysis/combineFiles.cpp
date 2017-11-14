@@ -22,39 +22,12 @@ int main(int argc, char** argv){
 	if (argc < 4)
     {
       cerr << "\nWrong number of arguments! Instead use:\n"
-	   << "\tcombineFiles /path/to/generator/input/ /path/to/combined/root/output /path/to/allInput/root/ \n";
+	   << "\tcombineFiles /path/to/combined/output /path/to/generator/allInput/ /path/to/kinVar/allInput/ \n";
       exit(-1);
     }
 
-    // Do to so, we need the generator file to get the cross section, or cross section squared:
-	TFile * inFile = new TFile(argv[1]);
-	TTree * inTree = (TTree*)inFile->Get("MCout");
-	double numEvents_sim = inTree->GetEntries(); 
-
-	double total_num_events;
-	TVectorT<double> *CSVec_dis = NULL;
-	TVectorT<double> *CSVec_rand = NULL;
-    CSVec_dis  = (TVectorT<double>*)inFile->Get("totalCS");
-    CSVec_rand = (TVectorT<double>*)inFile->Get("totalCSSq");
-
-    if (CSVec_dis){
-    	double CS = (*CSVec_dis)[0];
-        total_num_events = CS * luminosity * runtime;
-    }
-    else{
-		double CSSqDt = (*CSVec_rand)[0] * 1e-9;   // CSSqDt is product of the cross-sections and coincidence time window
-		total_num_events = CSSqDt * pow(luminosity, 2) * runtime;
-    }
-
-    // Calculate weighting ratio
-    double acceptance = azim_CLAS12;
-    double num_events_detected = total_num_events * acceptance;
-    double weighting = (num_events_detected / numEvents_sim) / (argc - 3);
-
-
-
     // Setting up the output file
-    TFile * outFile = new TFile(argv[2],"RECREATE");
+    TFile * outFile = new TFile(argv[1],"RECREATE");
   	TTree * outTree = new TTree("ResTree","CombinedHistograms");
 
   	double total_trueWp, total_trueXp, total_trueAs;
@@ -135,12 +108,43 @@ int main(int argc, char** argv){
 	outTree->Branch("reconCosTheta_qn",&(total_reconCosTheta_qn),"reconCosTheta_qn/D");
 
 
-    int numFiles = argc - 3;
+	/*
+    // Do to so, we need the generator file to get the cross section, or cross section squared:
+	TFile * inFile = new TFile(argv[1]);
+	TTree * inTree = (TTree*)inFile->Get("MCout");
+	double numEvents_sim = inTree->GetEntries(); 
+
+	double total_num_events;
+	TVectorT<double> *CSVec_dis = NULL;
+	TVectorT<double> *CSVec_rand = NULL;
+    CSVec_dis  = (TVectorT<double>*)inFile->Get("totalCS");
+    CSVec_rand = (TVectorT<double>*)inFile->Get("totalCSSq");
+
+    if (CSVec_dis){
+    	double CS = (*CSVec_dis)[0];
+        total_num_events = CS * luminosity * runtime;
+    }
+    else{
+		double CSSqDt = (*CSVec_rand)[0] * 1e-9;   // CSSqDt is product of the cross-sections and coincidence time window
+		total_num_events = CSSqDt * pow(luminosity, 2) * runtime;
+    }
+
+    // Calculate weighting ratio
+    double acceptance = azim_CLAS12;
+    double num_events_detected = total_num_events * acceptance;
+    double weighting = (num_events_detected / numEvents_sim) / (argc - 3);*/
+
+
+
+
+    int kinVar_startInd = argc - 2 - 200;
+    int gen_startInd = argc - 2 - 200 - 200;
     cout << "Number of Files to Combine: " << numFiles << "\n";
     for( int i = 0 ; i < numFiles ; ++i){
-    	cout << "\tWorking on file: " << argv[i+3] << "\n";
+    	cout << "\tWorking on file: " << argv[i+kinVar_startInd] << "\n";
+    	cout << "\t\tCorresponding generator file: " << argv[i+gen_startInd] << "\n";
     	
-    	TFile * inFile = new TFile(argv[i+3]);
+    	TFile * inFile = new TFile(argv[i+kinVar_startInd]);
    		TTree * inTree = (TTree*)inFile->Get("ResTree");
 
    		// Setting address for which branches to read in the input files
@@ -278,8 +282,6 @@ int main(int argc, char** argv){
 		inFile->Close();
 	}
 
-	// Now that we finished compiling all the histograms, let's scale them appropriately with cross section and
-	// luminosity and number of events
 
 	
 	
@@ -288,7 +290,6 @@ int main(int argc, char** argv){
 
 
 	outFile->cd();
-	outTree->SetWeight(weighting);
   	outTree->Write();
   	outFile->Close();
   	   
