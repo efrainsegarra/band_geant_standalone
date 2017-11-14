@@ -27,6 +27,9 @@ const double hallc_min_theta=8.*M_PI/180.;
 const double hallc_max_theta=24.*M_PI/180.;
 const double hms_acc_theta=1.6*M_PI/180.;
 const double shms_acc_theta=1.4*M_PI/180.;
+const double hms_acc_mom=1.1;
+const double shms_acc_mom_hi=1.22;
+const double shms_acc_mom_lo=1.1;
 const double hms_acc=0.006; // 6msr
 const double shms_acc=0.005; // 5msr
 

@@ -57,10 +57,15 @@ int main(int argc, char **argv)
     inTree->SetBranchAddress("reconAs", &(reconAs));
     inTree->SetBranchAddress("recon_eeEDep", &(recon_eeEDep));
 
-    // Calculate the efficiency of BAND
+    // Counts for BAND efficiency
     int num_src = 0;
     int num_src_hits = 0;
 
+    // Counts for background-to-signal ratio 
+    int lx1(0), lx2(0), lx3(0), lx4(0), lx5(0);     // low x'
+    int hx1(0), hx2(0), hx3(0), hx4(0), hx5(0);     // high x'
+
+    // Get counts
     for(int iii = 0; iii < num_events_sim; ++iii)
     {
         inTree -> GetEvent(iii);
@@ -79,8 +84,29 @@ int main(int argc, char **argv)
         // Band Selection Cut
         if (recon_eeEDep < thresh_eeEDep) continue;
         ++num_src_hits;
+
+        // Low reconXp / x'
+        if (reconXp > 0.25 && reconXp < 0.35)
+        {
+            if (reconAs > 1.30 && reconAs < 1.35) ++lx1;
+            if (reconAs > 1.35 && reconAs < 1.40) ++lx2;
+            if (reconAs > 1.40 && reconAs < 1.45) ++lx3;
+            if (reconAs > 1.45 && reconAs < 1.50) ++lx4;
+            if (reconAs > 1.50 && reconAs < 1.55) ++lx5;
+        }
+
+        // High reconXp / x'
+        if (reconXp > 0.5)
+        {
+            if (reconAs > 1.30 && reconAs < 1.35) ++hx1;
+            if (reconAs > 1.35 && reconAs < 1.40) ++hx2;
+            if (reconAs > 1.40 && reconAs < 1.45) ++hx3;
+            if (reconAs > 1.45 && reconAs < 1.50) ++hx4;
+            if (reconAs > 1.50 && reconAs < 1.55) ++hx5;
+        }
     }
 
+    // Calculate efficiency of BAND
     double band_eff = static_cast<double>(num_src_hits) / num_src;
 
     // Attempt to pull CS data from input root file
@@ -111,9 +137,21 @@ int main(int argc, char **argv)
     }
 
     // Calculate weighting ratio
-    double acceptance = azim_CLAS12 * azim_BAND * band_eff;
+    double acceptance = azim_CLAS12 * azim_BAND * 0.3;
     double num_events_detected = tot_num_events * acceptance;
     double weighting = num_events_detected / num_events_sim;
+
+    // Adjust the counts by weighting
+    lx1 = static_cast<int>(lx1*weighting);
+    lx2 = static_cast<int>(lx2*weighting);
+    lx3 = static_cast<int>(lx3*weighting);
+    lx4 = static_cast<int>(lx4*weighting);
+    lx5 = static_cast<int>(lx5*weighting);
+    hx1 = static_cast<int>(hx1*weighting);
+    hx2 = static_cast<int>(hx2*weighting);
+    hx3 = static_cast<int>(hx3*weighting);
+    hx4 = static_cast<int>(hx4*weighting);
+    hx5 = static_cast<int>(hx5*weighting); 
 
     // Hist output 
     TH1D *XpHist = new TH1D("XpHist",
@@ -127,14 +165,6 @@ int main(int argc, char **argv)
     TH2D *outhist3 = new TH2D("h3", 
     "After DIS, Backward Recoil Neutron & eeEDep_{n,r|thresh};#bf{#it{x_{B}}};#bf{#it{Q^{2}}} #left[#left(#frac{GeV}{c}#right)^{2} #right]", 
     100, 0.1, 0.8, 100, 2, 8);
-
-    // Data (text file) output
-    ofstream datfile;
-    string root_filename(argv[2]);
-    size_t raw_index = root_filename.find_last_of(string("."));
-    string filename = root_filename.substr(0, raw_index);
-    string dat_filename = filename + "_dat.txt";
-    datfile.open(dat_filename.c_str());
 
     for(int iii = 0; iii < num_events_sim; ++iii)
     {
@@ -166,7 +196,7 @@ int main(int argc, char **argv)
         outhist3 -> Fill(reconXp, reconQSq, weighting);
     }
 
-    // File I/O
+    // Root file I/O
     infile -> Close();
     CSVec -> Write("CSdata");
     XpHist -> Write();
@@ -174,8 +204,23 @@ int main(int argc, char **argv)
     outhist2 -> Write();
     outhist3 -> Write();
     outfile -> Close();
+    
+    // Data (text file) output
+    ofstream datfile;
+    string root_filename(argv[2]);
+    size_t raw_index = root_filename.find_last_of(string("."));
+    string filename = root_filename.substr(0, raw_index);
+    string dat_filename = filename + "_dat.txt";
+    string cts_filename = filename + "_cts.txt";
 
+    datfile.open(dat_filename.c_str());
     datfile << thresh_eeEDep << "\t" << band_eff << endl;
+    datfile.close();
+    datfile.open(cts_filename.c_str());
+    datfile << thresh_eeEDep << "\t" << lx1 << "\t" 
+            << lx2 << "\t" << lx3 << "\t" << lx4 << "\t" 
+            << lx5 << "\t" << hx1 << "\t" << hx2 << "\t" 
+            << hx3 << "\t" << hx4 << "\t" << hx5 << endl;
     datfile.close();
 
     return 0;
