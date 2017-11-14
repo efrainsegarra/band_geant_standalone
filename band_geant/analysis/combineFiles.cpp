@@ -283,7 +283,6 @@ int main(int argc, char** argv){
 
 		inFile->Close();
 		inGen->Close();
-		cout << "\t i: " << i << " " << argc << " " << i+kinVar_startInd << " " << i+gen_startInd << "\n";
 
 
 	}
