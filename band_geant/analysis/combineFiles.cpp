@@ -111,7 +111,7 @@ int main(int argc, char** argv){
     int kinVar_startInd = 2+numFiles;
     int gen_startInd = 2;
     cout << "Number of Files to Combine: " << numFiles << "\n";
-    for( int i = 0 ; i < (argc-2)/2 ; ++i){
+    for( int i = 0 ; i < numFiles ; ++i){
     	cout << "\tWorking on kin file   : " << argv[i+kinVar_startInd] << "\n";
     	cout << "\t Corresponding gen file: " << argv[i+gen_startInd] << "\n";
 
@@ -283,7 +283,6 @@ int main(int argc, char** argv){
 
 		inFile->Close();
 		inGen->Close();
-		cout << "\t i: " << i << " " << argc << " " << i+kinVar_startInd << " " << i+gen_startInd << "\n";
 
 
 	}
