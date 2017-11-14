@@ -148,6 +148,7 @@ int main(int argc, char** argv){
     	if (!(inFile->GetListOfKeys()->Contains("ResTree"))) continue;
    		TTree * inTree = (TTree*)inFile->Get("ResTree");
    		const int nEvents = inTree->GetEntries();
+   		if (nEvents == 0) continue;
 
    		// Setting address for which branches to read in the input files
 		double trueWp, trueXp, trueAs;
@@ -283,6 +284,7 @@ int main(int argc, char** argv){
 
 		inFile->Close();
 		inGen->Close();
+		cout << "\t i: " << i << " " << argc << " " << i+kinVar_startInd << " " << i+gen_startInd << "\n";
 
 
 	}
