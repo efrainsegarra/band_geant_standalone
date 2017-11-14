@@ -42,7 +42,10 @@ int main(int argc, char** argv){
   		cout << "Working on file: " <<  argv[i+2] << "\n";
   		TFile * inFile = new TFile(argv[i+2]);
 
-  		TH1D  * inXp = (TH1D*)inFile->Get("Xp");
+  		if (inFile->GetListOfKeys()->Contains("Xp")){
+  			TH1D  * inXp = (TH1D*)inFile->Get("Xp");
+  			total_Xp->Add(inXp);
+  		}
 
   		TH1D  * in_QSq_highX = (TH1D*)inFile->Get("QSq_highX");
   		TH1D  * in_Wp_highX = (TH1D*)inFile->Get("Wp_highX");
@@ -55,8 +58,6 @@ int main(int argc, char** argv){
   		TH1D  * in_As_lowX = (TH1D*)inFile->Get("As_lowX");
   		TH1D  * in_Pn_lowX = (TH1D*)inFile->Get("Pn_lowX");
   		TH1D  * in_Theta_qn_lowX = (TH1D*)inFile->Get("Theta_qn_lowX");
-
-  		total_Xp->Add(inXp);
 
   		total_QSq_highX->Add(in_QSq_highX);
   		total_Wp_highX->Add(in_Wp_highX);
