@@ -14,6 +14,9 @@ const double luminosity = 1e35*1e-33;
 const double runtime = 40*24*60*60; 
 const double azim_CLAS12 = 0.5;
 
+const int numFiles = 200;
+const int numGenEvents = 50000;
+
 int main(int argc, char** argv){
 
 	if (argc < 4)
