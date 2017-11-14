@@ -114,6 +114,7 @@ int main(int argc, char** argv){
     for( int i = 0 ; i < numFiles ; ++i){
     	cout << "\tWorking on kin file   : " << argv[i+kinVar_startInd] << "\n";
     	cout << "\t Corresponding gen file: " << argv[i+gen_startInd] << "\n";
+    	cout << "\t i: " << i << " " << argc << " " << i+kinVar_startInd << " " <<  i+gen_startInd << "\n";
 
 
 		// Create the weight unique to this generation
