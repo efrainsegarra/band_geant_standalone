@@ -10,6 +10,10 @@
 
 using namespace std;
 
+const double luminosity = 1e35*1e-33; 
+const double runtime = 40*24*60*60; 
+const double azim_CLAS12 = 0.5;
+
 int main(int argc, char** argv){
 
 	if (argc < 4)
@@ -18,6 +22,33 @@ int main(int argc, char** argv){
 	   << "\tcombineFiles /path/to/generator/input/ /path/to/combined/root/output /path/to/allInput/root/ \n";
       exit(-1);
     }
+
+    // Do to so, we need the generator file to get the cross section, or cross section squared:
+	TFile * inFile = new TFile(argv[1]);
+	TTree * inTree = (TTree*)inFile->Get("MCout");
+	double numEvents_sim = inTree->GetEntries(); 
+
+	double total_num_events;
+	TVectorT<double> *CSVec_dis = NULL;
+	TVectorT<double> *CSVec_rand = NULL;
+    CSVec_dis  = (TVectorT<double>*)inFile->Get("totalCS");
+    CSVec_rand = (TVectorT<double>*)inFile->Get("totalCSSq");
+
+    if (CSVec_dis){
+    	double CS = (*CSVec_dis)[0];
+        total_num_events = CS * luminosity * runtime;
+    }
+    else{
+		double CSSqDt = (*CSVec_rand)[0] * 1e-9;   // CSSqDt is product of the cross-sections and coincidence time window
+		total_num_events = CSSqDt * pow(luminosity, 2) * runtime;
+    }
+
+    // Calculate weighting ratio
+    double acceptance = azim_CLAS12;
+    double num_events_detected = total_num_events * acceptance;
+    double weighting = (num_events_detected / numEvents_sim) / (argc - 3);
+
+
 
     // Setting up the output file
     TFile * outFile = new TFile(argv[2],"RECREATE");
@@ -238,6 +269,7 @@ int main(int argc, char** argv){
 			total_reconCosTheta_qn = reconCosTheta_qn;
 
 			outTree->Fill();
+
 		}
 
 		inFile->Close();
@@ -246,16 +278,14 @@ int main(int argc, char** argv){
 	// Now that we finished compiling all the histograms, let's scale them appropriately with cross section and
 	// luminosity and number of events
 
-	// Do to so, we need the generator file to get the cross section, or cross section squared:
-	TFile * inFile = new TFile(argv[1]);
-	TTree * inTree = (TTree*)inFile->Get("MCout");
+	
+	
 
 	
 
-	double scaleFact = (1./numFiles)* ;
-
 
 	outFile->cd();
+	outTree->SetWeight(weighting);
   	outTree->Write();
   	outFile->Close();
   	   
