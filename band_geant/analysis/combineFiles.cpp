@@ -123,7 +123,6 @@ int main(int argc, char** argv){
 		if (numGenEvents != numEvents_sim ){
 			cerr << "*** GENERATED BATCH DOESN'T MATCH WITH NUM EVENTS ***\n"; exit(-1);
 		}
-		cout << "\t\t\t working on weight\n";
 		double total_num_events;
 		TVectorT<double> *CSVec_dis = NULL;
 		TVectorT<double> *CSVec_rand = NULL;
@@ -145,9 +144,10 @@ int main(int argc, char** argv){
 		double weighting = (num_events_detected / numEvents_sim) / (numFiles);
 
 		// Now import the kinematic root tree and combine into one
-    	cout << "\t\t\t working on small file\n";
     	TFile * inFile = new TFile(argv[i+kinVar_startInd]);
    		TTree * inTree = (TTree*)inFile->Get("ResTree");
+   		const int nEvents = inTree->GetEntries();
+   		if (nEvents == 0) continue;
 
    		// Setting address for which branches to read in the input files
 		double trueWp, trueXp, trueAs;
@@ -228,8 +228,6 @@ int main(int argc, char** argv){
 		inTree->SetBranchAddress("reconCosTheta_qn",&(reconCosTheta_qn));
 
 		// Looping over events in the input file
-		const int nEvents = inTree->GetEntries();
-		//cout << "Filling 2D histograms..." << endl;
 		for (int j = 0 ; j < nEvents ; ++j){
 			if (j % 100 == 0) cout << "\t\tEvent " << j << "\n";
 			inTree->GetEvent(j);
