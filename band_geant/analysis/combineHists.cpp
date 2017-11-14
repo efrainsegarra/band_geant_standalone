@@ -39,7 +39,7 @@ int main(int argc, char** argv){
   	
   	const int numFiles = argc - 2;
   	for(int i = 0; i < numFiles; ++i){
-
+  		cout << "Working on file: " <<  argv[i+2] << "\n";
   		TFile * inFile = new TFile(argv[i+2]);
 
   		TH1D  * inXp = (TH1D*)inFile->Get("Xp");
