@@ -46,7 +46,7 @@ int main(int argc, char** argv){
 	for (int i = 0 ; i < nEvents_Sig ; ++i){
 		inTreeSig->GetEvent(i);
 
-		if ((reconXp_sig > 0.5) && (reconXp_sig < 1.5)){
+		if ((reconXp_sig > 0.5) && (reconXp_sig < 1)){
 			if (abs(reconAs_sig - 1.325)<0.025) signal_hi[0]++;
 			if (abs(reconAs_sig - 1.375)<0.025) signal_hi[1]++;
 			if (abs(reconAs_sig - 1.425)<0.025) signal_hi[2]++;
@@ -67,7 +67,7 @@ int main(int argc, char** argv){
 	for (int i = 0 ; i < nEvents_Bac ; ++i){
 		inTreeBac->GetEvent(i);
 
-		if ((reconXp_bac > 0.5) && (reconXp_bac < 1.5)){
+		if ((reconXp_bac > 0.5) && (reconXp_bac < 1)){
 			if (abs(reconAs_bac - 1.325)<0.025) background_hi[0]++;
 			if (abs(reconAs_bac - 1.375)<0.025) background_hi[1]++;
 			if (abs(reconAs_bac - 1.425)<0.025) background_hi[2]++;
