@@ -42,6 +42,7 @@ int main(int argc, char** argv){
 	TH1D * As_lowX_bac = new TH1D("As_lowX_bac","Recon Q^2 > 2., W_prime > 1.8, Recon Pn > 0.25;As;As;Counts",5,1.3,1.55);
 	TH1D * As_highX_bac = new TH1D("As_highX_bac","Recon Q^2 > 2., W_prime > 1.8, Recon Pn > 0.25;As;As;Counts",5,1.3,1.55);
 	TFile * outFile = new TFile(argv[1],"RECREATE");
+	cout << "here\n";
 
 	// We have 5 bins we want in alphaS
 	double signal_hi[5], background_hi[5];
@@ -51,11 +52,11 @@ int main(int argc, char** argv){
 	for(int i=0; i<5;++i){
 		bin_centers[i] = 1.325 + 0.05*i;
 	}
-
+	cout << "\there\n";
 	const int nEvents_Sig = inTreeSig->GetEntries();
 	for (int i = 0 ; i < nEvents_Sig ; ++i){
 		inTreeSig->GetEvent(i);
-
+		cout << "\t\there\n";
 		if ((reconXp_sig > 0.5) && (reconXp_sig < 1)){
 			As_lowX_sig->Fill(reconAs_sig);
 			if (abs(reconAs_sig - 1.325)<0.025) signal_hi[0]++;
@@ -78,7 +79,7 @@ int main(int argc, char** argv){
 	const int nEvents_Bac = inTreeBac->GetEntries();
 	for (int i = 0 ; i < nEvents_Bac ; ++i){
 		inTreeBac->GetEvent(i);
-
+		cout << "\t\t\there\n";
 		if ((reconXp_bac > 0.5) && (reconXp_bac < 1)){
 			As_lowX_bac->Fill(reconAs_bac);
 			if (abs(reconAs_bac - 1.325)<0.025) background_hi[0]++;
@@ -97,6 +98,7 @@ int main(int argc, char** argv){
 		}
 
 	}
+	cout << "here\n";
 	inFileSig->Close();
 	inFileBac->Close();
 
