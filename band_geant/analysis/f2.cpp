@@ -57,19 +57,11 @@ int main(int argc, char** argv){
 		inTreeSig->GetEvent(i);
 		if ((reconXp_sig > 0.5) && (reconXp_sig < 1)){
 			As_lowX_sig->Fill(reconAs_sig);
-			if (abs(reconAs_sig - 1.325)<0.025) signal_hi[0]++;
-			if (abs(reconAs_sig - 1.375)<0.025) signal_hi[1]++;
-			if (abs(reconAs_sig - 1.425)<0.025) signal_hi[2]++;
-			if (abs(reconAs_sig - 1.475)<0.025) signal_hi[3]++;
-			if (abs(reconAs_sig - 1.525)<0.025) signal_hi[4]++;
+
 		}
 		if (abs(reconXp_sig - 0.3) < 0.05){
 			As_highX_sig->Fill(reconAs_sig);
-			if (abs(reconAs_sig - 1.325)<0.025) signal_lo[0]++;
-			if (abs(reconAs_sig - 1.375)<0.025) signal_lo[1]++;
-			if (abs(reconAs_sig - 1.425)<0.025) signal_lo[2]++;
-			if (abs(reconAs_sig - 1.475)<0.025) signal_lo[3]++;
-			if (abs(reconAs_sig - 1.525)<0.025) signal_lo[4]++;
+
 		}
 
 	}
@@ -79,26 +71,21 @@ int main(int argc, char** argv){
 		inTreeBac->GetEvent(i);
 		if ((reconXp_bac > 0.5) && (reconXp_bac < 1)){
 			As_lowX_bac->Fill(reconAs_bac);
-			if (abs(reconAs_bac - 1.325)<0.025) background_hi[0]++;
-			if (abs(reconAs_bac - 1.375)<0.025) background_hi[1]++;
-			if (abs(reconAs_bac - 1.425)<0.025) background_hi[2]++;
-			if (abs(reconAs_bac - 1.475)<0.025) background_hi[3]++;
-			if (abs(reconAs_bac - 1.525)<0.025) background_hi[4]++;
+
 		}
 		if (abs(reconXp_bac - 0.3) < 0.05){
 			As_highX_bac->Fill(reconAs_bac);
-			if (abs(reconAs_bac - 1.325)<0.025) background_lo[0]++;
-			if (abs(reconAs_bac - 1.375)<0.025) background_lo[1]++;
-			if (abs(reconAs_bac - 1.425)<0.025) background_lo[2]++;
-			if (abs(reconAs_bac - 1.475)<0.025) background_lo[3]++;
-			if (abs(reconAs_bac - 1.525)<0.025) background_lo[4]++;
+
 		}
 
 	}
 	
-	cout << "did i make it\n";
 	for (int i=1; i<6;i++){
-		cout << As_lowX_sig->GetBinContent(i) << "\n";
+		As_lowX_sig->GetBinContent(i) = signal_lo[i-1];
+		As_highX_sig->GetBinContent(i) = signal_hi[i-1];
+		As_lowX_bac->GetBinContent(i) = background_lo[i-1];
+		As_highX_bac->GetBinContent(i) = background_hi[i-1];
+
 	}
 
 
@@ -107,7 +94,6 @@ int main(int argc, char** argv){
 
 		cout << delta << " " << bin_centers[i] << " " << signal_hi[i] << " " << background_hi[i] << " " << signal_lo[i] << " " << background_lo[i] << "\n";
 	}
-	cout << "did i make it\n";
 	inFileSig->Close();
 	inFileBac->Close();
 	outFile->cd();
