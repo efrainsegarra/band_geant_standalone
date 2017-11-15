@@ -85,7 +85,9 @@ int main(int argc, char** argv){
 	}
 
 	for(int i=0; i<5; ++i){
-		cout << signal_hi[i] << " " << background_hi[i] << " " << signal_lo[i] << " " << background_lo[i] << "\n";
+		double delta = pow((signal_hi[i] + background_hi[i]) / (pow(signal_hi[i],2)) + (signal_lo[i] + background_lo[i]) / (pow(signal_lo[i],2)),0.5)
+
+		cout << delta << " " << signal_hi[i] << " " << background_hi[i] << " " << signal_lo[i] << " " << background_lo[i] << "\n";
 	}
 
 }
