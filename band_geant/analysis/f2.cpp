@@ -55,12 +55,12 @@ int main(int argc, char** argv){
 	const int nEvents_Sig = inTreeSig->GetEntries();
 	for (int i = 0 ; i < nEvents_Sig ; ++i){
 		inTreeSig->GetEvent(i);
-		if ((reconXp_sig > 0.5) && (reconXp_sig < 1)){
-			As_lowX_sig->Fill(reconAs_sig);
+		if ((reconXp_sig > 0.5) && (reconXp_sig < 0.7)){
+			As_highX_sig->Fill(reconAs_sig);
 
 		}
 		if (abs(reconXp_sig - 0.3) < 0.05){
-			As_highX_sig->Fill(reconAs_sig);
+			As_lowX_sig->Fill(reconAs_sig);
 
 		}
 
@@ -69,12 +69,12 @@ int main(int argc, char** argv){
 	const int nEvents_Bac = inTreeBac->GetEntries();
 	for (int i = 0 ; i < nEvents_Bac ; ++i){
 		inTreeBac->GetEvent(i);
-		if ((reconXp_bac > 0.5) && (reconXp_bac < 1)){
-			As_lowX_bac->Fill(reconAs_bac);
+		if ((reconXp_bac > 0.5) && (reconXp_bac < 0.7)){
+			As_highX_bac->Fill(reconAs_bac);
 
 		}
 		if (abs(reconXp_bac - 0.3) < 0.05){
-			As_highX_bac->Fill(reconAs_bac);
+			As_lowX_bac->Fill(reconAs_bac);
 
 		}
 
