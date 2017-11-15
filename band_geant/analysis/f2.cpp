@@ -41,7 +41,7 @@ int main(int argc, char** argv){
 	TH1D * As_highX_sig = new TH1D("As_highX_sig","Recon Q^2 > 2., W_prime > 1.8, Recon Pn > 0.25;As;As;Counts",5,1.3,1.55);
 	TH1D * As_lowX_bac = new TH1D("As_lowX_bac","Recon Q^2 > 2., W_prime > 1.8, Recon Pn > 0.25;As;As;Counts",5,1.3,1.55);
 	TH1D * As_highX_bac = new TH1D("As_highX_bac","Recon Q^2 > 2., W_prime > 1.8, Recon Pn > 0.25;As;As;Counts",5,1.3,1.55);
-	TFile * outFile = new TFile(argv[3],"RECREATE");
+	TFile * outFile = new TFile(argv[1],"RECREATE");
 
 	// We have 5 bins we want in alphaS
 	double signal_hi[5], background_hi[5];
