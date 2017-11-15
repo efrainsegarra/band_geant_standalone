@@ -84,5 +84,8 @@ int main(int argc, char** argv){
 
 	}
 
+	for(int i=0; i<5; ++i){
+		cout << signal_hi[i] << " " << background_hi[i] << " " << signal_lo[i] << " " << background_lo[i] << "\n";
+	}
 
 }
