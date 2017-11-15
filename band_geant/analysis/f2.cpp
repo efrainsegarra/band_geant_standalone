@@ -101,12 +101,14 @@ int main(int argc, char** argv){
 	cout << "here\n";
 	inFileSig->Close();
 	inFileBac->Close();
-
+	cout << "here\n";
 	outFile->cd();
+	cout << "here\n";
 	As_lowX_sig->Write();
 	As_highX_sig->Write();
 	As_lowX_bac->Write();
 	As_highX_bac->Write();
+	cout << "here\n";
 	outFile->Close();
 
 
