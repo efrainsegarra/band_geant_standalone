@@ -95,15 +95,8 @@ int main(int argc, char** argv){
 		}
 
 	}
-	inFileSig->Close();
-	inFileBac->Close();
-	outFile->cd();
-	As_lowX_sig->Write();
-	As_highX_sig->Write();
-	As_lowX_bac->Write();
-	As_highX_bac->Write();
-	outFile->Close();
-
+	
+	cout << "did i make it\n";
 	for (int i=1; i<6;i++){
 		cout << As_lowX_sig->GetBinContent(i) << "\n";
 	}
@@ -114,5 +107,14 @@ int main(int argc, char** argv){
 
 		cout << delta << " " << bin_centers[i] << " " << signal_hi[i] << " " << background_hi[i] << " " << signal_lo[i] << " " << background_lo[i] << "\n";
 	}
+	cout << "did i make it\n";
+	inFileSig->Close();
+	inFileBac->Close();
+	outFile->cd();
+	As_lowX_sig->Write();
+	As_highX_sig->Write();
+	As_lowX_bac->Write();
+	As_highX_bac->Write();
+	outFile->Close();
 
 }
