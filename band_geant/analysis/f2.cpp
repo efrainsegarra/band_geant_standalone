@@ -81,10 +81,10 @@ int main(int argc, char** argv){
 	}
 	
 	for (int i=1; i<6;i++){
-		As_lowX_sig->GetBinContent(i) = signal_lo[i-1];
-		As_highX_sig->GetBinContent(i) = signal_hi[i-1];
-		As_lowX_bac->GetBinContent(i) = background_lo[i-1];
-		As_highX_bac->GetBinContent(i) = background_hi[i-1];
+		signal_lo[i-1] = As_lowX_sig->GetBinContent(i);
+		signal_hi[i-1] = As_highX_sig->GetBinContent(i);
+		background_lo[i-1] = As_lowX_bac->GetBinContent(i);
+		background_hi[i-1] = As_highX_bac->GetBinContent(i);
 
 	}
 
