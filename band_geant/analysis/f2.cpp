@@ -41,6 +41,11 @@ int main(int argc, char** argv){
 	// We have 5 bins we want in alphaS
 	double signal_hi[5], background_hi[5];
 	double signal_lo[5], background_lo[5];
+	double bin_centers[5];
+
+	for(int i=0; i<5;++i){
+		bin_centers[i] = 1.325 + 0.05*i;
+	}
 
 	const int nEvents_Sig = inTreeSig->GetEntries();
 	for (int i = 0 ; i < nEvents_Sig ; ++i){
@@ -87,7 +92,7 @@ int main(int argc, char** argv){
 	for(int i=0; i<5; ++i){
 		double delta = pow((signal_hi[i] + background_hi[i]) / (pow(signal_hi[i],2)) + (signal_lo[i] + background_lo[i]) / (pow(signal_lo[i],2)),0.5);
 
-		cout << delta << " " << signal_hi[i] << " " << background_hi[i] << " " << signal_lo[i] << " " << background_lo[i] << "\n";
+		cout << delta << " " << bin_centers[i] << "\n"; //<< signal_hi[i] << " " << background_hi[i] << " " << signal_lo[i] << " " << background_lo[i] << "\n";
 	}
 
 }
