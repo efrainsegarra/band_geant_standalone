@@ -37,6 +37,11 @@ int main(int argc, char** argv){
 	inTreeBac->SetBranchAddress("reconXp",&reconXp_bac);
 	inTreeBac->SetBranchAddress("reconAs",&reconAs_bac);
 
+	TH1D * As_lowX_sig = new TH1D("As_lowX_sig","Recon Q^2 > 2., W_prime > 1.8, Recon Pn > 0.25;As;As;Counts",5,1.3,1.55);
+	TH1D * As_highX_sig = new TH1D("As_highX_sig","Recon Q^2 > 2., W_prime > 1.8, Recon Pn > 0.25;As;As;Counts",5,1.3,1.55);
+	TH1D * As_lowX_bac = new TH1D("As_lowX_bac","Recon Q^2 > 2., W_prime > 1.8, Recon Pn > 0.25;As;As;Counts",5,1.3,1.55);
+	TH1D * As_highX_bac = new TH1D("As_highX_bac","Recon Q^2 > 2., W_prime > 1.8, Recon Pn > 0.25;As;As;Counts",5,1.3,1.55);
+	TFile * outFile = new TFile(argv[3],"RECREATE");
 
 	// We have 5 bins we want in alphaS
 	double signal_hi[5], background_hi[5];
@@ -52,6 +57,7 @@ int main(int argc, char** argv){
 		inTreeSig->GetEvent(i);
 
 		if ((reconXp_sig > 0.5) && (reconXp_sig < 1)){
+			As_lowX_sig->Fill(reconAs_sig);
 			if (abs(reconAs_sig - 1.325)<0.025) signal_hi[0]++;
 			if (abs(reconAs_sig - 1.375)<0.025) signal_hi[1]++;
 			if (abs(reconAs_sig - 1.425)<0.025) signal_hi[2]++;
@@ -59,6 +65,7 @@ int main(int argc, char** argv){
 			if (abs(reconAs_sig - 1.525)<0.025) signal_hi[4]++;
 		}
 		if (abs(reconXp_sig - 0.3) < 0.05){
+			As_highX_sig->Fill(reconAs_sig);
 			if (abs(reconAs_sig - 1.325)<0.025) signal_lo[0]++;
 			if (abs(reconAs_sig - 1.375)<0.025) signal_lo[1]++;
 			if (abs(reconAs_sig - 1.425)<0.025) signal_lo[2]++;
@@ -73,6 +80,7 @@ int main(int argc, char** argv){
 		inTreeBac->GetEvent(i);
 
 		if ((reconXp_bac > 0.5) && (reconXp_bac < 1)){
+			As_lowX_bac->Fill(reconAs_bac);
 			if (abs(reconAs_bac - 1.325)<0.025) background_hi[0]++;
 			if (abs(reconAs_bac - 1.375)<0.025) background_hi[1]++;
 			if (abs(reconAs_bac - 1.425)<0.025) background_hi[2]++;
@@ -80,6 +88,7 @@ int main(int argc, char** argv){
 			if (abs(reconAs_bac - 1.525)<0.025) background_hi[4]++;
 		}
 		if (abs(reconXp_bac - 0.3) < 0.05){
+			As_highX_bac->Fill(reconAs_bac);
 			if (abs(reconAs_bac - 1.325)<0.025) background_lo[0]++;
 			if (abs(reconAs_bac - 1.375)<0.025) background_lo[1]++;
 			if (abs(reconAs_bac - 1.425)<0.025) background_lo[2]++;
@@ -88,6 +97,16 @@ int main(int argc, char** argv){
 		}
 
 	}
+	inFileSig->Close();
+	inFileBac->Close();
+
+	outFile->cd();
+	As_lowX_sig->Write();
+	As_highX_sig->Write();
+	As_lowX_bac->Write();
+	As_highX_bac->Write();
+	outFile->Close();
+
 
 	for(int i=0; i<5; ++i){
 		double delta = pow((signal_hi[i] + background_hi[i]) / (pow(signal_hi[i],2)) + (signal_lo[i] + background_lo[i]) / (pow(signal_lo[i],2)),0.5);
