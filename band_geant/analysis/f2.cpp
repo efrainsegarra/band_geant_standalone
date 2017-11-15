@@ -37,11 +37,12 @@ int main(int argc, char** argv){
 	inTreeBac->SetBranchAddress("reconXp",&reconXp_bac);
 	inTreeBac->SetBranchAddress("reconAs",&reconAs_bac);
 
+	TFile * outFile = new TFile(argv[1],"RECREATE");
 	TH1D * As_lowX_sig = new TH1D("As_lowX_sig","Recon Q^2 > 2., W_prime > 1.8, Recon Pn > 0.25;As;As;Counts",5,1.3,1.55);
 	TH1D * As_highX_sig = new TH1D("As_highX_sig","Recon Q^2 > 2., W_prime > 1.8, Recon Pn > 0.25;As;As;Counts",5,1.3,1.55);
 	TH1D * As_lowX_bac = new TH1D("As_lowX_bac","Recon Q^2 > 2., W_prime > 1.8, Recon Pn > 0.25;As;As;Counts",5,1.3,1.55);
 	TH1D * As_highX_bac = new TH1D("As_highX_bac","Recon Q^2 > 2., W_prime > 1.8, Recon Pn > 0.25;As;As;Counts",5,1.3,1.55);
-	TFile * outFile = new TFile(argv[1],"RECREATE");
+	
 	cout << "here\n";
 
 	// We have 5 bins we want in alphaS
