@@ -104,6 +104,10 @@ int main(int argc, char** argv){
 	As_highX_bac->Write();
 	outFile->Close();
 
+	for (int i=1; i<6;i++){
+		cout << As_lowX_sig->GetBinContent(i) << "\n";
+	}
+
 
 	for(int i=0; i<5; ++i){
 		double delta = pow((signal_hi[i] + background_hi[i]) / (pow(signal_hi[i],2)) + (signal_lo[i] + background_lo[i]) / (pow(signal_lo[i],2)),0.5);
