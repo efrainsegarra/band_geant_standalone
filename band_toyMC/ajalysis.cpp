@@ -57,58 +57,6 @@ int main(int argc, char **argv)
     inTree->SetBranchAddress("reconAs", &(reconAs));
     inTree->SetBranchAddress("recon_eeEDep", &(recon_eeEDep));
 
-    // Counts for BAND efficiency
-    int num_src = 0;
-    int num_src_hits = 0;
-
-    // Counts for background-to-signal ratio 
-    int lx1{0}, lx2{0}, lx3{0}, lx4{0}, lx5{0};     // low x'
-    int hx1{0}, hx2{0}, hx3{0}, hx4{0}, hx5{0};     // high x'
-
-    // Get counts
-    for(int iii = 0; iii < num_events_sim; ++iii)
-    {
-        inTree -> GetEvent(iii);
-
-        TVector3 rePn(reconPn[0], reconPn[1], reconPn[2]);
-        TVector3 rePe(reconPe[0], reconPe[1], reconPe[2]);
-        TVector3 q = TVector3(0, 0, E1) - rePe;
-        double theta_nq = rePn.Angle(q) * 180/TMath::Pi();
-
-        // DIS Selection Cuts
-        if (reconQSq < 2) continue;
-        if (reconWp < 1.8) continue;        
-        if (theta_nq < 110) continue;
-        ++num_src;
-
-        // Band Selection Cut
-        if (recon_eeEDep < thresh_eeEDep) continue;
-        ++num_src_hits;
-
-        // Low reconXp / x'
-        if (reconXp > 0.25 && reconXp < 0.35)
-        {
-            if (reconAs > 1.30 && reconAs < 1.35) ++lx1;
-            if (reconAs > 1.35 && reconAs < 1.40) ++lx2;
-            if (reconAs > 1.40 && reconAs < 1.45) ++lx3;
-            if (reconAs > 1.45 && reconAs < 1.50) ++lx4;
-            if (reconAs > 1.50 && reconAs < 1.55) ++lx5;
-        }
-
-        // High reconXp / x'
-        if (reconXp > 0.5)
-        {
-            if (reconAs > 1.30 && reconAs < 1.35) ++hx1;
-            if (reconAs > 1.35 && reconAs < 1.40) ++hx2;
-            if (reconAs > 1.40 && reconAs < 1.45) ++hx3;
-            if (reconAs > 1.45 && reconAs < 1.50) ++hx4;
-            if (reconAs > 1.50 && reconAs < 1.55) ++hx5;
-        }
-    }
-
-    // Calculate efficiency of BAND
-    double band_eff = static_cast<double>(num_src_hits) / num_src;
-
     // Attempt to pull CS data from input root file
     TVectorT<double> *CSVec = NULL;
     CSVec = (TVectorT<double>*)infile->Get("totalCS");
@@ -137,75 +85,93 @@ int main(int argc, char **argv)
     }
 
     // Calculate weighting ratio
-    double acceptance = azim_CLAS12 * azim_BAND * 0.3;
+    double acceptance = azim_CLAS12 * azim_BAND;
     double num_events_detected = tot_num_events * acceptance;
     double weighting = num_events_detected / num_events_sim;
 
-    // Adjust the counts by weighting
-    lx1 = static_cast<int>(lx1*weighting);
-    lx2 = static_cast<int>(lx2*weighting);
-    lx3 = static_cast<int>(lx3*weighting);
-    lx4 = static_cast<int>(lx4*weighting);
-    lx5 = static_cast<int>(lx5*weighting);
-    hx1 = static_cast<int>(hx1*weighting);
-    hx2 = static_cast<int>(hx2*weighting);
-    hx3 = static_cast<int>(hx3*weighting);
-    hx4 = static_cast<int>(hx4*weighting);
-    hx5 = static_cast<int>(hx5*weighting); 
-
     // Hist output 
-    TH1D *XpHist = new TH1D("XpHist",
-    "After DIS, Backward Recoil Neutron & eeEDep_{n,r|thresh} Selection Cuts;#bf{#it{x_{B}}};Counts", 14, 0.1, 0.8);
-    TH2D *outhist1 = new TH2D("h1", 
-    "Before Cuts;#bf{#it{#theta_{e,r}}} #left[#it{deg.}#right];#left|#bf{#it{#vec{p}_{e,r}}}#right| #left[#frac{GeV}{c}#right]", 
-    100, 4, 35, 100, 1.5, 8);
+    TH1D *lx = new TH1D("lx", "Low x' Events; #alpha_{s}; Counts", 5, 1.30, 1.55);
+    TH1D *hx = new TH1D("hx", "High x' Events; #alpha_{s}; Counts", 5, 1.30, 1.55);
+    TH1D *Xp_dist = new TH1D("Xp_dist",
+    "x' Distribution; x'; Counts", 14, 0.1, 0.8);
+    TH1D *As_dist = new TH1D("As_dist",
+    "#alpha_{s} Distribution; #alpha_{s}; Counts", 10, 1, 2);
+    TH2D *Xp_As_dist = new TH2D("Xp_As",
+				"#alpha_{s} vs x' Distribution; x'; #alpha_{s}; Counts", 14, 0.1, 0.8, 20, 1, 2);
+    TH2D *theta_reconPe_dist = new TH2D("theta_reconPe_dist", 
+    "Smeared; #it{#theta_{e}} [deg.]; |#it{#vec{p}_{e}}| #left[#frac{GeV}{c}#right]", 
+    100, 5, 35, 100, 2, 7);
     TH2D *outhist2 = new TH2D("h2", 
-    "After DIS, Backward Recoil Neutron & eeEDep_{n,r|thresh};#bf{#it{#theta_{#vec{p}_{n,r}#vec{q}}}} #left[#it{deg.}#right];#left|#bf{#it{#vec{p}_{n,r}}}#right| #left[#frac{GeV}{c}#right]",
-    100, 135, 180, 100, 0.26, 0.65);
+    "Smeared; #it{#theta_{rq}} [deg.]; |#it{#vec{p}_{r}}| #left[#frac{GeV}{c}#right]",
+    100, 140, 180, 100, 0.28, 0.52);
     TH2D *outhist3 = new TH2D("h3", 
-    "After DIS, Backward Recoil Neutron & eeEDep_{n,r|thresh};#bf{#it{x_{B}}};#bf{#it{Q^{2}}} #left[#left(#frac{GeV}{c}#right)^{2} #right]", 
+    "Smeared; #it{x'}; #it{Q^{2}} #left[#frac{GeV}{c^{2}}#right]", 
     100, 0.1, 0.8, 100, 2, 8);
+
+    // Counts for BAND efficiency
+    int num_src = 0;
+    int num_src_hits = 0;
 
     for(int iii = 0; iii < num_events_sim; ++iii)
     {
+        // if (iii % 50000 == 0) cout << "Working on event " << iii << endl;
         inTree -> GetEvent(iii);
 
         TVector3 rePn(reconPn[0], reconPn[1], reconPn[2]);
         TVector3 rePe(reconPe[0], reconPe[1], reconPe[2]);
         TVector3 q = TVector3(0, 0, E1) - rePe;
         double theta_nq = rePn.Angle(q) * 180/TMath::Pi();
+        double pn_mag = rePn.Mag();
 
         // DIS Selection Cuts
         if (reconQSq < 2) continue;
         if (reconWp < 1.8) continue;        
         if (theta_nq < 110) continue;
+        if (pn_mag > 0.6 ) continue;
+        if (reconXp > 1) continue;      // Get rid of pesky high x' background events
+        ++num_src;
 
         // Band Selection Cut
         if (recon_eeEDep < thresh_eeEDep) continue;
+        ++num_src_hits;
         
         // Fill histograms
-        XpHist->Fill(reconXp, weighting);
+        Xp_dist->Fill(reconXp, weighting);
+        As_dist->Fill(reconAs, weighting);
+        Xp_As_dist->Fill(reconXp, reconAs, weighting);
+
+        if (reconXp > 0.25 && reconXp < 0.35) {
+            lx -> Fill(reconAs, weighting);
+        }
+        else if (reconXp > 0.5) {
+            hx -> Fill(reconAs, weighting);
+        }
         
         double theta_e = rePe.Theta() * 180/TMath::Pi();
         double rePe_mag = rePe.Mag();
-        outhist1 -> Fill(theta_e, rePe_mag, weighting);
+        theta_reconPe_dist -> Fill(theta_e, rePe_mag, weighting);
 
-        double pn_mag = rePn.Mag();
         outhist2 -> Fill(theta_nq, pn_mag, weighting);
 
         outhist3 -> Fill(reconXp, reconQSq, weighting);
     }
+    
+    // Calculate efficiency of BAND
+    double band_eff = static_cast<double>(num_src_hits) / num_src;
 
     // Root file I/O
     infile -> Close();
     CSVec -> Write("CSdata");
-    XpHist -> Write();
-    outhist1 -> Write();
+    Xp_dist -> Write();
+    As_dist -> Write();
+    Xp_As_dist -> Write();
+    lx -> Write();
+    hx -> Write();
+    theta_reconPe_dist -> Write();
     outhist2 -> Write();
     outhist3 -> Write();
-    outfile -> Close();
     
-    // Data (text file) output
+    // Data (text) filenames string format
     ofstream datfile;
     string root_filename(argv[2]);
     size_t raw_index = root_filename.find_last_of(string("."));
@@ -213,15 +179,27 @@ int main(int argc, char **argv)
     string dat_filename = filename + "_dat.txt";
     string cts_filename = filename + "_cts.txt";
 
+    // Write efficiency data
     datfile.open(dat_filename.c_str());
     datfile << thresh_eeEDep << "\t" << band_eff << endl;
     datfile.close();
+
+    // Write background to signal data
     datfile.open(cts_filename.c_str());
-    datfile << thresh_eeEDep << "\t" << lx1 << "\t" 
-            << lx2 << "\t" << lx3 << "\t" << lx4 << "\t" 
-            << lx5 << "\t" << hx1 << "\t" << hx2 << "\t" 
-            << hx3 << "\t" << hx4 << "\t" << hx5 << endl;
+    datfile << thresh_eeEDep << "\t";
+
+    TH1D* histlist[2] = {lx,hx};
+    for (int h=0; h<2; ++h)
+    {
+        for (int bin=1; bin<=5; ++bin)
+        {
+            datfile << histlist[h] -> GetBinContent(bin) << "\t";
+        }
+    }
+
+    datfile << "\n";
     datfile.close();
+    outfile -> Close();
 
     return 0;
 }
