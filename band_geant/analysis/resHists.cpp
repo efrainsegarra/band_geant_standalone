@@ -65,9 +65,9 @@ int main(int argc, char ** argv)
   inTree->SetBranchAddress("truePe_y",&(truereconMom_e[1]));
   inTree->SetBranchAddress("truePe_z",&(truereconMom_e[2]));
 
-  inTree->SetBranchAddress("truePn_x",&(truereconMom_e[0]));
-  inTree->SetBranchAddress("truePn_y",&(truereconMom_e[1]));
-  inTree->SetBranchAddress("truePn_z",&(truereconMom_e[2]));
+  inTree->SetBranchAddress("truePn_x",&(trueMom_n[0]));
+  inTree->SetBranchAddress("truePn_y",&(trueMom_n[1]));
+  inTree->SetBranchAddress("truePn_z",&(trueMom_n[2]));
 
   inTree->SetBranchAddress("reconPe_x",&(reconreconMom_e[0]));
   inTree->SetBranchAddress("reconPe_y",&(reconreconMom_e[1]));
@@ -157,7 +157,7 @@ int main(int argc, char ** argv)
   int AsEndBin = AsRes->GetXaxis()->FindBin(1.5);
   itBins = (AsEndBin-AsStartBin)/numBins;
   for (int bin=AsStartBin ; bin<= AsEndBin; bin += itBins){
-    bool write = false;
+    bool write = true;
     double AsSigGuess = 0.01;
     doProj( AsRes, bin,  itBins,AsSigGuess,write);
   }

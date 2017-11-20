@@ -19,6 +19,73 @@ using namespace std;
 // assumes that the detector is located in negative z-direction, upstream
 // the target with the following parameters:
 
+int checkBAND(double theta_r,double phi_r){
+  // ONLY SAVE THE EVENTS THAT WILL MAKE IT INTO BAND
+  double numbars,prevbars;
+  double max_x, min_x,max_x_2,min_x_2;
+  double max_y = 7.4*13;
+  double min_y = -7.4*5;
+
+  double r = -262. / cos(theta_r) ;
+  double x_traj = r * cos(phi_r) * sin(theta_r) ;
+  double y_traj = r * sin(phi_r) * sin(theta_r) ;
+
+  double r_2 = (-262.-7.4*5) / cos(theta_r) ;
+  double x_traj_2 = r_2 * cos(phi_r) * sin(theta_r) ;
+  double y_traj_2 = r_2 * sin(phi_r) * sin(theta_r) ;
+
+  if ((y_traj > max_y) || (y_traj < min_y)) return -1;
+
+  // first group
+  prevbars = 0;
+  numbars = 2;
+  if ((y_traj > min_y + prevbars*7.4) && (y_traj < min_y + (numbars+prevbars)*7.4)){
+    max_x = 2018.35 / 10 / 2;
+    min_x = -max_x;
+    if ((x_traj > max_x) || (x_traj < min_x)) return -1;
+  }
+  // second group
+  prevbars += numbars;
+  numbars = 6;
+  if ((y_traj > min_y + prevbars*7.4) && (y_traj < min_y + (numbars+prevbars)*7.4)){
+    max_x = (509.17/10 + 500/10);
+    min_x_2 = -(509.17/10 + 500/10);
+    if ((x_traj > max_x) || (x_traj < min_x_2)) return -1;
+  }
+  if ((y_traj_2 > min_y + prevbars*7.4) && (y_traj_2 < min_y + (numbars+prevbars)*7.4)){
+    min_x = (509.17/10 );
+    max_x_2 = -(509.17/10 );
+    if (( x_traj_2 < min_x ) && (x_traj_2 > max_x_2) ) return -1;
+  }
+
+  // third group
+  prevbars += numbars;
+  numbars = 4;
+  if ((y_traj > min_y + prevbars*7.4) && (y_traj < min_y + (numbars+prevbars)*7.4)){
+    max_x = 2018.35 / 10 / 2;
+    min_x = -max_x;
+    if ((x_traj > max_x) || (x_traj < min_x)) return -1;
+  }
+  // fourth group
+  prevbars += numbars;
+  numbars = 3;
+  if ((y_traj > min_y + prevbars*7.4) && (y_traj < min_y + (numbars+prevbars)*7.4)){
+    max_x = 1946.53 / 10 / 2;
+    min_x = -max_x;
+    if ((x_traj > max_x) || (x_traj < min_x)) return -1;
+  }
+  // five group
+  prevbars += numbars;
+  numbars = 3;
+  if ((y_traj > min_y + prevbars*7.4) && (y_traj < min_y + (numbars+prevbars)*7.4)){
+    max_x = 1634.58 / 10 / 2;
+    min_x = -max_x;
+    if ((x_traj > max_x) || (x_traj < min_x)) return -1;
+  }
+  return 1;
+}
+
+
 
 //
 int main(int argc, char** argv){
@@ -51,7 +118,7 @@ int main(int argc, char** argv){
 			// in MeVee
 			// this conversion from http://shop-pdp.net/efhtml/NIM_151_1978_445-450_Madey.pdf
 			double hitE = event->hits[j].E_dep;
-			double hitE_MeVee = 0.83 * hitE - 2.82 * ( 1 - exp( 0.25 * ( pow(hitE,0.93)) ) );
+			double hitE_MeVee = 0.83 * hitE - 2.82 * ( 1 - exp( - 0.25 * ( pow(hitE,0.93)) ) );
 			if(abs(hitE_MeVee)<threshold) continue;
 			
 			barFires++;

@@ -14,4 +14,7 @@ target_link_libraries(lad_digi ${ROOT_LIBRARIES} deuteron_dis_tree )
 add_executable(lad_analysis ${CMAKE_CURRENT_SOURCE_DIR}/lad_analysis.cpp lad_helpers.cpp)
 target_link_libraries(lad_analysis ${ROOT_LIBRARIES} deuteron_dis_tree )
 
+add_executable(lad_optimize ${CMAKE_CURRENT_SOURCE_DIR}/lad_optimize.cpp lad_helpers.cpp)
+target_link_libraries(lad_optimize ${ROOT_LIBRARIES} deuteron_dis_tree )
+
 

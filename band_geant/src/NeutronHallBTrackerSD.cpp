@@ -90,9 +90,6 @@ void NeutronHallBTrackerSD::EndOfEvent(G4HCofThisEvent*)
 {
 
   for(std::map<int,BAND_Hit>::iterator it=barHits.begin() ; it != barHits.end() ; it++){
-    //eventE = it->second.E_dep;
-    //it->second.time *= (1./eventE);
-    //it->second.pos *= (1./eventE);
     hitList->hits.push_back(it->second);
 
   }
