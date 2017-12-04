@@ -97,15 +97,15 @@ int main(int argc, char **argv)
     TH1D *As_dist = new TH1D("As_dist",
     "#alpha_{s} Distribution; #alpha_{s}; Counts", 10, 1, 2);
     TH2D *Xp_As_dist = new TH2D("Xp_As",
-				"#alpha_{s} vs x' Distribution; x'; #alpha_{s}; Counts", 14, 0.1, 0.8, 20, 1, 2);
-    TH2D *theta_reconPe_dist = new TH2D("theta_reconPe_dist", 
-    "Smeared; #it{#theta_{e}} [deg.]; |#it{#vec{p}_{e}}| #left[#frac{GeV}{c}#right]", 
+	"#alpha_{s} vs x' Distribution; x'; #alpha_{s}; Counts", 14, 0.1, 0.8, 20, 1, 2);
+    TH2D *the_pe_dist = new TH2D("the_pe_dist", 
+    "#theta_{e} vs. #vec{p}_{e}; #theta_{e} [deg.]; #vec{p}_{e} #left[#frac{GeV}{c}#right]", 
     100, 5, 35, 100, 2, 7);
-    TH2D *outhist2 = new TH2D("h2", 
-    "Smeared; #it{#theta_{rq}} [deg.]; |#it{#vec{p}_{r}}| #left[#frac{GeV}{c}#right]",
+    TH2D *thrq_pr_dist = new TH2D("thrq_pr_dist", 
+    "#theta_{rq} vs. #vec{p}_{r} Distribution; #theta_{rq} [deg.]; #vec{p}_{r} #left[#frac{GeV}{c}#right]",
     100, 140, 180, 100, 0.28, 0.52);
-    TH2D *outhist3 = new TH2D("h3", 
-    "Smeared; #it{x'}; #it{Q^{2}} #left[#frac{GeV}{c^{2}}#right]", 
+    TH2D *Xp_QSq_dist = new TH2D("Xp_QSq_dist", 
+    "x' vs. Q^{2}; x'; Q^{2} #left[#frac{GeV}{c^{2}}#right]", 
     100, 0.1, 0.8, 100, 2, 8);
 
     // Counts for BAND efficiency
@@ -149,11 +149,11 @@ int main(int argc, char **argv)
         
         double theta_e = rePe.Theta() * 180/TMath::Pi();
         double rePe_mag = rePe.Mag();
-        theta_reconPe_dist -> Fill(theta_e, rePe_mag, weighting);
+        the_pe_dist -> Fill(theta_e, rePe_mag, weighting);
 
-        outhist2 -> Fill(theta_nq, pn_mag, weighting);
+        thrq_pr_dist -> Fill(theta_nq, pn_mag, weighting);
 
-        outhist3 -> Fill(reconXp, reconQSq, weighting);
+        Xp_QSq_dist -> Fill(reconXp, reconQSq, weighting);
     }
     
     // Calculate efficiency of BAND
@@ -167,9 +167,9 @@ int main(int argc, char **argv)
     Xp_As_dist -> Write();
     lx -> Write();
     hx -> Write();
-    theta_reconPe_dist -> Write();
-    outhist2 -> Write();
-    outhist3 -> Write();
+    the_pe_dist -> Write();
+    thrq_pr_dist -> Write();
+    Xp_QSq_dist -> Write();
     
     // Data (text) filenames string format
     ofstream datfile;
