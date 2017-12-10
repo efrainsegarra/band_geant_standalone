@@ -109,8 +109,8 @@ int main(int argc, char **argv)
     100, 0.1, 0.8, 100, 2, 8);
 
     // Counts for BAND efficiency
-    int num_src = 0;
-    int num_src_hits = 0;
+    int num_dis = 0;
+    int num_dis_hits = 0;
 
     for(int iii = 0; iii < num_events_sim; ++iii)
     {
@@ -127,13 +127,11 @@ int main(int argc, char **argv)
         if (reconQSq < 2) continue;
         if (reconWp < 1.8) continue;        
         if (theta_nq < 110) continue;
-        if (pn_mag > 0.6 ) continue;
-        if (reconXp > 1) continue;      // Get rid of pesky high x' background events
-        ++num_src;
+        ++num_dis;
 
         // Band Selection Cut
         if (recon_eeEDep < thresh_eeEDep) continue;
-        ++num_src_hits;
+        ++num_dis_hits;
         
         // Fill histograms
         Xp_dist->Fill(reconXp, weighting);
@@ -143,7 +141,7 @@ int main(int argc, char **argv)
         if (reconXp > 0.25 && reconXp < 0.35) {
             lx -> Fill(reconAs, weighting);
         }
-        else if (reconXp > 0.5) {
+        else if (reconXp > 0.5 && reconXp < 1) {
             hx -> Fill(reconAs, weighting);
         }
         
@@ -157,7 +155,7 @@ int main(int argc, char **argv)
     }
     
     // Calculate efficiency of BAND
-    double band_eff = static_cast<double>(num_src_hits) / num_src;
+    double band_eff = static_cast<double>(num_dis_hits) / num_dis;
 
     // Root file I/O
     infile -> Close();
@@ -182,7 +180,7 @@ int main(int argc, char **argv)
     // Write efficiency data
     txtfile.open(dat_filename.c_str());
     txtfile << thresh_eeEDep << "\t" << band_eff << "\t" 
-            << num_src << endl;
+            << num_dis << endl;
     txtfile.close();
 
     // Write signal and background counts for the As and x' bins
