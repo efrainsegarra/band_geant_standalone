@@ -172,7 +172,7 @@ int main(int argc, char **argv)
     Xp_QSq_dist -> Write();
     
     // Data (text) filenames string format
-    ofstream datfile;
+    ofstream txtfile;
     string root_filename(argv[2]);
     size_t raw_index = root_filename.find_last_of(string("."));
     string filename = root_filename.substr(0, raw_index);
@@ -180,25 +180,26 @@ int main(int argc, char **argv)
     string cts_filename = filename + "_cts.txt";
 
     // Write efficiency data
-    datfile.open(dat_filename.c_str());
-    datfile << thresh_eeEDep << "\t" << band_eff << endl;
-    datfile.close();
+    txtfile.open(dat_filename.c_str());
+    txtfile << thresh_eeEDep << "\t" << band_eff << "\t" 
+            << num_src << endl;
+    txtfile.close();
 
-    // Write background to signal data
-    datfile.open(cts_filename.c_str());
-    datfile << thresh_eeEDep << "\t";
+    // Write signal and background counts for the As and x' bins
+    txtfile.open(cts_filename.c_str());
+    txtfile << thresh_eeEDep << "\t";
 
     TH1D* histlist[2] = {lx,hx};
     for (int h=0; h<2; ++h)
     {
         for (int bin=1; bin<=5; ++bin)
         {
-            datfile << histlist[h] -> GetBinContent(bin) << "\t";
+            txtfile << histlist[h] -> GetBinContent(bin) << "\t";
         }
     }
 
-    datfile << "\n";
-    datfile.close();
+    txtfile << "\n";
+    txtfile.close();
     outfile -> Close();
 
     return 0;
