@@ -278,10 +278,10 @@ double getCLAS12_PRes(double theta, double p)
 double eeEDep(double En)
 {
     // test if neutron deposits energy
-    const double a = 0.370058;
-    const double b = 85.7907;
-    const double c = 0.000129199;
-    const double d = 0.130177;
+    const double a = 0.372469;
+    const double b = 84.8343;
+    const double c = 0.000121438;
+    const double d = 0.13453;
     const double f5 = a*exp(-b*(En - mN)) + c/(En - mN) + d;
     const double fband = 1 - pow(1-f5, bandZWidth/5.);
     if (myRand->Rndm() > fband) return 0;
