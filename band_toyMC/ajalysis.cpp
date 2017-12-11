@@ -90,12 +90,23 @@ int main(int argc, char **argv)
     double weighting = num_events_detected / num_events_sim;
 
     // Hist output 
-    TH1D *lx = new TH1D("lx", "Low x' Events; #alpha_{s}; Counts", 5, 1.30, 1.55);
-    TH1D *hx = new TH1D("hx", "High x' Events; #alpha_{s}; Counts", 5, 1.30, 1.55);
+    // Reach histograms
     TH1D *Xp_dist = new TH1D("Xp_dist",
     "x' Distribution; x'; Counts", 14, 0.1, 0.8);
     TH1D *As_dist = new TH1D("As_dist",
     "#alpha_{s} Distribution; #alpha_{s}; Counts", 10, 1, 2);
+    TH1D *lx = new TH1D("lx", "#alpha_{s} Distribution for Low x' Events; #alpha_{s}; Counts", 5, 1.30, 1.55);
+    TH1D *hx = new TH1D("hx", "#alpha_{s} Distribution for High x' Events; #alpha_{s}; Counts", 5, 1.30, 1.55);
+    TH1D *lxqsq = new TH1D("lxqsq", "Q^{2} Distribution for Low x' Events; Q^{2} [GeV}]^{2}; Counts", 60, 2, 8);
+    TH1D *hxqsq = new TH1D("hxqsq", "Q^{2} Distribution for High x' Events; Q^{2} [GeV]^{2}; Counts", 60, 2, 8);
+    TH1D *lxtheqr = new TH1D("lxtheqr", "#theta_{qr} Distribution for Low x' Events; #theta_{qr} [deg.]; Counts", 80, 140, 180);
+    TH1D *hxtheqr = new TH1D("hxtheqr", "#theta_{qr} Distribution for High x' Events; #theta_{qr} [deg.]; Counts", 80, 140, 180);
+    TH1D *lxwp = new TH1D("lxwp", "W' Distribution for Low x' Events; W' [GeV]; Counts", 14, 1.8, 3.2);
+    TH1D *hxwp = new TH1D("hxwp", "W' Distribution for High x' Events; W' [GeV]; Counts", 14, 1.8, 3.2);
+    TH1D *lxpr = new TH1D("lxpr", "#vec{p}_{r} Distribution for Low x' Events; |#vec{p}_{r}|; Counts", 14, 0.28, 0.42);
+    TH1D *hxpr = new TH1D("hxpr", "#vec{p}_{r} Distribution for High x' Events; |#vec{p}_{r}|; Counts", 14, 0.28, 0.42);
+    
+    // Kinematic distributions histograms
     TH2D *Xp_As_dist = new TH2D("Xp_As",
 	"#alpha_{s} vs x' Distribution; x'; #alpha_{s}; Counts", 14, 0.1, 0.8, 20, 1, 2);
     TH2D *the_pe_dist = new TH2D("the_pe_dist", 
@@ -109,55 +120,69 @@ int main(int argc, char **argv)
     100, 0.1, 0.8, 100, 2, 8);
 
     // Counts for BAND efficiency
-    int num_src = 0;
-    int num_src_hits = 0;
+    int num_dis = 0;
+    int num_dis_hits = 0;
 
     for(int iii = 0; iii < num_events_sim; ++iii)
     {
         // if (iii % 50000 == 0) cout << "Working on event " << iii << endl;
         inTree -> GetEvent(iii);
 
+        // Calculate values from reconstructed momentum vectors
         TVector3 rePn(reconPn[0], reconPn[1], reconPn[2]);
-        TVector3 rePe(reconPe[0], reconPe[1], reconPe[2]);
-        TVector3 q = TVector3(0, 0, E1) - rePe;
-        double theta_nq = rePn.Angle(q) * 180/TMath::Pi();
-        double pn_mag = rePn.Mag();
+        double rePn_mag = rePn.Mag();
 
-        // DIS Selection Cuts
+        TVector3 rePe(reconPe[0], reconPe[1], reconPe[2]);
+        double rePe_mag = rePe.Mag();
+        TVector3 q = TVector3(0, 0, E1) - rePe;
+        double theta_e = rePe.Theta() * 180/TMath::Pi();
+
+        double theta_qn = rePn.Angle(q) * 180/TMath::Pi();
+
+        // Fill neutron histograms for low and high x'
+        if (reconXp > 0.25 && reconXp < 0.35)
+        {
+            lxqsq -> Fill(reconQSq, weighting);
+            lxtheqr -> Fill(theta_qn, weighting);
+            lxwp -> Fill(reconWp, weighting);
+            lxpr -> Fill(rePn_mag, weighting);
+        }
+
+        if (reconXp > 0.5 && reconXp < 1)
+        {
+            hxqsq -> Fill(reconQSq, weighting);
+            hxtheqr -> Fill(theta_qn, weighting);
+            hxwp -> Fill(reconWp, weighting);
+            hxpr -> Fill(rePn_mag, weighting);
+        }
+
+        // Perform DIS Selection Cuts
         if (reconQSq < 2) continue;
         if (reconWp < 1.8) continue;        
-        if (theta_nq < 110) continue;
-        if (pn_mag > 0.6 ) continue;
-        if (reconXp > 1) continue;      // Get rid of pesky high x' background events
-        ++num_src;
+        if (theta_qn < 110) continue;
+        ++num_dis;
 
-        // Band Selection Cut
+        // Perform BAND Selection Cut
         if (recon_eeEDep < thresh_eeEDep) continue;
-        ++num_src_hits;
+        ++num_dis_hits;
         
-        // Fill histograms
+        // Fill reach histograms
         Xp_dist->Fill(reconXp, weighting);
         As_dist->Fill(reconAs, weighting);
         Xp_As_dist->Fill(reconXp, reconAs, weighting);
 
-        if (reconXp > 0.25 && reconXp < 0.35) {
-            lx -> Fill(reconAs, weighting);
-        }
-        else if (reconXp > 0.5) {
-            hx -> Fill(reconAs, weighting);
-        }
+        if (reconXp > 0.25 && reconXp < 0.35) lx -> Fill(reconAs, weighting);
+        else if (reconXp > 0.5 && reconXp < 1) hx -> Fill(reconAs, weighting);
         
-        double theta_e = rePe.Theta() * 180/TMath::Pi();
-        double rePe_mag = rePe.Mag();
+        // Fill kinematic distribution of DIS events hists        
         the_pe_dist -> Fill(theta_e, rePe_mag, weighting);
-
-        thrq_pr_dist -> Fill(theta_nq, pn_mag, weighting);
-
+        thrq_pr_dist -> Fill(theta_qn, rePn_mag, weighting);
         Xp_QSq_dist -> Fill(reconXp, reconQSq, weighting);
+
     }
     
     // Calculate efficiency of BAND
-    double band_eff = static_cast<double>(num_src_hits) / num_src;
+    double band_eff = static_cast<double>(num_dis_hits) / num_dis;
 
     // Root file I/O
     infile -> Close();
@@ -167,12 +192,20 @@ int main(int argc, char **argv)
     Xp_As_dist -> Write();
     lx -> Write();
     hx -> Write();
+    lxqsq -> Write();
+    hxqsq -> Write();
+    lxtheqr -> Write();
+    hxtheqr -> Write();
+    lxwp -> Write();
+    hxwp -> Write();
+    lxpr -> Write();
+    hxpr -> Write();
     the_pe_dist -> Write();
     thrq_pr_dist -> Write();
     Xp_QSq_dist -> Write();
     
     // Data (text) filenames string format
-    ofstream datfile;
+    ofstream txtfile;
     string root_filename(argv[2]);
     size_t raw_index = root_filename.find_last_of(string("."));
     string filename = root_filename.substr(0, raw_index);
@@ -180,25 +213,26 @@ int main(int argc, char **argv)
     string cts_filename = filename + "_cts.txt";
 
     // Write efficiency data
-    datfile.open(dat_filename.c_str());
-    datfile << thresh_eeEDep << "\t" << band_eff << endl;
-    datfile.close();
+    txtfile.open(dat_filename.c_str());
+    txtfile << thresh_eeEDep << "\t" << band_eff << "\t" 
+            << num_dis << endl;
+    txtfile.close();
 
-    // Write background to signal data
-    datfile.open(cts_filename.c_str());
-    datfile << thresh_eeEDep << "\t";
+    // Write signal and background counts for the As and x' bins
+    txtfile.open(cts_filename.c_str());
+    txtfile << thresh_eeEDep << "\t";
 
     TH1D* histlist[2] = {lx,hx};
     for (int h=0; h<2; ++h)
     {
         for (int bin=1; bin<=5; ++bin)
         {
-            datfile << histlist[h] -> GetBinContent(bin) << "\t";
+            txtfile << histlist[h] -> GetBinContent(bin) << "\t";
         }
     }
 
-    datfile << "\n";
-    datfile.close();
+    txtfile << "\n";
+    txtfile.close();
     outfile -> Close();
 
     return 0;
