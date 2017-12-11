@@ -192,6 +192,14 @@ int main(int argc, char **argv)
     Xp_As_dist -> Write();
     lx -> Write();
     hx -> Write();
+    lxqsq -> Write();
+    hxqsq -> Write();
+    lxtheqr -> Write();
+    hxtheqr -> Write();
+    lxwp -> Write();
+    hxwp -> Write();
+    lxpr -> Write();
+    hxpr -> Write();
     the_pe_dist -> Write();
     thrq_pr_dist -> Write();
     Xp_QSq_dist -> Write();
