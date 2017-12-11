@@ -163,7 +163,7 @@ int main(int argc, char ** argv)
       double reconBeta = reconPath/(cAir*reconT);
       reconPr = mN / sqrt( sq(1./reconBeta) - 1.);
       reconEr = sqrt(sq(reconPr)+sq(mN));
-      recon_eeEDep = eeEDep(reconEr);
+      recon_eeEDep = eeEDep(trueEr);
 
       // True lepton quantities
       double truePe =sqrt(sq(mom_e[0]) + sq(mom_e[1]) + sq(mom_e[2]));
