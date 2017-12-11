@@ -90,12 +90,23 @@ int main(int argc, char **argv)
     double weighting = num_events_detected / num_events_sim;
 
     // Hist output 
-    TH1D *lx = new TH1D("lx", "Low x' Events; #alpha_{s}; Counts", 5, 1.30, 1.55);
-    TH1D *hx = new TH1D("hx", "High x' Events; #alpha_{s}; Counts", 5, 1.30, 1.55);
+    // Reach histograms
     TH1D *Xp_dist = new TH1D("Xp_dist",
     "x' Distribution; x'; Counts", 14, 0.1, 0.8);
     TH1D *As_dist = new TH1D("As_dist",
     "#alpha_{s} Distribution; #alpha_{s}; Counts", 10, 1, 2);
+    TH1D *lx = new TH1D("lx", "#alpha_{s} Distribution for Low x' Events; #alpha_{s}; Counts", 5, 1.30, 1.55);
+    TH1D *hx = new TH1D("hx", "#alpha_{s} Distribution for High x' Events; #alpha_{s}; Counts", 5, 1.30, 1.55);
+    TH1D *lxqsq = new TH1D("lxqsq", "Q^{2} Distribution for Low x' Events; Q^{2} [GeV}]^{2}; Counts", 60, 2, 8);
+    TH1D *hxqsq = new TH1D("hxqsq", "Q^{2} Distribution for High x' Events; Q^{2} [GeV]^{2}; Counts", 60, 2, 8);
+    TH1D *lxtheqr = new TH1D("lxtheqr", "#theta_{qr} Distribution for Low x' Events; #theta_{qr} [deg.]; Counts", 80, 140, 180);
+    TH1D *hxtheqr = new TH1D("hxtheqr", "#theta_{qr} Distribution for High x' Events; #theta_{qr} [deg.]; Counts", 80, 140, 180);
+    TH1D *lxwp = new TH1D("lxwp", "W' Distribution for Low x' Events; W' [GeV]; Counts", 14, 1.8, 3.2);
+    TH1D *hxwp = new TH1D("hxwp", "W' Distribution for High x' Events; W' [GeV]; Counts", 14, 1.8, 3.2);
+    TH1D *lxpr = new TH1D("lxpr", "#vec{p}_{r} Distribution for Low x' Events; |#vec{p}_{r}|; Counts", 14, 0.28, 0.42);
+    TH1D *hxpr = new TH1D("hxpr", "#vec{p}_{r} Distribution for High x' Events; |#vec{p}_{r}|; Counts", 14, 0.28, 0.42);
+    
+    // Kinematic distributions histograms
     TH2D *Xp_As_dist = new TH2D("Xp_As",
 	"#alpha_{s} vs x' Distribution; x'; #alpha_{s}; Counts", 14, 0.1, 0.8, 20, 1, 2);
     TH2D *the_pe_dist = new TH2D("the_pe_dist", 
@@ -117,41 +128,57 @@ int main(int argc, char **argv)
         // if (iii % 50000 == 0) cout << "Working on event " << iii << endl;
         inTree -> GetEvent(iii);
 
+        // Calculate values from reconstructed momentum vectors
         TVector3 rePn(reconPn[0], reconPn[1], reconPn[2]);
-        TVector3 rePe(reconPe[0], reconPe[1], reconPe[2]);
-        TVector3 q = TVector3(0, 0, E1) - rePe;
-        double theta_nq = rePn.Angle(q) * 180/TMath::Pi();
-        double pn_mag = rePn.Mag();
+        double rePn_mag = rePn.Mag();
 
-        // DIS Selection Cuts
+        TVector3 rePe(reconPe[0], reconPe[1], reconPe[2]);
+        double rePe_mag = rePe.Mag();
+        TVector3 q = TVector3(0, 0, E1) - rePe;
+        double theta_e = rePe.Theta() * 180/TMath::Pi();
+
+        double theta_qn = rePn.Angle(q) * 180/TMath::Pi();
+
+        // Fill neutron histograms for low and high x'
+        if (reconXp > 0.25 && reconXp < 0.35)
+        {
+            lxqsq -> Fill(reconQSq, weighting);
+            lxtheqr -> Fill(theta_qn, weighting);
+            lxwp -> Fill(reconWp, weighting);
+            lxpr -> Fill(rePn_mag, weighting);
+        }
+
+        if (reconXp > 0.5 && reconXp < 1)
+        {
+            hxqsq -> Fill(reconQSq, weighting);
+            hxtheqr -> Fill(theta_qn, weighting);
+            hxwp -> Fill(reconWp, weighting);
+            hxpr -> Fill(rePn_mag, weighting);
+        }
+
+        // Perform DIS Selection Cuts
         if (reconQSq < 2) continue;
         if (reconWp < 1.8) continue;        
-        if (theta_nq < 110) continue;
+        if (theta_qn < 110) continue;
         ++num_dis;
 
-        // Band Selection Cut
+        // Perform BAND Selection Cut
         if (recon_eeEDep < thresh_eeEDep) continue;
         ++num_dis_hits;
         
-        // Fill histograms
+        // Fill reach histograms
         Xp_dist->Fill(reconXp, weighting);
         As_dist->Fill(reconAs, weighting);
         Xp_As_dist->Fill(reconXp, reconAs, weighting);
 
-        if (reconXp > 0.25 && reconXp < 0.35) {
-            lx -> Fill(reconAs, weighting);
-        }
-        else if (reconXp > 0.5 && reconXp < 1) {
-            hx -> Fill(reconAs, weighting);
-        }
+        if (reconXp > 0.25 && reconXp < 0.35) lx -> Fill(reconAs, weighting);
+        else if (reconXp > 0.5 && reconXp < 1) hx -> Fill(reconAs, weighting);
         
-        double theta_e = rePe.Theta() * 180/TMath::Pi();
-        double rePe_mag = rePe.Mag();
+        // Fill kinematic distribution of DIS events hists        
         the_pe_dist -> Fill(theta_e, rePe_mag, weighting);
-
-        thrq_pr_dist -> Fill(theta_nq, pn_mag, weighting);
-
+        thrq_pr_dist -> Fill(theta_qn, rePn_mag, weighting);
         Xp_QSq_dist -> Fill(reconXp, reconQSq, weighting);
+
     }
     
     // Calculate efficiency of BAND
