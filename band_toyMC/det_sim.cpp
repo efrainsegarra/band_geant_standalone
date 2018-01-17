@@ -21,7 +21,7 @@ TRandom3 *myRand;
 inline double sq(double x){ return x*x;};
 bool didItHit(double x, double y);
 double getCLAS12_PRes(double theta, double p);
-double eeEDep(double En);
+double GetErDep(double Er);
 
 int main(int argc, char ** argv)
 {
@@ -70,7 +70,7 @@ int main(int argc, char ** argv)
   double mom_e[3];
   double mom_r[3];
 
-  double reconWp, reconXp, reconAs, reconQSq, recon_eeEDep;
+  double reconWp, reconXp, reconAs, reconQSq, ErDep;
   double reconPr, reconEr, reconZHit;
   double reconMom_e[3];
   double reconMom_r[3];
@@ -85,7 +85,7 @@ int main(int argc, char ** argv)
   outTree->Branch("reconXp",&reconXp,"reconXp/D");
   outTree->Branch("reconAs",&reconAs,"reconAs/D");
   outTree->Branch("reconQSq",&reconQSq,"reconQSq/D");
-  outTree->Branch("recon_eeEDep",&recon_eeEDep,"recon_eeEDep/D");
+  outTree->Branch("ErDep",&ErDep,"ErDep/D");
 
   // Modulus of momentum vectors and energy
   outTree->Branch("truePr",&truePr,"truePr/D");
@@ -163,7 +163,7 @@ int main(int argc, char ** argv)
       double reconBeta = reconPath/(cAir*reconT);
       reconPr = mN / sqrt( sq(1./reconBeta) - 1.);
       reconEr = sqrt(sq(reconPr)+sq(mN));
-      recon_eeEDep = eeEDep(trueEr);
+      ErDep = GetErDep(trueEr);
 
       // True lepton quantities
       double truePe =sqrt(sq(mom_e[0]) + sq(mom_e[1]) + sq(mom_e[2]));
@@ -275,19 +275,19 @@ double getCLAS12_PRes(double theta, double p)
   return p*(a+b*sin(theta)+c*cos(theta));  
 }
 
-double eeEDep(double En)
+double GetErDep(double Er)
 {
     // test if neutron deposits energy
     const double a = 0.372469;
     const double b = 84.8343;
     const double c = 0.000121438;
     const double d = 0.13453;
-    const double f5 = a*exp(-b*(En - mN)) + c/(En - mN) + d;
+    const double f5 = a*exp(-b*(Er - mN)) + c/(Er - mN) + d;
     const double fband = 1 - pow(1-f5, bandZWidth/5.);
     if (myRand->Rndm() > fband) return 0;
 
     // pick trueEDep
-    double trueEDep = (myRand->Rndm() * (En - mN)) * 1000;   // multiply by 1000 for GeV->MeV
+    double trueEDep = (myRand->Rndm() * (Er - mN)) * 1000;   // multiply by 1000 for GeV->MeV
     
     // translate to e-equivalent E
     // *********** These are parameters from a paper

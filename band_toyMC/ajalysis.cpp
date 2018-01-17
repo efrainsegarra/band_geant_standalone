@@ -24,7 +24,7 @@ int main(int argc, char **argv)
     {
         cerr << "Wrong number of arguments, try:\n\t"
              << "ajalysis  path/to/inputfile  /path/to/outputfile  "
-             << "Threshold_eeEDep" << endl;
+             << "Threshold(in MeVee)" << endl;
         return -1;
     }
         
@@ -37,25 +37,25 @@ int main(int argc, char **argv)
     TTree *inTree = (TTree*)infile -> Get("ReconTree");
 
     int num_events_sim = inTree->GetEntries();  // number of events generated in simulation
-    double truePe[3], truePn[3], reconPe[3], reconPn[3];
-    double reconWp, reconAs, reconQSq, reconXp, recon_eeEDep;
+    double truePe[3], truePr[3], reconPe[3], reconPr[3];
+    double reconWp, reconAs, reconQSq, reconXp, ErDep;
     inTree->SetBranchAddress("truePe_x", &(truePe[0]));
     inTree->SetBranchAddress("truePe_y", &(truePe[1]));
     inTree->SetBranchAddress("truePe_z", &(truePe[2]));
-    inTree->SetBranchAddress("truePr_x", &(truePn[0]));
-    inTree->SetBranchAddress("truePr_y", &(truePn[1]));
-    inTree->SetBranchAddress("truePr_z", &(truePn[2]));
+    inTree->SetBranchAddress("truePr_x", &(truePr[0]));
+    inTree->SetBranchAddress("truePr_y", &(truePr[1]));
+    inTree->SetBranchAddress("truePr_z", &(truePr[2]));
     inTree->SetBranchAddress("reconPe_x", &(reconPe[0]));
     inTree->SetBranchAddress("reconPe_y", &(reconPe[1]));
     inTree->SetBranchAddress("reconPe_z", &(reconPe[2]));
-    inTree->SetBranchAddress("reconPr_x", &(reconPn[0]));
-    inTree->SetBranchAddress("reconPr_y", &(reconPn[1]));
-    inTree->SetBranchAddress("reconPr_z", &(reconPn[2]));
+    inTree->SetBranchAddress("reconPr_x", &(reconPr[0]));
+    inTree->SetBranchAddress("reconPr_y", &(reconPr[1]));
+    inTree->SetBranchAddress("reconPr_z", &(reconPr[2]));
     inTree->SetBranchAddress("reconQSq", &(reconQSq));
     inTree->SetBranchAddress("reconXp", &(reconXp)); 
     inTree->SetBranchAddress("reconWp", &(reconWp));
     inTree->SetBranchAddress("reconAs", &(reconAs));
-    inTree->SetBranchAddress("recon_eeEDep", &(recon_eeEDep));
+    inTree->SetBranchAddress("ErDep", &(ErDep));
 
     // Attempt to pull CS data from input root file
     TVectorT<double> *CSVec = NULL;
@@ -95,16 +95,16 @@ int main(int argc, char **argv)
     "x' Distribution; x'; Counts", 14, 0.1, 0.8);
     TH1D *As_dist = new TH1D("As_dist",
     "#alpha_{s} Distribution; #alpha_{s}; Counts", 10, 1, 2);
-    TH1D *lx = new TH1D("lx", "#alpha_{s} Distribution for Low x' Events; #alpha_{s}; Counts", 5, 1.30, 1.55);
-    TH1D *hx = new TH1D("hx", "#alpha_{s} Distribution for High x' Events; #alpha_{s}; Counts", 5, 1.30, 1.55);
-    TH1D *lxqsq = new TH1D("lxqsq", "Q^{2} Distribution for Low x' Events; Q^{2} [GeV}]^{2}; Counts", 60, 2, 8);
-    TH1D *hxqsq = new TH1D("hxqsq", "Q^{2} Distribution for High x' Events; Q^{2} [GeV]^{2}; Counts", 60, 2, 8);
-    TH1D *lxtheqr = new TH1D("lxtheqr", "#theta_{qr} Distribution for Low x' Events; #theta_{qr} [deg.]; Counts", 80, 140, 180);
-    TH1D *hxtheqr = new TH1D("hxtheqr", "#theta_{qr} Distribution for High x' Events; #theta_{qr} [deg.]; Counts", 80, 140, 180);
-    TH1D *lxwp = new TH1D("lxwp", "W' Distribution for Low x' Events; W' [GeV]; Counts", 14, 1.8, 3.2);
-    TH1D *hxwp = new TH1D("hxwp", "W' Distribution for High x' Events; W' [GeV]; Counts", 14, 1.8, 3.2);
-    TH1D *lxpr = new TH1D("lxpr", "#vec{p}_{r} Distribution for Low x' Events; |#vec{p}_{r}|; Counts", 14, 0.28, 0.42);
-    TH1D *hxpr = new TH1D("hxpr", "#vec{p}_{r} Distribution for High x' Events; |#vec{p}_{r}|; Counts", 14, 0.28, 0.42);
+    TH1D *lx_As = new TH1D("lx_As", "#alpha_{s} Distribution for Low x' Events; #alpha_{s}; Counts", 5, 1.30, 1.55);
+    TH1D *hx_As = new TH1D("hx_As", "#alpha_{s} Distribution for High x' Events; #alpha_{s}; Counts", 5, 1.30, 1.55);
+    TH1D *lx_qsq = new TH1D("lx_qsq", "Q^{2} Distribution for Low x' Events; Q^{2} [GeV}]^{2}; Counts", 60, 2, 8);
+    TH1D *hx_qsq = new TH1D("hx_qsq", "Q^{2} Distribution for High x' Events; Q^{2} [GeV]^{2}; Counts", 60, 2, 8);
+    TH1D *lx_theqr = new TH1D("lx_theqr", "#theta_{qr} Distribution for Low x' Events; #theta_{qr} [deg.]; Counts", 80, 140, 180);
+    TH1D *hx_theqr = new TH1D("hx_theqr", "#theta_{qr} Distribution for High x' Events; #theta_{qr} [deg.]; Counts", 80, 140, 180);
+    TH1D *lx_wp = new TH1D("lx_wp", "W' Distribution for Low x' Events; W' [GeV]; Counts", 14, 1.8, 3.2);
+    TH1D *hx_wp = new TH1D("hx_wp", "W' Distribution for High x' Events; W' [GeV]; Counts", 14, 1.8, 3.2);
+    TH1D *lx_pr = new TH1D("lx_pr", "#vec{p}_{r} Distribution for Low x' Events; |#vec{p}_{r}|; Counts", 14, 0.28, 0.42);
+    TH1D *hx_pr = new TH1D("hx_pr", "#vec{p}_{r} Distribution for High x' Events; |#vec{p}_{r}|; Counts", 14, 0.28, 0.42);
     
     // Kinematic distributions histograms
     TH2D *Xp_As_dist = new TH2D("Xp_As",
@@ -129,7 +129,7 @@ int main(int argc, char **argv)
         inTree -> GetEvent(iii);
 
         // Calculate values from reconstructed momentum vectors
-        TVector3 rePn(reconPn[0], reconPn[1], reconPn[2]);
+        TVector3 rePn(reconPr[0], reconPr[1], reconPr[2]);
         double rePn_mag = rePn.Mag();
 
         TVector3 rePe(reconPe[0], reconPe[1], reconPe[2]);
@@ -142,18 +142,18 @@ int main(int argc, char **argv)
         // Fill neutron histograms for low and high x'
         if (reconXp > 0.25 && reconXp < 0.35)
         {
-            lxqsq -> Fill(reconQSq, weighting);
-            lxtheqr -> Fill(theta_qn, weighting);
-            lxwp -> Fill(reconWp, weighting);
-            lxpr -> Fill(rePn_mag, weighting);
+            lx_qsq -> Fill(reconQSq, weighting);
+            lx_theqr -> Fill(theta_qn, weighting);
+            lx_wp -> Fill(reconWp, weighting);
+            lx_pr -> Fill(rePn_mag, weighting);
         }
 
         if (reconXp > 0.5 && reconXp < 1)
         {
-            hxqsq -> Fill(reconQSq, weighting);
-            hxtheqr -> Fill(theta_qn, weighting);
-            hxwp -> Fill(reconWp, weighting);
-            hxpr -> Fill(rePn_mag, weighting);
+            hx_qsq -> Fill(reconQSq, weighting);
+            hx_theqr -> Fill(theta_qn, weighting);
+            hx_wp -> Fill(reconWp, weighting);
+            hx_pr -> Fill(rePn_mag, weighting);
         }
 
         // Perform DIS Selection Cuts
@@ -163,7 +163,7 @@ int main(int argc, char **argv)
         ++num_dis;
 
         // Perform BAND Selection Cut
-        if (recon_eeEDep < thresh_eeEDep) continue;
+        if (ErDep < thresh_eeEDep) continue;
         ++num_dis_hits;
         
         // Fill reach histograms
@@ -171,8 +171,8 @@ int main(int argc, char **argv)
         As_dist->Fill(reconAs, weighting);
         Xp_As_dist->Fill(reconXp, reconAs, weighting);
 
-        if (reconXp > 0.25 && reconXp < 0.35) lx -> Fill(reconAs, weighting);
-        else if (reconXp > 0.5 && reconXp < 1) hx -> Fill(reconAs, weighting);
+        if (reconXp > 0.25 && reconXp < 0.35) lx_As -> Fill(reconAs, weighting);
+        else if (reconXp > 0.5 && reconXp < 1) hx_As -> Fill(reconAs, weighting);
         
         // Fill kinematic distribution of DIS events hists        
         the_pe_dist -> Fill(theta_e, rePe_mag, weighting);
@@ -190,19 +190,19 @@ int main(int argc, char **argv)
     Xp_dist -> Write();
     As_dist -> Write();
     Xp_As_dist -> Write();
-    lx -> Write();
-    hx -> Write();
-    lxqsq -> Write();
-    hxqsq -> Write();
-    lxtheqr -> Write();
-    hxtheqr -> Write();
-    lxwp -> Write();
-    hxwp -> Write();
-    lxpr -> Write();
-    hxpr -> Write();
     the_pe_dist -> Write();
     thrq_pr_dist -> Write();
     Xp_QSq_dist -> Write();
+    lx_As -> Write();
+    hx_As -> Write();
+    lx_qsq -> Write();
+    hx_qsq -> Write();
+    lx_theqr -> Write();
+    hx_theqr -> Write();
+    lx_wp -> Write();
+    hx_wp -> Write();
+    lx_pr -> Write();
+    hx_pr -> Write();
     
     // Data (text) filenames string format
     ofstream txtfile;
@@ -222,7 +222,7 @@ int main(int argc, char **argv)
     txtfile.open(cts_filename.c_str());
     txtfile << thresh_eeEDep << "\t";
 
-    TH1D* histlist[2] = {lx,hx};
+    TH1D* histlist[2] = {lx_As,hx_As};
     for (int h=0; h<2; ++h)
     {
         for (int bin=1; bin<=5; ++bin)
