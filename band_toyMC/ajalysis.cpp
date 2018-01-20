@@ -24,7 +24,7 @@ int main(int argc, char **argv)
     {
         cerr << "Wrong number of arguments, try:\n\t"
              << "ajalysis  path/to/inputfile  /path/to/outputfile  "
-             << "Threshold_eeEDep" << endl;
+             << "Threshold(in MeVee)" << endl;
         return -1;
     }
         
@@ -37,77 +37,25 @@ int main(int argc, char **argv)
     TTree *inTree = (TTree*)infile -> Get("ReconTree");
 
     int num_events_sim = inTree->GetEntries();  // number of events generated in simulation
-    double truePe[3], truePn[3], reconPe[3], reconPn[3];
-    double reconWp, reconAs, reconQSq, reconXp, recon_eeEDep;
+    double truePe[3], truePr[3], reconPe[3], reconPr[3];
+    double reconWp, reconAs, reconQSq, reconXp, ErDep;
     inTree->SetBranchAddress("truePe_x", &(truePe[0]));
     inTree->SetBranchAddress("truePe_y", &(truePe[1]));
     inTree->SetBranchAddress("truePe_z", &(truePe[2]));
-    inTree->SetBranchAddress("truePr_x", &(truePn[0]));
-    inTree->SetBranchAddress("truePr_y", &(truePn[1]));
-    inTree->SetBranchAddress("truePr_z", &(truePn[2]));
+    inTree->SetBranchAddress("truePr_x", &(truePr[0]));
+    inTree->SetBranchAddress("truePr_y", &(truePr[1]));
+    inTree->SetBranchAddress("truePr_z", &(truePr[2]));
     inTree->SetBranchAddress("reconPe_x", &(reconPe[0]));
     inTree->SetBranchAddress("reconPe_y", &(reconPe[1]));
     inTree->SetBranchAddress("reconPe_z", &(reconPe[2]));
-    inTree->SetBranchAddress("reconPr_x", &(reconPn[0]));
-    inTree->SetBranchAddress("reconPr_y", &(reconPn[1]));
-    inTree->SetBranchAddress("reconPr_z", &(reconPn[2]));
+    inTree->SetBranchAddress("reconPr_x", &(reconPr[0]));
+    inTree->SetBranchAddress("reconPr_y", &(reconPr[1]));
+    inTree->SetBranchAddress("reconPr_z", &(reconPr[2]));
     inTree->SetBranchAddress("reconQSq", &(reconQSq));
     inTree->SetBranchAddress("reconXp", &(reconXp)); 
     inTree->SetBranchAddress("reconWp", &(reconWp));
     inTree->SetBranchAddress("reconAs", &(reconAs));
-    inTree->SetBranchAddress("recon_eeEDep", &(recon_eeEDep));
-
-    // Counts for BAND efficiency
-    int num_src = 0;
-    int num_src_hits = 0;
-
-    // Counts for background-to-signal ratio 
-    int lx1(0), lx2(0), lx3(0), lx4(0), lx5(0);     // low x'
-    int hx1(0), hx2(0), hx3(0), hx4(0), hx5(0);     // high x'
-
-    // Get counts
-    for(int iii = 0; iii < num_events_sim; ++iii)
-    {
-        inTree -> GetEvent(iii);
-
-        TVector3 rePn(reconPn[0], reconPn[1], reconPn[2]);
-        TVector3 rePe(reconPe[0], reconPe[1], reconPe[2]);
-        TVector3 q = TVector3(0, 0, E1) - rePe;
-        double theta_nq = rePn.Angle(q) * 180/TMath::Pi();
-
-        // DIS Selection Cuts
-        if (reconQSq < 2) continue;
-        if (reconWp < 1.8) continue;        
-        if (theta_nq < 110) continue;
-        ++num_src;
-
-        // Band Selection Cut
-        if (recon_eeEDep < thresh_eeEDep) continue;
-        ++num_src_hits;
-
-        // Low reconXp / x'
-        if (reconXp > 0.25 && reconXp < 0.35)
-        {
-            if (reconAs > 1.30 && reconAs < 1.35) ++lx1;
-            if (reconAs > 1.35 && reconAs < 1.40) ++lx2;
-            if (reconAs > 1.40 && reconAs < 1.45) ++lx3;
-            if (reconAs > 1.45 && reconAs < 1.50) ++lx4;
-            if (reconAs > 1.50 && reconAs < 1.55) ++lx5;
-        }
-
-        // High reconXp / x'
-        if (reconXp > 0.5)
-        {
-            if (reconAs > 1.30 && reconAs < 1.35) ++hx1;
-            if (reconAs > 1.35 && reconAs < 1.40) ++hx2;
-            if (reconAs > 1.40 && reconAs < 1.45) ++hx3;
-            if (reconAs > 1.45 && reconAs < 1.50) ++hx4;
-            if (reconAs > 1.50 && reconAs < 1.55) ++hx5;
-        }
-    }
-
-    // Calculate efficiency of BAND
-    double band_eff = static_cast<double>(num_src_hits) / num_src;
+    inTree->SetBranchAddress("ErDep", &(ErDep));
 
     // Attempt to pull CS data from input root file
     TVectorT<double> *CSVec = NULL;
@@ -137,91 +85,155 @@ int main(int argc, char **argv)
     }
 
     // Calculate weighting ratio
-    double acceptance = azim_CLAS12 * azim_BAND * 0.3;
+    double acceptance = azim_CLAS12 * azim_BAND;
     double num_events_detected = tot_num_events * acceptance;
     double weighting = num_events_detected / num_events_sim;
 
-    // Adjust the counts by weighting
-    lx1 = static_cast<int>(lx1*weighting);
-    lx2 = static_cast<int>(lx2*weighting);
-    lx3 = static_cast<int>(lx3*weighting);
-    lx4 = static_cast<int>(lx4*weighting);
-    lx5 = static_cast<int>(lx5*weighting);
-    hx1 = static_cast<int>(hx1*weighting);
-    hx2 = static_cast<int>(hx2*weighting);
-    hx3 = static_cast<int>(hx3*weighting);
-    hx4 = static_cast<int>(hx4*weighting);
-    hx5 = static_cast<int>(hx5*weighting); 
-
     // Hist output 
-    TH1D *XpHist = new TH1D("XpHist",
-    "After DIS, Backward Recoil Neutron & eeEDep_{n,r|thresh} Selection Cuts;#bf{#it{x_{B}}};Counts", 14, 0.1, 0.8);
-    TH2D *outhist1 = new TH2D("h1", 
-    "Before Cuts;#bf{#it{#theta_{e,r}}} #left[#it{deg.}#right];#left|#bf{#it{#vec{p}_{e,r}}}#right| #left[#frac{GeV}{c}#right]", 
-    100, 4, 35, 100, 1.5, 8);
-    TH2D *outhist2 = new TH2D("h2", 
-    "After DIS, Backward Recoil Neutron & eeEDep_{n,r|thresh};#bf{#it{#theta_{#vec{p}_{n,r}#vec{q}}}} #left[#it{deg.}#right];#left|#bf{#it{#vec{p}_{n,r}}}#right| #left[#frac{GeV}{c}#right]",
-    100, 135, 180, 100, 0.26, 0.65);
-    TH2D *outhist3 = new TH2D("h3", 
-    "After DIS, Backward Recoil Neutron & eeEDep_{n,r|thresh};#bf{#it{x_{B}}};#bf{#it{Q^{2}}} #left[#left(#frac{GeV}{c}#right)^{2} #right]", 
+    // Reach histograms
+    TH1D *Xp_dist = new TH1D("Xp_dist",
+    "x' Distribution; x'; Counts", 14, 0.1, 0.8);
+    TH1D *As_dist = new TH1D("As_dist",
+    "#alpha_{s} Distribution; #alpha_{s}; Counts", 10, 1, 2);
+    TH1D *lx_As = new TH1D("lx_As", "#alpha_{s} Distribution for Low x' Events; #alpha_{s}; Counts", 5, 1.30, 1.55);
+    TH1D *hx_As = new TH1D("hx_As", "#alpha_{s} Distribution for High x' Events; #alpha_{s}; Counts", 5, 1.30, 1.55);
+    TH1D *lx_qsq = new TH1D("lx_qsq", "Q^{2} Distribution for Low x' Events; Q^{2} [GeV}]^{2}; Counts", 60, 2, 8);
+    TH1D *hx_qsq = new TH1D("hx_qsq", "Q^{2} Distribution for High x' Events; Q^{2} [GeV]^{2}; Counts", 60, 2, 8);
+    TH1D *lx_theqr = new TH1D("lx_theqr", "#theta_{qr} Distribution for Low x' Events; #theta_{qr} [deg.]; Counts", 80, 140, 180);
+    TH1D *hx_theqr = new TH1D("hx_theqr", "#theta_{qr} Distribution for High x' Events; #theta_{qr} [deg.]; Counts", 80, 140, 180);
+    TH1D *lx_wp = new TH1D("lx_wp", "W' Distribution for Low x' Events; W' [GeV]; Counts", 14, 1.8, 3.2);
+    TH1D *hx_wp = new TH1D("hx_wp", "W' Distribution for High x' Events; W' [GeV]; Counts", 14, 1.8, 3.2);
+    TH1D *lx_pr = new TH1D("lx_pr", "#vec{p}_{r} Distribution for Low x' Events; |#vec{p}_{r}|; Counts", 14, 0.28, 0.42);
+    TH1D *hx_pr = new TH1D("hx_pr", "#vec{p}_{r} Distribution for High x' Events; |#vec{p}_{r}|; Counts", 14, 0.28, 0.42);
+    
+    // Kinematic distributions histograms
+    TH2D *Xp_As_dist = new TH2D("Xp_As",
+	"#alpha_{s} vs x' Distribution; x'; #alpha_{s}; Counts", 14, 0.1, 0.8, 20, 1, 2);
+    TH2D *the_pe_dist = new TH2D("the_pe_dist", 
+    "#theta_{e} vs. #vec{p}_{e}; #theta_{e} [deg.]; #vec{p}_{e} #left[#frac{GeV}{c}#right]", 
+    100, 5, 35, 100, 2, 7);
+    TH2D *thrq_pr_dist = new TH2D("thrq_pr_dist", 
+    "#theta_{rq} vs. #vec{p}_{r} Distribution; #theta_{rq} [deg.]; #vec{p}_{r} #left[#frac{GeV}{c}#right]",
+    100, 140, 180, 100, 0.28, 0.52);
+    TH2D *Xp_QSq_dist = new TH2D("Xp_QSq_dist", 
+    "x' vs. Q^{2}; x'; Q^{2} #left[#frac{GeV}{c^{2}}#right]", 
     100, 0.1, 0.8, 100, 2, 8);
+
+    // Counts for BAND efficiency
+    int num_dis = 0;
+    int num_dis_hits = 0;
 
     for(int iii = 0; iii < num_events_sim; ++iii)
     {
+        // if (iii % 50000 == 0) cout << "Working on event " << iii << endl;
         inTree -> GetEvent(iii);
 
-        TVector3 rePn(reconPn[0], reconPn[1], reconPn[2]);
-        TVector3 rePe(reconPe[0], reconPe[1], reconPe[2]);
-        TVector3 q = TVector3(0, 0, E1) - rePe;
-        double theta_nq = rePn.Angle(q) * 180/TMath::Pi();
+        // Calculate values from reconstructed momentum vectors
+        TVector3 rePn(reconPr[0], reconPr[1], reconPr[2]);
+        double rePn_mag = rePn.Mag();
 
-        // DIS Selection Cuts
+        TVector3 rePe(reconPe[0], reconPe[1], reconPe[2]);
+        double rePe_mag = rePe.Mag();
+        TVector3 q = TVector3(0, 0, E1) - rePe;
+        double theta_e = rePe.Theta() * 180/TMath::Pi();
+
+        double theta_qn = rePn.Angle(q) * 180/TMath::Pi();
+
+        // Fill neutron histograms for low and high x'
+        if (reconXp > 0.25 && reconXp < 0.35)
+        {
+            lx_qsq -> Fill(reconQSq, weighting);
+            lx_theqr -> Fill(theta_qn, weighting);
+            lx_wp -> Fill(reconWp, weighting);
+            lx_pr -> Fill(rePn_mag, weighting);
+        }
+
+        if (reconXp > 0.5 && reconXp < 1)
+        {
+            hx_qsq -> Fill(reconQSq, weighting);
+            hx_theqr -> Fill(theta_qn, weighting);
+            hx_wp -> Fill(reconWp, weighting);
+            hx_pr -> Fill(rePn_mag, weighting);
+        }
+
+        // Perform DIS Selection Cuts
         if (reconQSq < 2) continue;
         if (reconWp < 1.8) continue;        
-        if (theta_nq < 110) continue;
+        if (theta_qn < 110) continue;
+        ++num_dis;
 
-        // Band Selection Cut
-        if (recon_eeEDep < thresh_eeEDep) continue;
+        // Perform BAND Selection Cut
+        if (ErDep < thresh_eeEDep) continue;
+        ++num_dis_hits;
         
-        // Fill histograms
-        XpHist->Fill(reconXp, weighting);
+        // Fill reach histograms
+        Xp_dist->Fill(reconXp, weighting);
+        As_dist->Fill(reconAs, weighting);
+        Xp_As_dist->Fill(reconXp, reconAs, weighting);
+
+        if (reconXp > 0.25 && reconXp < 0.35) lx_As -> Fill(reconAs, weighting);
+        else if (reconXp > 0.5 && reconXp < 1) hx_As -> Fill(reconAs, weighting);
         
-        double theta_e = rePe.Theta() * 180/TMath::Pi();
-        double rePe_mag = rePe.Mag();
-        outhist1 -> Fill(theta_e, rePe_mag, weighting);
+        // Fill kinematic distribution of DIS events hists        
+        the_pe_dist -> Fill(theta_e, rePe_mag, weighting);
+        thrq_pr_dist -> Fill(theta_qn, rePn_mag, weighting);
+        Xp_QSq_dist -> Fill(reconXp, reconQSq, weighting);
 
-        double pn_mag = rePn.Mag();
-        outhist2 -> Fill(theta_nq, pn_mag, weighting);
-
-        outhist3 -> Fill(reconXp, reconQSq, weighting);
     }
+    
+    // Calculate efficiency of BAND
+    double band_eff = static_cast<double>(num_dis_hits) / num_dis;
 
     // Root file I/O
     infile -> Close();
     CSVec -> Write("CSdata");
-    XpHist -> Write();
-    outhist1 -> Write();
-    outhist2 -> Write();
-    outhist3 -> Write();
-    outfile -> Close();
+    Xp_dist -> Write();
+    As_dist -> Write();
+    Xp_As_dist -> Write();
+    the_pe_dist -> Write();
+    thrq_pr_dist -> Write();
+    Xp_QSq_dist -> Write();
+    lx_As -> Write();
+    hx_As -> Write();
+    lx_qsq -> Write();
+    hx_qsq -> Write();
+    lx_theqr -> Write();
+    hx_theqr -> Write();
+    lx_wp -> Write();
+    hx_wp -> Write();
+    lx_pr -> Write();
+    hx_pr -> Write();
     
-    // Data (text file) output
-    ofstream datfile;
+    // Data (text) filenames string format
+    ofstream txtfile;
     string root_filename(argv[2]);
     size_t raw_index = root_filename.find_last_of(string("."));
     string filename = root_filename.substr(0, raw_index);
     string dat_filename = filename + "_dat.txt";
     string cts_filename = filename + "_cts.txt";
 
-    datfile.open(dat_filename.c_str());
-    datfile << thresh_eeEDep << "\t" << band_eff << endl;
-    datfile.close();
-    datfile.open(cts_filename.c_str());
-    datfile << thresh_eeEDep << "\t" << lx1 << "\t" 
-            << lx2 << "\t" << lx3 << "\t" << lx4 << "\t" 
-            << lx5 << "\t" << hx1 << "\t" << hx2 << "\t" 
-            << hx3 << "\t" << hx4 << "\t" << hx5 << endl;
-    datfile.close();
+    // Write efficiency data
+    txtfile.open(dat_filename.c_str());
+    txtfile << thresh_eeEDep << "\t" << band_eff << "\t" 
+            << num_dis << endl;
+    txtfile.close();
+
+    // Write signal and background counts for the As and x' bins
+    txtfile.open(cts_filename.c_str());
+    txtfile << thresh_eeEDep << "\t";
+
+    TH1D* histlist[2] = {lx_As,hx_As};
+    for (int h=0; h<2; ++h)
+    {
+        for (int bin=1; bin<=5; ++bin)
+        {
+            txtfile << histlist[h] -> GetBinContent(bin) << "\t";
+        }
+    }
+
+    txtfile << "\n";
+    txtfile.close();
+    outfile -> Close();
 
     return 0;
 }
