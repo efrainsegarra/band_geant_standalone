@@ -58,11 +58,11 @@ int main(int argc, char ** argv)
   TTree * outTree = new TTree("MCout","Random Coincidence Output");
   Gen_Event * outEvent = new Gen_Event;
   outTree->Branch("event",&outEvent);
-
   // Loop over the events
   const int nEvents = inTree->GetEntries();
   for (int i=0 ; i<nEvents ; i++)
     {
+      if (i%10000) cout << "Working on entry " << i << "\n";
       inTree->GetEntry(i);
 
       // Require that there be one particle in the event
@@ -98,7 +98,6 @@ int main(int argc, char ** argv)
       outEvent->particles.push_back(neutron);
       outTree->Fill();
     }
- 
   // Update cross section info
   double neutronCS = getNeutronCS(minTrueKE) * (2.*M_PI)*(maxCosThetaR - minCosThetaR);
   TVectorT<double> csSqVec(3);
@@ -106,10 +105,11 @@ int main(int argc, char ** argv)
   csSqVec[1]=neutronCS*timeWindow*(*csVec)[1];
   csSqVec[2]=timeWindow;
   csSqVec.Write("totalCSSq");
-
+  
   // Clean-up
-  gFile = outfile;
+  //gFile = outfile;
   outTree->Write();
+  outfile->Close();
 }
 
 double getNeutronCS(double threshold)

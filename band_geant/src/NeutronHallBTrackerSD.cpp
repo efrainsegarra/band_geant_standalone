@@ -48,6 +48,7 @@ G4bool NeutronHallBTrackerSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
   hitBarNo = touchable->GetReplicaNumber(0);
 
   hitE = aStep->GetTotalEnergyDeposit()/MeV;
+  //if (hitE<= 0.) return true;
 
   /*
   G4String hitParticleName = aStep->GetTrack()->GetDynamicParticle()->GetDefinition()->GetParticleName();
@@ -56,7 +57,6 @@ G4bool NeutronHallBTrackerSD::ProcessHits(G4Step* aStep, G4TouchableHistory*)
   if( std::abs(aStep->GetPreStepPoint()->GetPosition().z()/mm +2620.) > 0.001) return true;
   if (hitE != 0.) return true;
   */
-  if (hitE <= 0.) return true;
 
   hitTime = aStep->GetPreStepPoint()->GetGlobalTime()/ns;
   hitPos = aStep->GetPreStepPoint()->GetPosition();
@@ -91,7 +91,7 @@ void NeutronHallBTrackerSD::EndOfEvent(G4HCofThisEvent*)
 
   for(std::map<int,BAND_Hit>::iterator it=barHits.begin() ; it != barHits.end() ; it++){
     hitList->hits.push_back(it->second);
-
+    
   }
 
 
