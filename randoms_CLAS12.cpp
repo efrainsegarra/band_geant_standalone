@@ -12,7 +12,7 @@
 
 using namespace std;
 
-const double minTrueKE = 0.01;
+const double minTrueKE = 0.1;
 const double minMomR = 0.275;
 const double maxMomR = 0.700;
 const double maxThetaR = 170.*M_PI/180.;
@@ -126,7 +126,7 @@ double CDF(double Tr)
 
 double getNeutronKE(double r)
 {
-  double minKE = 0.;
+  double minKE = 0.1;
   double maxKE = E1;
   double testKE = 0.5*(minKE + maxKE);
 
