@@ -43,8 +43,9 @@ int main(int argc, char** argv){
   bool counted;
 
   for( int i = 0; i < events_generated ; i++){
-    if (i%10000 == 0) cout << "Working on event: "<< i <<"\n";
+    //if (i%10000 == 0) cout << "Working on event: "<< i <<"\n";
     inTree->GetEntry(i);
+
     if ( event->hits.size() > 0){
       counted = false;
       // Then we had a particle either pass through BAND or deposit energy in BAND
@@ -70,7 +71,7 @@ int main(int argc, char** argv){
     }
   }
 
-  cout << events_generated << " " << tot_particles << " " << int_particles << "\n";
+  cout << events_generated << " " << tot_particles << " " << int_particles << " " << threshold << "\n";
 
   spectrum->Write();
   outFile->Close();

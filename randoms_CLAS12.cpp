@@ -12,12 +12,12 @@
 
 using namespace std;
 
-const double minTrueKE = 0.1;
-const double minMomR = 0.275;
-const double maxMomR = 0.700;
-const double maxThetaR = 170.*M_PI/180.;
-const double minThetaR = 160.*M_PI/180.;
-const double bandZ = -250.; // cm
+const double minTrueKE = 0.05;
+const double minMomR = 0.2;
+const double maxMomR = 0.6;
+const double maxThetaR = 150.*M_PI/180.;
+const double minThetaR = 178.*M_PI/180.;
+const double bandZ = -280.5; // cm
 
 inline double sq(double x){ return x*x; };
 inline double beta(double p){ return 1./sqrt(1. + sq(mN/p)); };
@@ -39,7 +39,7 @@ int main(int argc, char ** argv)
   const double minCosThetaR = cos(maxThetaR);
   const double maxCosThetaR = cos(minThetaR);
   const double minTime = -bandZ/(maxBetaR*cAir) - 5.;  // Put in 5 ns for cushion
-  const double maxTime = (40.-bandZ)/(minBetaR*cAir) + 5.; // Put in another 5 ns for more cushion
+  const double maxTime = (37.-bandZ)/(minBetaR*cAir) + 5.; // Put in another 5 ns for more cushion
   const double timeWindow = maxTime - minTime;
 
   // Open the files
@@ -86,7 +86,7 @@ int main(int argc, char ** argv)
       double hitTime = minTime + timeWindow*myRand->Rndm();
 
       // Work back the time it would take to reach the center of BAND, store to tree
-      double t0 = hitTime - (20.-bandZ)/(betaR*cAir);
+      double t0 = hitTime - (37./2.-bandZ)/(betaR*cAir);
 
       // Write tree
       outEvent->particles.clear();
