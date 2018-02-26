@@ -11,38 +11,33 @@
 
 using namespace std;
 
+
 int main(int argc, char** argv){
 
 	// need to read in signal and background file
 	// and get the Xp histogram and collect
 	// events in the high X and low X region
 
-	if (argc < 4){
+	if (argc < 3){
 	    cerr << "Wrong number of arguments. Instead use\n"
-	    << "\t./makeF2 /path/to/output/file /path/to/signal/ /path/to/background/\n";
+	    << "\t./makeF2 /path/to/signal/ /path/to/background/\n";
 	    exit(-1);
 	}
 
+	TFile * inFileSig = new TFile(argv[1]);
+	TH1F * As_highX_sig = new TH1F("As_highX_sig","Recon Q^2 > 2., W_prime > 1.8, 0.6 > Recon Pn > 0.25, Recon Xp < 1.;As;As;Counts",5,1.3,1.55);
+	As_highX_sig = (TH1F*)inFileSig->Get("As_highX");
 
-	TFile * inFileSig = new TFile(argv[2]);
-	TTree * inTreeSig = (TTree*)inFileSig->Get("ResTree");
-	
-	TFile * inFileBac = new TFile(argv[3]);
-	TTree * inTreeBac = (TTree*)inFileBac->Get("ResTree");
+	TH1F * As_lowX_sig = new TH1F("As_lowX_sig","Recon Q^2 > 2., W_prime > 1.8, 0.6 > Recon Pn > 0.25, Recon Xp < 1.;As;As;Counts",5,1.3,1.55);
+	As_lowX_sig = (TH1F*)inFileSig->Get("As_lowX");
 
-	double reconXp_sig,reconXp_bac;
-	double reconAs_sig,reconAs_bac;
-	inTreeSig->SetBranchAddress("reconXp",&reconXp_sig);
-	inTreeSig->SetBranchAddress("reconAs",&reconAs_sig);
-	inTreeBac->SetBranchAddress("reconXp",&reconXp_bac);
-	inTreeBac->SetBranchAddress("reconAs",&reconAs_bac);
 
-	TFile * outFile = new TFile(argv[1],"RECREATE");
-	TH1D * As_lowX_sig = new TH1D("As_lowX_sig","Recon Q^2 > 2., W_prime > 1.8, Recon Pn > 0.25;As;As;Counts",5,1.3,1.55);
-	TH1D * As_highX_sig = new TH1D("As_highX_sig","Recon Q^2 > 2., W_prime > 1.8, Recon Pn > 0.25;As;As;Counts",5,1.3,1.55);
-	TH1D * As_lowX_bac = new TH1D("As_lowX_bac","Recon Q^2 > 2., W_prime > 1.8, Recon Pn > 0.25;As;As;Counts",5,1.3,1.55);
-	TH1D * As_highX_bac = new TH1D("As_highX_bac","Recon Q^2 > 2., W_prime > 1.8, Recon Pn > 0.25;As;As;Counts",5,1.3,1.55);
-	
+	TFile * inFileBac = new TFile(argv[2]);
+	TH1F * As_highX_bac = new TH1F("As_highX_bac","Recon Q^2 > 2., W_prime > 1.8, 0.6 > Recon Pn > 0.25, Recon Xp < 1.;As;As;Counts",5,1.3,1.55);
+	As_highX_bac = (TH1F*)inFileBac->Get("As_highX");
+
+	TH1F * As_lowX_bac = new TH1F("As_lowX_bac","Recon Q^2 > 2., W_prime > 1.8, 0.6 > Recon Pn > 0.25, Recon Xp < 1.;As;As;Counts",5,1.3,1.55);
+	As_lowX_bac = (TH1F*)inFileBac->Get("As_lowX");
 
 	// We have 5 bins we want in alphaS
 	double signal_hi[5], background_hi[5];
@@ -52,33 +47,9 @@ int main(int argc, char** argv){
 	for(int i=0; i<5;++i){
 		bin_centers[i] = 1.325 + 0.05*i;
 	}
-	const int nEvents_Sig = inTreeSig->GetEntries();
-	for (int i = 0 ; i < nEvents_Sig ; ++i){
-		inTreeSig->GetEvent(i);
-		if ((reconXp_sig > 0.5) && (reconXp_sig < 1)){
-			As_highX_sig->Fill(reconAs_sig);
 
-		}
-		if (abs(reconXp_sig - 0.3) < 0.05){
-			As_lowX_sig->Fill(reconAs_sig);
 
-		}
-
-	}
-
-	const int nEvents_Bac = inTreeBac->GetEntries();
-	for (int i = 0 ; i < nEvents_Bac ; ++i){
-		inTreeBac->GetEvent(i);
-		if ((reconXp_bac > 0.5) && (reconXp_bac < 1)){
-			As_highX_bac->Fill(reconAs_bac);
-
-		}
-		if (abs(reconXp_bac - 0.3) < 0.05){
-			As_lowX_bac->Fill(reconAs_bac);
-
-		}
-
-	}
+	
 	
 	for (int i=1; i<6;i++){
 		signal_lo[i-1] = As_lowX_sig->GetBinContent(i);
@@ -88,19 +59,15 @@ int main(int argc, char** argv){
 
 	}
 
-
+	cout << "# Uncertainty\tAlphaBinCenter\tSignal_hiX\tBackground_hiX\tSignal_lowX\tBackground_lowX\n";
 	for(int i=0; i<5; ++i){
 		double delta = pow((signal_hi[i] + background_hi[i]) / (pow(signal_hi[i],2)) + (signal_lo[i] + background_lo[i]) / (pow(signal_lo[i],2)),0.5);
-
 		cout << delta << " " << bin_centers[i] << " " << signal_hi[i] << " " << background_hi[i] << " " << signal_lo[i] << " " << background_lo[i] << "\n";
 	}
+
+
 	inFileSig->Close();
 	inFileBac->Close();
-	outFile->cd();
-	As_lowX_sig->Write();
-	As_highX_sig->Write();
-	As_lowX_bac->Write();
-	As_highX_bac->Write();
-	outFile->Close();
+
 
 }

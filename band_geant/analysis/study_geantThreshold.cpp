@@ -28,7 +28,7 @@ int main(int argc, char** argv){
   TTree *inTree   = (TTree*)inFile -> Get("PropTree");
 
   TFile * outFile   = new TFile("MeVee_spectrum.root","RECREATE");
-  TH1D * spectrum = new TH1D("MeVee_spectrum","Energy Deposited in BAND for all Neutron Hits in Single Event",120,0,120);
+  TH1D * spectrum = new TH1D("MeVee_spectrum","Energy Deposited in BAND for all Neutron Hits in Single Event",2000,0,20);
   spectrum->GetXaxis()->SetTitle("Energy Deposited [MeVee]");
   spectrum->GetYaxis()->SetTitle("Entries");
   spectrum->SetStats(0);
@@ -40,6 +40,7 @@ int main(int argc, char** argv){
 	int events_generated = inTree->GetEntries(); // total number of particles shot in given phase space
   int tot_particles = 0; // number of particles that pass through BAND or deposit energy in BAND
   int int_particles = 0; // number of interacting particles in BAND
+  int it = 0;
   bool counted;
 
   for( int i = 0; i < events_generated ; i++){
@@ -59,7 +60,10 @@ int main(int argc, char** argv){
         double en = event->hits[j].E_dep; // in MeV
         double en_MeVee = 0.83 * en - 2.82 * ( 1 - exp( - 0.25 * ( pow(en,0.93)) ) );
 
-        if (en_MeVee > 0) spectrum->Fill(en_MeVee);
+        if (en_MeVee > 0){
+          spectrum->Fill(en_MeVee);
+          it++;
+        } 
 
         if ((en_MeVee > threshold) && (counted==false)){
           int_particles++;
@@ -72,7 +76,7 @@ int main(int argc, char** argv){
   }
 
   cout << events_generated << " " << tot_particles << " " << int_particles << " " << threshold << "\n";
-
+  spectrum->Scale(1./it);
   spectrum->Write();
   outFile->Close();
 

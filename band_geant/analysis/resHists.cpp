@@ -8,6 +8,7 @@
 #include "TH1.h"
 #include "TVector3.h"
 #include "TF1.h"
+#include "TLatex.h"
 
 #include "constants.h"
 
@@ -118,10 +119,10 @@ int main(int argc, char ** argv)
   int As_nBin = 200;
   int Wp_nBin = 200;
   int Xp_nBin = 250;
-  TH2D * PnRes = new TH2D("PnRes","Recon Q^2 > 2., W_prime > 1.8, Recon Pn > 0.25;Pn;delta Pn / Pn;Counts",Pn_nBin,0.25,0.55,100,-0.2,0.2);
-  TH2D * AsRes = new TH2D("AsRes","Recon Q^2 > 2., W_prime > 1.8, Recon Pn > 0.25;As;delta As / As;Counts",As_nBin,1.25,1.65,100,-0.1,0.1);
-  TH2D * WpRes = new TH2D("WpRes","Recon Q^2 > 2., W_prime > 1.8, Recon Pn > 0.25;Wp;delta Wp / Wp;Counts",Wp_nBin,1.5,3.5,100,-0.2,0.2);
-  TH2D * XpRes = new TH2D("XpRes","Recon Q^2 > 2., W_prime > 1.8, Recon Pn > 0.25;Xp;delta Xp / Xp;Counts",Xp_nBin,0.2,0.7,100,-0.2,0.2);
+  TH2D * PnRes = new TH2D("PnRes","Recon Q^2 > 2., W_prime > 1.8, 0.6 > Recon Pn > 0.25, Recon Xp < 1.;P_{n};#Delta P_{n} / P_{n};Counts",Pn_nBin,0.25,0.55,100,-0.2,0.2);
+  TH2D * AsRes = new TH2D("AsRes","Recon Q^2 > 2., W_prime > 1.8, 0.6 > Recon Pn > 0.25, Recon Xp < 1.;A_{s};#Delta A_{s} / A_{s};Counts",As_nBin,1.25,1.65,100,-0.1,0.1);
+  TH2D * WpRes = new TH2D("WpRes","Recon Q^2 > 2., W_prime > 1.8, 0.6 > Recon Pn > 0.25, Recon Xp < 1.;W^{'};#Delta W^{'} / W^{'};Counts",Wp_nBin,1.5,3.5,100,-0.2,0.2);
+  TH2D * XpRes = new TH2D("XpRes","Recon Q^2 > 2., W_prime > 1.8, 0.6 > Recon Pn > 0.25, Recon Xp < 1.;X^{'};#Delta X^{'} / X^{'};Counts",Xp_nBin,0.2,0.7,100,-0.2,0.2);
 
   // Loop over events to fill histograms
   const int nEvents = inTree->GetEntries();
@@ -133,7 +134,7 @@ int main(int argc, char ** argv)
     // Fill histograms
 	  PnRes->Fill(truePn,(reconPn - truePn)/truePn);
 	  AsRes->Fill(trueAs,(reconAs-trueAs)/trueAs);
-    WpRes->Fill(trueWp,(reconWp-trueWp)/trueWp);
+    WpRes->Fill(trueWp,-(reconWp-trueWp)/trueWp);
     XpRes->Fill(trueXp,(reconXp-trueXp)/trueXp);
   }
 
@@ -142,11 +143,11 @@ int main(int argc, char ** argv)
 
   cout << "\tPn Resolution: " << "\n";
   int numBins = 10;
-  int PnStartBin = PnRes->GetXaxis()->FindBin(0.25);
+  int PnStartBin = PnRes->GetXaxis()->FindBin(0.3);
   int PnEndBin = PnRes->GetXaxis()->FindBin(0.5);
   int itBins = (PnEndBin-PnStartBin)/numBins;
   for (int bin=PnStartBin ; bin<= PnEndBin; bin += itBins){
-    bool write = false;
+    bool write = true;
     double PnSigGuess = 0.02;
     doProj( PnRes, bin,  itBins,PnSigGuess,write);
   }
@@ -168,7 +169,7 @@ int main(int argc, char ** argv)
   int WpEndBin = WpRes->GetXaxis()->FindBin(3.);
   itBins = (WpEndBin-WpStartBin)/numBins;
   for (int bin=WpStartBin ; bin<= WpEndBin; bin += itBins){
-    bool write = false;
+    bool write = true;
     double WpSigGuess = 0.03;
     doProj( WpRes, bin,  itBins,WpSigGuess,write);
   }
@@ -179,8 +180,8 @@ int main(int argc, char ** argv)
   int XpEndBin = XpRes->GetXaxis()->FindBin(0.6);
   itBins = (XpEndBin-XpStartBin)/numBins;
   for (int bin=XpStartBin ; bin<= XpEndBin; bin += itBins){
-    bool write = false;
-    double XpSigGuess = 0.02;
+    bool write = true;
+    double XpSigGuess = 0.03;
     doProj( XpRes, bin,  itBins,XpSigGuess,write);
   }
   
@@ -233,18 +234,22 @@ void fitMeanSig(TH1D * hist, double &mean, double &sig)
   model->SetParameter(2,sig);  // set the initial guess width
   model->SetParameter(0,hist->GetMaximum()); // set amplitude of gaussian ontop of background
 
-  hist->Fit("fitRes","QES","",mean-3*sig,mean+3*sig);
+  hist->Fit("fitRes","QES","",mean-1*sig,mean+3*sig);
 
   mean = model->GetParameter(1);
   sig  = fabs(model->GetParameter(2)); // update sigma that is fitted and output
 
+  if( hist->GetEntries() < 150 ){
+    mean = 0.;
+    sig = 0.;
+  }
   //delete model;
 }
 
 void doProj( TH2D * hist,int bin, int itBins, double &sig, bool write){
   
   char temp[100];
-  sprintf(temp,"slice_%d",bin);
+  sprintf(temp,"slice_%d_%s",bin,hist->GetName());
 
   TH1D * pj = hist->ProjectionY(temp,bin,bin+itBins-1);
   double mean;

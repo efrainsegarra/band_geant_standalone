@@ -29,3 +29,6 @@ target_link_libraries(combineHists deuteron_dis_tree ${ROOT_LIBRARIES} )
 
 add_executable(f2 ${CMAKE_CURRENT_SOURCE_DIR}/f2.cpp)
 target_link_libraries(f2 deuteron_dis_tree ${ROOT_LIBRARIES} )
+
+add_executable(tomography ${CMAKE_CURRENT_SOURCE_DIR}/tomography.cpp)
+target_link_libraries(tomography deuteron_dis_tree ${ROOT_LIBRARIES} )

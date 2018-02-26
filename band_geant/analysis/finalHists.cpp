@@ -9,6 +9,7 @@
 #include "TVector3.h"
 #include "TF1.h"
 #include "TVectorT.h"
+#include "TLatex.h"
 
 #include "constants.h"
 
@@ -27,7 +28,49 @@ int main(int argc, char ** argv){
   }
 
   TFile * outFile = new TFile(argv[3],"RECREATE");
-  TH1D * Xp = new TH1D("Xp","Recon Q^2 > 2., W_prime > 1.8, Recon Pn > 0.25;xp;xp;Counts",14,0.1,0.8);
+
+  //
+  TH2D * pE_thetaE = new TH2D("pE_thetaE","Recon Q^2 > 2., W_prime > 1.8, 0.6 > Recon Pn > 0.25, Recon Xp < 1.",150,5,35,50,2,7);
+  pE_thetaE->GetXaxis()->SetTitle("Electron Scattering Angle [^{#bullet}]");
+  pE_thetaE->GetYaxis()->SetTitle("Electron Momentum [GeV/c]");
+
+  TH2D * pN_thetaNQ = new TH2D("pN_thetaNQ","Recon Q^2 > 2., W_prime > 1.8, 0.6 > Recon Pn > 0.25, Recon Xp < 1.",100,130,180,90,0.2,0.65);
+  pN_thetaNQ->GetXaxis()->SetTitle("Angle Between Neutron and Q Vector [^{#bullet}]");
+  pN_thetaNQ->GetYaxis()->SetTitle("Neutron Momentum [GeV/c]");
+  
+  TH2D * pE_Xp = new TH2D("pE_Xp","Recon Q^2 > 2., W_prime > 1.8, 0.6 > Recon Pn > 0.25, Recon Xp < 1.",70,0.1,0.8,60,2,8);
+  pE_Xp->GetXaxis()->SetTitle("x_{p}");
+  pE_Xp->GetYaxis()->SetTitle("Electron Momentum [GeV/c]");
+  
+  TH2D * thetaE_Xp = new TH2D("thetaE_Xp","Recon Q^2 > 2., W_prime > 1.8, 0.6 > Recon Pn > 0.25, Recon Xp < 1.",70,0.1,0.8,150,5,35);
+  thetaE_Xp->GetXaxis()->SetTitle("x_{p}");
+  thetaE_Xp->GetYaxis()->SetTitle("Electron Scattering Angle [^{#bullet}]");
+
+  TH2D * QSq_Xp = new TH2D("QSq_Xp","Recon Q^2 > 2., W_prime > 1.8, 0.6 > Recon Pn > 0.25, Recon Xp < 1.",70,0.1,0.8,60,2,8);
+  QSq_Xp->GetXaxis()->SetTitle("x_{p}");
+  QSq_Xp->GetYaxis()->SetTitle("Q^{2} [GeV/c]^{2}");
+
+  TH2D * As_Xp = new TH2D("As_Xp","Recon Q^2 > 2., W_prime > 1.8, 0.6 > Recon Pn > 0.25, Recon Xp < 1.",70,0.1,0.8,50,1.3,1.55);
+  As_Xp->GetXaxis()->SetTitle("x_{p}");
+  As_Xp->GetYaxis()->SetTitle("#alpha_{S}");
+
+  Float_t xp_bins[ ] = {0.25,0.35,0.5,0.9};
+  Int_t binnumXp = sizeof(xp_bins)/sizeof(Float_t) - 1;
+  Float_t as_bins[ ] = {1.3,1.35,1.4,1.45,1.5,1.55};
+  Int_t binnumAs = sizeof(as_bins)/sizeof(Float_t) - 1;
+  TH2D * falsePos = new TH2D("falsePos","#frac{(True Fail) & (Smeared Pass)}{Smeared Pass};Recon x';Recon a_{s};Counts",binnumXp,xp_bins,binnumAs,as_bins);
+  TH2D * falseNeg = new TH2D("falseNeg","#frac{(True Pass) & (Smeared Fail)}{Smeared Pass};Recon x';Recon a_{s};Counts",binnumXp,xp_bins,binnumAs,as_bins);  
+  TH2D * changeYield = new TH2D("changeYield","False Negative - False Positive [%];Recon x';Recon a_{s};Counts",binnumXp,xp_bins,binnumAs,as_bins);  
+
+  double denom[binnumXp][binnumAs];
+  for(int n = 0; n < binnumAs; n++){
+    for(int m = 0; m < binnumXp; m++){
+      denom[m][n] = 0;
+    }
+  }
+
+
+  TH1D * Xp = new TH1D("Xp","Recon Q^2 > 2., W_prime > 1.8, 0.6 > Recon Pn > 0.25, Recon Xp < 1. ;xp;xp;Counts",14,0.1,0.8);
   
   TH1D * QSq_highX = new TH1D("QSq_highX","Recon Q^2 > 2., W_prime > 1.8, Recon Pn > 0.25;QSq;QSq;Counts",42,2,8);
   TH1D * Wp_highX = new TH1D("Wp_highX","Recon Q^2 > 2., W_prime > 1.8, Recon Pn > 0.25;Wp;Wp;Counts",13,1.8,3.1);
@@ -144,12 +187,12 @@ int main(int argc, char ** argv){
   else{
     double CSSqDt = (*CSVec_rand)[0] * 1e-9;   // CSSqDt is product of the cross-sections and coincidence time window
     total_num_events = CSSqDt * pow(luminosity, 2) * runtime;
+
   }
     // Calculate weighting ratio
   double acceptance = azim_CLAS12 ;
   total_num_events *= acceptance;
   double weighting = total_num_events / simulated_nEvents;
-
 
   const int nEvents = inTree->GetEntries();
   //cout << "Filling 2D histograms..." << endl;
@@ -157,10 +200,64 @@ int main(int argc, char ** argv){
     //if (i % 10000 == 0) cout << "Event " << i << "\n";
     inTree->GetEvent(i);
 
+    // Determine if there is bin migration
+    for(int n = 0; n < binnumAs; n++){
+      for(int m = 0; m < binnumXp; m++){
+
+        if( m == 1 ) continue;
+
+        double L = xp_bins[m];
+        double R = xp_bins[m+1];
+
+        double B = as_bins[n];
+        double U = as_bins[n+1];
+
+        // If smeared is in the bin
+        if( (reconXp >= L) && (reconXp < R) ){
+          if( (reconAs >= B) && (reconAs < U) ){
+
+            denom[m][n]++;
+            //cout << "In bin " << L << " " << R << " " << B << " " << U << "\n";
+
+            // If true ISN'T in the bin
+            if( !( (trueXp >= L) && (trueXp < R) ) || !( (trueAs >= B) && (trueAs < U) ) ){
+                falsePos->Fill(reconXp,reconAs);
+                //cout << "\tfalse pos: " << trueXp << " " << trueAs << "\n";
+
+            }
+              //else cout << "\tgood: " << trueXp << " " << trueAs << "\n";
+
+          }
+        }
+
+        // If true is in the bin
+        if( (trueXp >= L) && (trueXp < R) ){
+          if( (trueAs >= B) && (trueAs < U) ){
+
+            // If smeared ISN'T in the bin
+            if( !( (reconXp >= L) && (reconXp < R) ) || !( (reconAs >= B) && (reconAs < U) ) ){
+                falseNeg->Fill(trueXp,trueAs);
+            }
+
+          }
+        }
+
+
+      }
+    }
+
     // Fill histograms
+    pE_thetaE->Fill(reconTheta_e*180./M_PI,reconPe,weighting);
+    pE_Xp->Fill(reconXp,reconPe,weighting);
+    thetaE_Xp->Fill(reconXp,reconTheta_e*180./M_PI,weighting);
+    QSq_Xp->Fill(reconXp,reconQSq,weighting);
+    As_Xp->Fill(reconXp,reconAs,weighting);
+    pN_thetaNQ->Fill( acos(reconCosTheta_qn)*180./M_PI , reconPn );
+
+
     Xp->Fill(reconXp,weighting);
 
-    if (reconXp > 0.5){
+    if ((reconXp > 0.5) && (reconXp < 0.9)){
       QSq_highX->Fill(reconQSq,weighting);
       Wp_highX->Fill(reconWp,weighting);
       As_highX->Fill(reconAs,weighting);
@@ -180,6 +277,36 @@ int main(int argc, char ** argv){
   inFile->Close();
   inGen->Close();
   outFile->cd();
+
+  pE_thetaE->Write();
+  pN_thetaNQ->Write();
+  pE_Xp->Write();
+  thetaE_Xp->Write();
+  QSq_Xp->Write();
+  As_Xp->Write();
+
+
+
+  cout << "# AsBinCenter\tXp_High[0.7]_Low[0.3]\tFalseNeg\tFalsePos\tChangeYield\n";
+  for(int n = 0; n < binnumAs; n++){
+    for(int m = 0; m < binnumXp; m++){
+      if( m == 1 ) continue;
+
+      falsePos->SetBinContent( m+1,n+1, falsePos->GetBinContent(m+1,n+1) * 100. / (denom[m][n])  );
+      falseNeg->SetBinContent( m+1,n+1, falseNeg->GetBinContent(m+1,n+1) * 100. / (denom[m][n])  );
+
+      changeYield->SetBinContent( m+1,n+1, falseNeg->GetBinContent(m+1,n+1) - falsePos->GetBinContent(m+1,n+1) );
+
+      cout << (as_bins[n]+as_bins[n+1])/2. << "\t" << (xp_bins[m]+xp_bins[m+1])/2. << "\t" <<  falseNeg->GetBinContent(m+1,n+1) << "\t" << falsePos->GetBinContent(m+1,n+1) << "\t" << changeYield->GetBinContent(m+1,n+1) << "\n";
+
+      }
+  } 
+
+ 
+  falsePos->Write();
+  falseNeg->Write();
+  changeYield->Write();
+  
   Xp->Write();
 
   QSq_highX->Write();
@@ -193,6 +320,7 @@ int main(int argc, char ** argv){
   As_lowX->Write();
   Pn_lowX->Write();
   Theta_qn_lowX->Write();
+  
 
   outFile->Close();
 

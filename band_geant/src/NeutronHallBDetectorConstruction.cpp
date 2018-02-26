@@ -732,7 +732,7 @@ void NeutronHallBDetectorConstruction::ConstructSDandField()
   // Sensitive detectors
   auto sdManager = G4SDManager::GetSDMpointer();
   G4String SDname;
-
+  
   NeutronHallBTrackerSD* bandSD = new NeutronHallBTrackerSD(treePtr,SDname="band");
   sdManager->AddNewDetector(bandSD);
 
@@ -743,7 +743,7 @@ void NeutronHallBDetectorConstruction::ConstructSDandField()
       logicDetectorBarsB[wall]->SetSensitiveDetector(bandSD); 
       logicDetectorBarsA[wall]->SetSensitiveDetector(bandSD);            
   }
-
+  
   // Electro-magnetic fields (currently zero)  
   G4ThreeVector fieldValue = G4ThreeVector();
   G4AutoDelete::Register(fMagFieldMessenger);

@@ -16,12 +16,12 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
-  const double max_y = 8*13;
-  const double min_y = -8*5;
-  const double max_z = -250.;
-  const double min_z = -270.-5*7.4;
-  const double glob_max_x = 2100 / 10 / 2;
-  const double glob_min_x = -2100 / 10 / 2;
+  const double max_y = 100.;
+  const double min_y = -40.;
+  const double max_z = -260.;
+  const double min_z = -310.;
+  const double glob_max_x = 120.;
+  const double glob_min_x = -120.;
 
   const double min_p_r =0.25;
   const double max_p_r =0.25;

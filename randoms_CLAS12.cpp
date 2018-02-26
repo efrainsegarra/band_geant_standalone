@@ -12,11 +12,11 @@
 
 using namespace std;
 
-const double minTrueKE = 0.05;
+const double minTrueKE = 0.;
 const double minMomR = 0.2;
 const double maxMomR = 0.6;
-const double maxThetaR = 150.*M_PI/180.;
-const double minThetaR = 178.*M_PI/180.;
+const double minThetaR = 150.*M_PI/180.;
+const double maxThetaR = 178.*M_PI/180.;
 const double bandZ = -280.5; // cm
 
 inline double sq(double x){ return x*x; };
@@ -62,7 +62,7 @@ int main(int argc, char ** argv)
   const int nEvents = inTree->GetEntries();
   for (int i=0 ; i<nEvents ; i++)
     {
-      if (i%10000) cout << "Working on entry " << i << "\n";
+      if (i % 10000 == 0) cout << "Event " << i << endl;
       inTree->GetEntry(i);
 
       // Require that there be one particle in the event
@@ -76,10 +76,11 @@ int main(int argc, char ** argv)
       double cosThetaR = minCosThetaR + myRand->Rndm()*(maxCosThetaR-minCosThetaR);
       double phiR = 2.*M_PI * myRand->Rndm();
       double keR = getNeutronKE(myRand->Rndm());
-
+      
       // Calculate the derived neutron info
       double thetaR = acos(cosThetaR);
-      double momR = sqrt(sq(keR + mN) - mN);
+      double momR = sqrt(sq(keR + mN) - mN*mN);
+
       double betaR = momR / (keR + mN);
 
       // Calculate a random time for the hit to occur
@@ -101,6 +102,7 @@ int main(int argc, char ** argv)
   // Update cross section info
   double neutronCS = getNeutronCS(minTrueKE) * (2.*M_PI)*(maxCosThetaR - minCosThetaR);
   TVectorT<double> csSqVec(3);
+
   csSqVec[0]=neutronCS*timeWindow*(*csVec)[0]; // Units of nb^2 * ns
   csSqVec[1]=neutronCS*timeWindow*(*csVec)[1];
   csSqVec[2]=timeWindow;
@@ -126,7 +128,7 @@ double CDF(double Tr)
 
 double getNeutronKE(double r)
 {
-  double minKE = 0.1;
+  double minKE = minTrueKE;
   double maxKE = E1;
   double testKE = 0.5*(minKE + maxKE);
 
