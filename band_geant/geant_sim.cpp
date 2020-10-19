@@ -17,6 +17,7 @@
 
 #include "QGSP_BIC.hh"
 #include "QGSP_BERT.hh"
+#include "QGSP_BERT_HP.hh"
 #include "FTFP_BERT.hh"
 
 
@@ -24,85 +25,85 @@ using namespace std;
 
 int main(int argc, char ** argv)
 {
-  if (argc != 5)
-    {
-      cerr << "Wrong number of arguments! Instead use:\n"
-	   << "\tgeant_sim /path/to/generated/root/file /path/to/output/file /path/to/macro [1 for vis / 0 for batch]\n\n";
-      exit(-1);
-    }
-  
-  char * inFileName=argv[1];
-  char * outFileName=argv[2];
-  G4String macroName=argv[3];
-  bool useVis = atoi(argv[4]);
-  
-  // Input tree
-  TFile * inFile = new TFile(inFileName);
-  TTree * inTree = (TTree*) inFile->Get("MCout");
-  const int nEvents = inTree->GetEntries();
+	if (argc != 5)
+	{
+		cerr << "Wrong number of arguments! Instead use:\n"
+			<< "\tgeant_sim /path/to/generated/root/file /path/to/output/file /path/to/macro [1 for vis / 0 for batch]\n\n";
+		exit(-1);
+	}
 
-  // Output file + tree
-  TFile * outFile = new TFile(outFileName,"RECREATE");
-  TTree * outTree = new TTree("PropTree","Propagation Tree");
+	char * inFileName=argv[1];
+	char * outFileName=argv[2];
+	G4String macroName=argv[3];
+	bool useVis = atoi(argv[4]);
 
-  cout << "Beginning geant_sim initialization...\n"
-       << "\tGenerator file: " << inFileName << "\n"
-       << "\tOutput file:    " << outFileName << "\n"
-       << "\tMacro:          " << macroName << "\n";
-  if (useVis)
-    cout << "\tVisualisation:  ON\n";
-  else
-    cout << "\tVisualization:  OFF\n";
+	// Input tree
+	TFile * inFile = new TFile(inFileName);
+	TTree * inTree = (TTree*) inFile->Get("MCout");
+	const int nEvents = inTree->GetEntries();
 
-  // Initialization
-  G4Random::setTheEngine(new CLHEP::RanecuEngine);
-  G4RunManager * runManager = new G4RunManager;
+	// Output file + tree
+	TFile * outFile = new TFile(outFileName,"RECREATE");
+	TTree * outTree = new TTree("PropTree","Propagation Tree");
 
-  // Detector Geometry
-  runManager->SetUserInitialization(new NeutronHallBDetectorConstruction((void*)outTree));
+	cout << "Beginning geant_sim initialization...\n"
+		<< "\tGenerator file: " << inFileName << "\n"
+		<< "\tOutput file:    " << outFileName << "\n"
+		<< "\tMacro:          " << macroName << "\n";
+	if (useVis)
+		cout << "\tVisualisation:  ON\n";
+	else
+		cout << "\tVisualization:  OFF\n";
 
-  // Physics List
-  G4VModularPhysicsList* physicsList = new QGSP_BERT;//FTFP_BERT_HP;//FTFP_BERT;
-  physicsList->RegisterPhysics(new G4StepLimiterPhysics());
-  runManager->SetUserInitialization(physicsList);
+	// Initialization
+	G4Random::setTheEngine(new CLHEP::RanecuEngine);
+	G4RunManager * runManager = new G4RunManager;
 
-  // User Action
-  runManager->SetUserInitialization(new NeutronHallBActionInitialization(inTree,outTree));
+	// Detector Geometry
+	runManager->SetUserInitialization(new NeutronHallBDetectorConstruction((void*)outTree));
 
-  // Initialize G4 kernel
-  runManager->Initialize();
-  cout << "\n\nGeant4 is initialized!\n\n";
+	// Physics List
+	G4VModularPhysicsList* physicsList = new QGSP_BIC;//FTFP_BERT_HP;//FTFP_BERT;
+	physicsList->RegisterPhysics(new G4StepLimiterPhysics());
+	runManager->SetUserInitialization(physicsList);
 
-  // Visualization and User-Interface
-  G4UIExecutive* ui = NULL;
-  if (useVis)
-    ui = new G4UIExecutive(1,argv);
-  G4VisManager *visManager = new G4VisExecutive("Quiet");
-  visManager->Initialize();
-  G4UImanager* UImanager = G4UImanager::GetUIpointer();
+	// User Action
+	runManager->SetUserInitialization(new NeutronHallBActionInitialization(inTree,outTree));
 
-  // Execute macro
-  G4String command = "/control/execute ";
-  UImanager->ApplyCommand(command+macroName);
+	// Initialize G4 kernel
+	runManager->Initialize();
+	cout << "\n\nGeant4 is initialized!\n\n";
 
-  // Either start visualization or do the run.
-  if (useVis)
-    ui->SessionStart();
-  else
-    {
-      // We're in batch mode so let's start the run
-      char runCmd[100];
-      sprintf(runCmd,"/run/beamOn %d",nEvents);
-      UImanager->ApplyCommand(G4String(runCmd));	
-    }
+	// Visualization and User-Interface
+	G4UIExecutive* ui = NULL;
+	if (useVis)
+		ui = new G4UIExecutive(1,argv);
+	G4VisManager *visManager = new G4VisExecutive("Quiet");
+	visManager->Initialize();
+	G4UImanager* UImanager = G4UImanager::GetUIpointer();
 
-  // Clean Up
-  outFile->Write();
-  inFile->Close();
-  outFile->Close();
-  delete runManager;
-  if (visManager) delete visManager;
-  if (ui) delete ui;
+	// Execute macro
+	G4String command = "/control/execute ";
+	UImanager->ApplyCommand(command+macroName);
 
-  return 0;
+	// Either start visualization or do the run.
+	if (useVis)
+		ui->SessionStart();
+	else
+	{
+		// We're in batch mode so let's start the run
+		char runCmd[100];
+		sprintf(runCmd,"/run/beamOn %d",nEvents);
+		UImanager->ApplyCommand(G4String(runCmd));	
+	}
+
+	// Clean Up
+	outFile->Write();
+	inFile->Close();
+	outFile->Close();
+	delete runManager;
+	if (visManager) delete visManager;
+	if (ui) delete ui;
+
+	return 0;
 }

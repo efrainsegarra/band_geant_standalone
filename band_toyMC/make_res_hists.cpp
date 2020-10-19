@@ -117,12 +117,12 @@ int main(int argc, char ** argv)
 	  // Determine if there is bin migration
 	  if (reconXpAsSame->FindBin(trueXp,true_alpha_s) == reconXpAsSame->FindBin(reconXp,alpha_s))
 	    {
-	      reconXpAsSame->Fill(reconXp,alpha_s);
+	      reconXpAsSame->Fill(reconXp,alpha_s); // correctly reconstructed
 	    }
 	  else
 	    {
-	      reconXpAsDiff->Fill(reconXp,alpha_s);
-	      trueXpAsDiff->Fill(trueXp,true_alpha_s);
+	      reconXpAsDiff->Fill(reconXp,alpha_s); // where wrong events were reconstructed
+	      trueXpAsDiff->Fill(trueXp,true_alpha_s); // where wrong events originated
 	    }
 
 	  // Figure out what bin

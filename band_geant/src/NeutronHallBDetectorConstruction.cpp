@@ -162,7 +162,7 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
   // ------------------ End Defining World ---------------- //
 
   // ------------------ Defining Target - in World ---------------- //
-    
+    /*
     G4double targetRadius = 1.*mm;
 
     G4Sphere* solid_target = 
@@ -189,7 +189,7 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
                           fCheckOverlaps);                     // overlap checkign
 
     logic_target -> SetVisAttributes (G4Colour::G4Colour( 0.65 , 0.82 , 0.77 ));
-    
+    */
   // ------------------ End Defining Target ---------------- //
 
   // ------------------ Defining BAND Detector - in World ---------------- //
@@ -198,7 +198,7 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
     const int BAND_wallGroups = 5;
     //const int BAND_numRows = 18;
     
-    G4double BAND_barCrossSection = 7.4*cm;
+    G4double BAND_barCrossSection = 7.2*cm;
     G4double BAND_groupA_length = 1634.58*mm; // temp
     G4double BAND_groupB_length = 1946.53*mm; // temp
     G4double BAND_groupC_length = 2018.35*mm; // temp
@@ -326,8 +326,7 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
   // ------------------ END Defining BAND Detector  ---------------- //
     
   // ------------------ Defining Lead Wall  - in World ---------------- //
-    
-    G4double lead_thickness = 25.*mm/2;
+    G4double lead_thickness = 20.*mm;
     G4double lead_Z_coord = (BAND_Z_coord_center + BAND_Z_thickness/2.)*mm + 15*mm + lead_thickness;
 
     G4double RinDetector = 225.*mm;
@@ -360,6 +359,7 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
     logicLeadWall -> SetVisAttributes(LeadWallVisAttributes);
     // ------------------ END Defining Lead Wall  - in World ---------------- //
     
+    /*
     // ------------------ Defining Solenoid ---------------- //
     
     length = 480.*mm;                                          // length of the first tube pipe
@@ -722,7 +722,7 @@ G4VPhysicalVolume* NeutronHallBDetectorConstruction::DefineVolumes(){
     }
   // ------------------ END Defining Electronic Boxes  ---------------- //
     
-    
+    */
     // Always return the physical world
     return physWorld;
 }

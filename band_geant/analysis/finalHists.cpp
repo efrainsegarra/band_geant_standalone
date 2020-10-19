@@ -54,6 +54,15 @@ int main(int argc, char ** argv){
   As_Xp->GetXaxis()->SetTitle("x_{p}");
   As_Xp->GetYaxis()->SetTitle("#alpha_{S}");
 
+  TH2D * smear_to_gen = new TH2D("smear_to_gen","Recon Q^2 > 2., W_prime > 1.8, 0.6 > Recon Pn > 0.25, Recon Xp < 1.",70,0.1,0.8,70,1.2,1.55);
+  smear_to_gen->GetXaxis()->SetTitle("x_{p}");
+  smear_to_gen->GetYaxis()->SetTitle("#alpha_{S}");
+
+  TH2D * gen_to_smear = new TH2D("gen_to_smear","Recon Q^2 > 2., W_prime > 1.8, 0.6 > Recon Pn > 0.25, Recon Xp < 1.",70,0.1,0.8,70,1.2,1.55);
+  gen_to_smear->GetXaxis()->SetTitle("x_{p}");
+  gen_to_smear->GetYaxis()->SetTitle("#alpha_{S}");
+
+
   Float_t xp_bins[ ] = {0.25,0.35,0.5,0.9};
   Int_t binnumXp = sizeof(xp_bins)/sizeof(Float_t) - 1;
   Float_t as_bins[ ] = {1.3,1.35,1.4,1.45,1.5,1.55};
@@ -63,9 +72,13 @@ int main(int argc, char ** argv){
   TH2D * changeYield = new TH2D("changeYield","False Negative - False Positive [%];Recon x';Recon a_{s};Counts",binnumXp,xp_bins,binnumAs,as_bins);  
 
   double denom[binnumXp][binnumAs];
+  double m_gen[binnumXp][binnumAs];
+  double n_rec[binnumXp][binnumAs];
   for(int n = 0; n < binnumAs; n++){
     for(int m = 0; m < binnumXp; m++){
       denom[m][n] = 0;
+      m_gen[m][n] = 0;
+      n_rec[m][n] = 0;
     }
   }
 
@@ -216,7 +229,10 @@ int main(int argc, char ** argv){
         if( (reconXp >= L) && (reconXp < R) ){
           if( (reconAs >= B) && (reconAs < U) ){
 
+            if( (m == 2) && (n==2) ) smear_to_gen->Fill(trueXp,trueAs);
+
             denom[m][n]++;
+            n_rec[m][n]++;
             //cout << "In bin " << L << " " << R << " " << B << " " << U << "\n";
 
             // If true ISN'T in the bin
@@ -234,6 +250,9 @@ int main(int argc, char ** argv){
         if( (trueXp >= L) && (trueXp < R) ){
           if( (trueAs >= B) && (trueAs < U) ){
 
+            if( (m == 2) && (n==2) ) gen_to_smear->Fill(reconXp,reconAs);
+
+            m_gen[m][n]++;
             // If smeared ISN'T in the bin
             if( !( (reconXp >= L) && (reconXp < R) ) || !( (reconAs >= B) && (reconAs < U) ) ){
                 falseNeg->Fill(trueXp,trueAs);
@@ -298,11 +317,12 @@ int main(int argc, char ** argv){
       changeYield->SetBinContent( m+1,n+1, falseNeg->GetBinContent(m+1,n+1) - falsePos->GetBinContent(m+1,n+1) );
 
       cout << (as_bins[n]+as_bins[n+1])/2. << "\t" << (xp_bins[m]+xp_bins[m+1])/2. << "\t" <<  falseNeg->GetBinContent(m+1,n+1) << "\t" << falsePos->GetBinContent(m+1,n+1) << "\t" << changeYield->GetBinContent(m+1,n+1) << "\n";
-
+      cout << "\t" << m_gen[m][n] << " " << n_rec[m][n] << " " << 1. - m_gen[m][n]/n_rec[m][n] <<  "\n";
       }
   } 
 
- 
+  smear_to_gen->Write();
+  gen_to_smear->Write();
   falsePos->Write();
   falseNeg->Write();
   changeYield->Write();

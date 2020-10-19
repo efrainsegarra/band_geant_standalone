@@ -51,9 +51,12 @@ int main(int argc, char** argv){
       double y = event->hits[0].pos.Y()/10.;
       double z = event->hits[0].pos.Z()/10.;
       if ((abs(z + 262)) < 0.2) tomography->Fill(x,y);
-      
+
     //}
   }
+
+  
+
   tomography->Write();
   outFile->Close();
   inFile->Close();

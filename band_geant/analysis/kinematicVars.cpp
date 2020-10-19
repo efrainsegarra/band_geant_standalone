@@ -211,11 +211,12 @@ int main(int argc, char** argv){
 		reconAs = (reconEn - reconPn*reconCosTheta_qn)/mN;
 
 		if (acos(reconCosTheta_qn)*180./M_PI < 110.) continue;
-		if (reconQSq < 2) continue;
-		if (reconWp < 1.8) continue;
+		if (reconQSq < 2) 	continue;
+		if (reconWp < 1.8) 	continue;
 		if (reconPn < 0.25) continue;
-		if (reconPn > 0.6) continue;
-		if (reconXp > 0.8)continue;
+		if (reconPn > 0.6) 	continue;
+		if (reconXp > 0.8) 	continue;
+		if (reconXp < 0.2) 	continue;
 
 		outTree->Fill();
 	}

@@ -68,6 +68,7 @@ int main(int argc, char** argv){
         if ((en_MeVee > threshold) && (counted==false)){
           int_particles++;
           counted = true;
+          break;
         }
 
       }

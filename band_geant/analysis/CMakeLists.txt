@@ -32,3 +32,6 @@ target_link_libraries(f2 deuteron_dis_tree ${ROOT_LIBRARIES} )
 
 add_executable(tomography ${CMAKE_CURRENT_SOURCE_DIR}/tomography.cpp)
 target_link_libraries(tomography deuteron_dis_tree ${ROOT_LIBRARIES} )
+
+add_executable(geometry ${CMAKE_CURRENT_SOURCE_DIR}/geometry.cpp)
+target_link_libraries(geometry deuteron_dis_tree ${ROOT_LIBRARIES} )
